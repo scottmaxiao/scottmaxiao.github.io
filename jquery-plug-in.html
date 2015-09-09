@@ -1,0 +1,263 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##jQuery插件开发
+jQuery插件的开发包括两种：
+
+一种是类级别的插件开发，即给jQuery添加新的全局函数，相当于给jQuery类本身添加方法。jQuery的全局函数就是属于jQuery命名空间的函数，另一种是对象级别的插件开发，即给jQuery对象添加方法。下面就两种函数的开发做详细的说明。
+
+类级别的插件开发
+
+    自定义全局函数
+    jQuery.foo = function() {  
+      alert('This is a test. This is only a test.'); 
+    }; 
+    jQuery.bar = function(param) {  
+      alert('This function takes a parameter, which is "' + param + '".'); 
+    };  
+    调用时和一个函数的一样的:jQuery.foo();jQuery.bar();或者$.foo();$.bar('bar');
+
+
+    使用jQuery.extend(object)
+    jQuery.extend({     
+      foo: function() {     
+         alert('This is a test. This is only a test.');     
+      },     
+      bar: function(param) {     
+         alert('This function takes a parameter, which is "' + param +'".');     
+      }     
+    });
+　　
+
+对象级别的插件开发
+
+对象级别的插件开发需要如下的两种形式：
+
+    形式1：  
+    (function($){    
+       $.fn.extend({    
+           pluginName:function(opt,callback){    
+          // Our plugin implementation code goes here.      
+           }    
+       })    
+    })(jQuery);
+　　
+
+    形式2：
+    (function($) {      
+       $.fn.pluginName = function() {    
+            // Our plugin implementation code goes here.    
+       };    
+     })(jQuery);
+　　
+
+上面定义了一个jQuery函数,形参是$，函数定义完成之后,把jQuery这个实参传递进去.立即调用执行。这样的好处是,我们在写jQuery插件时,也可以使用$这个别名,而不会与prototype引起冲突.
+
+调用样例如下
+    
+    $('#myDiv').hilight();
+　　
+
+接受options参数以控制插件的行为 
+
+    // plugin definition   
+    $.fn.hilight = function(options) {   
+        var defaults = {   
+              foreground: 'red',   
+              background: 'yellow'   
+        };   
+        // Extend our default options with those provided.   
+        var opts = $.extend(defaults, options);   
+        // Our plugin implementation code goes here.   
+    };   
+我们的插件可以这样被调用： 
+
+    $('#myDiv').hilight({   
+       foreground: 'blue'   
+    });
+　　
+参考资料：
+
+[jQuery插件开发全解析]<http://www.iteye.com/topic/545971>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="jquery">jQuery插件开发</h2>
+
+<p>jQuery插件的开发包括两种：</p>
+
+<p>一种是类级别的插件开发，即给jQuery添加新的全局函数，相当于给jQuery类本身添加方法。jQuery的全局函数就是属于jQuery命名空间的函数，另一种是对象级别的插件开发，即给jQuery对象添加方法。下面就两种函数的开发做详细的说明。</p>
+
+<p>类级别的插件开发</p>
+
+<pre><code>自定义全局函数
+jQuery.foo = function() {  
+  alert('This is a test. This is only a test.'); 
+}; 
+jQuery.bar = function(param) {  
+  alert('This function takes a parameter, which is "' + param + '".'); 
+};  
+调用时和一个函数的一样的:jQuery.foo();jQuery.bar();或者$.foo();$.bar('bar');
+
+
+使用jQuery.extend(object)
+jQuery.extend({     
+  foo: function() {     
+     alert('This is a test. This is only a test.');     
+  },     
+  bar: function(param) {     
+     alert('This function takes a parameter, which is "' + param +'".');     
+  }     
+});
+</code></pre>
+
+<p>对象级别的插件开发</p>
+
+<p>对象级别的插件开发需要如下的两种形式：</p>
+
+<pre><code>形式1：  
+(function($){    
+   $.fn.extend({    
+       pluginName:function(opt,callback){    
+      // Our plugin implementation code goes here.      
+       }    
+   })    
+})(jQuery);
+</code></pre>
+
+<pre><code>形式2：
+(function($) {      
+   $.fn.pluginName = function() {    
+        // Our plugin implementation code goes here.    
+   };    
+ })(jQuery);
+</code></pre>
+
+<p>上面定义了一个jQuery函数,形参是<span class="MathJax_Preview" style="color: inherit;"></span><span class="MathJax" id="MathJax-Element-38-Frame"><nobr><span class="math" id="MathJax-Span-5295" role="math" style="width: 51.933em; display: inline-block;"><span style="display: inline-block; position: relative; width: 42.228em; height: 0px; font-size: 123%;"><span style="position: absolute; clip: rect(1.578em 1000em 2.899em -999.997em); top: -2.538em; left: 0.003em;"><span class="mrow" id="MathJax-Span-5296"><span class="texatom" id="MathJax-Span-5297"><span class="mrow" id="MathJax-Span-5298"><span class="mo" id="MathJax-Span-5299"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">，</span></span></span></span><span class="texatom" id="MathJax-Span-5300"><span class="mrow" id="MathJax-Span-5301"><span class="mo" id="MathJax-Span-5302"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">函</span></span></span></span><span class="texatom" id="MathJax-Span-5303"><span class="mrow" id="MathJax-Span-5304"><span class="mo" id="MathJax-Span-5305"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">数</span></span></span></span><span class="texatom" id="MathJax-Span-5306"><span class="mrow" id="MathJax-Span-5307"><span class="mo" id="MathJax-Span-5308"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">定</span></span></span></span><span class="texatom" id="MathJax-Span-5309"><span class="mrow" id="MathJax-Span-5310"><span class="mo" id="MathJax-Span-5311"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">义</span></span></span></span><span class="texatom" id="MathJax-Span-5312"><span class="mrow" id="MathJax-Span-5313"><span class="mo" id="MathJax-Span-5314"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">完</span></span></span></span><span class="texatom" id="MathJax-Span-5315"><span class="mrow" id="MathJax-Span-5316"><span class="mo" id="MathJax-Span-5317"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">成</span></span></span></span><span class="texatom" id="MathJax-Span-5318"><span class="mrow" id="MathJax-Span-5319"><span class="mo" id="MathJax-Span-5320"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">之</span></span></span></span><span class="texatom" id="MathJax-Span-5321"><span class="mrow" id="MathJax-Span-5322"><span class="mo" id="MathJax-Span-5323"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">后</span></span></span></span><span class="mo" id="MathJax-Span-5324" style="font-family: STIXGeneral-Regular;">,</span><span class="texatom" id="MathJax-Span-5325" style="padding-left: 0.206em;"><span class="mrow" id="MathJax-Span-5326"><span class="mo" id="MathJax-Span-5327"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">把</span></span></span></span><span class="mi" id="MathJax-Span-5328" style="font-family: STIXGeneral-Italic;">j<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.003em;"></span></span><span class="mi" id="MathJax-Span-5329" style="font-family: STIXGeneral-Italic;">Q</span><span class="mi" id="MathJax-Span-5330" style="font-family: STIXGeneral-Italic;">u</span><span class="mi" id="MathJax-Span-5331" style="font-family: STIXGeneral-Italic;">e</span><span class="mi" id="MathJax-Span-5332" style="font-family: STIXGeneral-Italic;">r<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.003em;"></span></span><span class="mi" id="MathJax-Span-5333" style="font-family: STIXGeneral-Italic;">y</span><span class="texatom" id="MathJax-Span-5334"><span class="mrow" id="MathJax-Span-5335"><span class="mo" id="MathJax-Span-5336"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">这</span></span></span></span><span class="texatom" id="MathJax-Span-5337"><span class="mrow" id="MathJax-Span-5338"><span class="mo" id="MathJax-Span-5339"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">个</span></span></span></span><span class="texatom" id="MathJax-Span-5340"><span class="mrow" id="MathJax-Span-5341"><span class="mo" id="MathJax-Span-5342"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">实</span></span></span></span><span class="texatom" id="MathJax-Span-5343"><span class="mrow" id="MathJax-Span-5344"><span class="mo" id="MathJax-Span-5345"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">参</span></span></span></span><span class="texatom" id="MathJax-Span-5346"><span class="mrow" id="MathJax-Span-5347"><span class="mo" id="MathJax-Span-5348"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">传</span></span></span></span><span class="texatom" id="MathJax-Span-5349"><span class="mrow" id="MathJax-Span-5350"><span class="mo" id="MathJax-Span-5351"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">递</span></span></span></span><span class="texatom" id="MathJax-Span-5352"><span class="mrow" id="MathJax-Span-5353"><span class="mo" id="MathJax-Span-5354"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">进</span></span></span></span><span class="texatom" id="MathJax-Span-5355"><span class="mrow" id="MathJax-Span-5356"><span class="mo" id="MathJax-Span-5357"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">去</span></span></span></span><span class="mo" id="MathJax-Span-5358" style="font-family: STIXGeneral-Regular;">.</span><span class="texatom" id="MathJax-Span-5359" style="padding-left: 0.206em;"><span class="mrow" id="MathJax-Span-5360"><span class="mo" id="MathJax-Span-5361"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">立</span></span></span></span><span class="texatom" id="MathJax-Span-5362"><span class="mrow" id="MathJax-Span-5363"><span class="mo" id="MathJax-Span-5364"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">即</span></span></span></span><span class="texatom" id="MathJax-Span-5365"><span class="mrow" id="MathJax-Span-5366"><span class="mo" id="MathJax-Span-5367"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">调</span></span></span></span><span class="texatom" id="MathJax-Span-5368"><span class="mrow" id="MathJax-Span-5369"><span class="mo" id="MathJax-Span-5370"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">用</span></span></span></span><span class="texatom" id="MathJax-Span-5371"><span class="mrow" id="MathJax-Span-5372"><span class="mo" id="MathJax-Span-5373"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">执</span></span></span></span><span class="texatom" id="MathJax-Span-5374"><span class="mrow" id="MathJax-Span-5375"><span class="mo" id="MathJax-Span-5376"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">行</span></span></span></span><span class="texatom" id="MathJax-Span-5377"><span class="mrow" id="MathJax-Span-5378"><span class="mo" id="MathJax-Span-5379"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">。</span></span></span></span><span class="texatom" id="MathJax-Span-5380"><span class="mrow" id="MathJax-Span-5381"><span class="mo" id="MathJax-Span-5382"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">这</span></span></span></span><span class="texatom" id="MathJax-Span-5383"><span class="mrow" id="MathJax-Span-5384"><span class="mo" id="MathJax-Span-5385"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">样</span></span></span></span><span class="texatom" id="MathJax-Span-5386"><span class="mrow" id="MathJax-Span-5387"><span class="mo" id="MathJax-Span-5388"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">的</span></span></span></span><span class="texatom" id="MathJax-Span-5389"><span class="mrow" id="MathJax-Span-5390"><span class="mo" id="MathJax-Span-5391"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">好</span></span></span></span><span class="texatom" id="MathJax-Span-5392"><span class="mrow" id="MathJax-Span-5393"><span class="mo" id="MathJax-Span-5394"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">处</span></span></span></span><span class="texatom" id="MathJax-Span-5395"><span class="mrow" id="MathJax-Span-5396"><span class="mo" id="MathJax-Span-5397"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">是</span></span></span></span><span class="mo" id="MathJax-Span-5398" style="font-family: STIXGeneral-Regular;">,</span><span class="texatom" id="MathJax-Span-5399" style="padding-left: 0.206em;"><span class="mrow" id="MathJax-Span-5400"><span class="mo" id="MathJax-Span-5401"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">我</span></span></span></span><span class="texatom" id="MathJax-Span-5402"><span class="mrow" id="MathJax-Span-5403"><span class="mo" id="MathJax-Span-5404"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">们</span></span></span></span><span class="texatom" id="MathJax-Span-5405"><span class="mrow" id="MathJax-Span-5406"><span class="mo" id="MathJax-Span-5407"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">在</span></span></span></span><span class="texatom" id="MathJax-Span-5408"><span class="mrow" id="MathJax-Span-5409"><span class="mo" id="MathJax-Span-5410"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">写</span></span></span></span><span class="mi" id="MathJax-Span-5411" style="font-family: STIXGeneral-Italic;">j<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.003em;"></span></span><span class="mi" id="MathJax-Span-5412" style="font-family: STIXGeneral-Italic;">Q</span><span class="mi" id="MathJax-Span-5413" style="font-family: STIXGeneral-Italic;">u</span><span class="mi" id="MathJax-Span-5414" style="font-family: STIXGeneral-Italic;">e</span><span class="mi" id="MathJax-Span-5415" style="font-family: STIXGeneral-Italic;">r<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.003em;"></span></span><span class="mi" id="MathJax-Span-5416" style="font-family: STIXGeneral-Italic;">y</span><span class="texatom" id="MathJax-Span-5417"><span class="mrow" id="MathJax-Span-5418"><span class="mo" id="MathJax-Span-5419"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">插</span></span></span></span><span class="texatom" id="MathJax-Span-5420"><span class="mrow" id="MathJax-Span-5421"><span class="mo" id="MathJax-Span-5422"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">件</span></span></span></span><span class="texatom" id="MathJax-Span-5423"><span class="mrow" id="MathJax-Span-5424"><span class="mo" id="MathJax-Span-5425"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">时</span></span></span></span><span class="mo" id="MathJax-Span-5426" style="font-family: STIXGeneral-Regular;">,</span><span class="texatom" id="MathJax-Span-5427" style="padding-left: 0.206em;"><span class="mrow" id="MathJax-Span-5428"><span class="mo" id="MathJax-Span-5429"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">也</span></span></span></span><span class="texatom" id="MathJax-Span-5430"><span class="mrow" id="MathJax-Span-5431"><span class="mo" id="MathJax-Span-5432"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">可</span></span></span></span><span class="texatom" id="MathJax-Span-5433"><span class="mrow" id="MathJax-Span-5434"><span class="mo" id="MathJax-Span-5435"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">以</span></span></span></span><span class="texatom" id="MathJax-Span-5436"><span class="mrow" id="MathJax-Span-5437"><span class="mo" id="MathJax-Span-5438"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">使</span></span></span></span><span class="texatom" id="MathJax-Span-5439"><span class="mrow" id="MathJax-Span-5440"><span class="mo" id="MathJax-Span-5441"><span style="font-family: STIXGeneral, 'Arial Unicode MS', serif; font-size: 81%; font-style: normal; font-weight: normal;">用</span></span></span></span></span><span style="display: inline-block; width: 0px; height: 2.543em;"></span></span></span><span style="border-left-width: 0.003em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.378em; vertical-align: -0.309em;"></span></span></nobr></span><script type="math/tex" id="MathJax-Element-38">，函数定义完成之后,把jQuery这个实参传递进去.立即调用执行。这样的好处是,我们在写jQuery插件时,也可以使用</script>这个别名,而不会与prototype引起冲突.</p>
+
+<p>调用样例如下</p>
+
+<pre><code>$('#myDiv').hilight();
+</code></pre>
+
+<p>接受options参数以控制插件的行为 </p>
+
+<pre><code>// plugin definition   
+$.fn.hilight = function(options) {   
+    var defaults = {   
+          foreground: 'red',   
+          background: 'yellow'   
+    };   
+    // Extend our default options with those provided.   
+    var opts = $.extend(defaults, options);   
+    // Our plugin implementation code goes here.   
+};   
+</code></pre>
+
+<p>我们的插件可以这样被调用： </p>
+
+<pre><code>$('#myDiv').hilight({   
+   foreground: 'blue'   
+});
+</code></pre>
+
+<p>　　
+参考资料：</p>
+
+<p>[jQuery插件开发全解析]<a href="http://www.iteye.com/topic/545971">http://www.iteye.com/topic/545971</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "jquery-plug-in.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

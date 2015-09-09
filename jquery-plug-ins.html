@@ -1,0 +1,321 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+####IOS数组和字典介绍
+<table>
+	<tr>
+		<td>NSArray</td>
+		<td>数组</td>
+		<td>对象有序集合</td>
+	</tr>
+	<tr>
+		<td>NSMutableArray</td>
+		<td>动态数组</td>
+		<td>对象有序集合,允许添加和删除数组元素</td>
+	</tr>
+	<tr>
+		<td>NSDictionary</td>
+		<td>字典</td>
+		<td>键值映射</td>
+	</tr>
+	<tr>
+		<td>NSMutableDictionary</td>
+		<td>动态字典</td>
+		<td>键值映射,允许添加和删除key和value</td>
+	</tr>
+</table>
+注：这些集合类只能容纳cocoa对象（NSOjbect对象），如果想保存一些原始的C数据（例如，int, float, double, BOOL等），则需要将这些原始的C数据封装成NSNumber类型进行存储。NSNumber对象是cocoa对象，可以被保存在集合类中。
+
+nil不能作为空值存储到集合中，只能使用[NSNull null]存储到集合中。如
+
+    [myArray addObject:[NSNull null]];
+
+
+NSArray初始化
+<pre><code>方式一
+        NSArray *array = [[NSArray alloc] initWithObjects:@"One",@"Two",@"Three",@"Four",nil];
+    方式二
+        NSArray *monthNames = [NSArray arrayWithObjects:@"January",@"February",@"March",@"April",@"May",nil];
+    方式三
+        NSArray *array=@[@"defaultArray",@"queryArray"];
+</code></pre>　
+    
+NSMutableArray初始化
+<pre><code>方式一
+        NSMutableArray *array = [NSMutableArray arrayWithObjects:@"One",@"Two",@"Three",nil];
+    方式二
+        NSArray *array = [NSMutableArray arrayWithCapacity:20];
+    [array addObject:@"One"];
+    [array addObject:@"Two"];
+</code></pre>　
+
+NSDictionary初始化
+ <pre><code>方式一
+        NSDictionary *dictionary = [[NSDictionary alloc]initWithObjectsAndKeys:@"One",@"1",@"Two",@"2",@"Three",@"3",nil];
+    方式二
+        NSDictionary *parameters = @{@"search_key": self.searchBar.text,@"current_count":@"0",@"page_size":kPageSize};
+</code></pre>　
+
+NSMutableDictionary初始化
+<pre><code>方式一
+        NSMutableDictionary *dictionary = [[NSMutableDictionary alloc] init];
+    方式二
+        NSMutableDictionary *dictionary = [NSMutableDictionary dictionary]; 
+    
+    方式三
+        NSMutableDictionary *dictionary =[NSMutableDictionary dictionaryWithCapacity:5];
+    
+    //添加字典
+    [dictionary setObject:@"One" forKey:@"1"];
+    [dictionary setObject:@"Two" forKey:@"2"];
+    [dictionary setObject:@"Three" forKey:@"3"];
+    [dictionary setObject:@"Four" forKey:@"4"];
+    NSLog(@"dictionary:%@",dictionary);
+</code></pre>
+
+遍历
+<pre><code>数组遍历
+    NSMutableArray *test = [NSMutableArray array];
+    方式一
+    for (int i= 0; i < test.count; i++) {
+        ...
+    }
+    方式二
+    for (id obj in test) {
+        ...
+    }
+    
+    方式三
+    [test enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
+        ...
+    }];
+    参数讲解:
+    *obj:数组中的元素,该参数可以直接指定类型，如BnlogModel * model
+    *idx:当前数组下标
+    *stop:设为YES，就跳出循环，不继续遍历了
+</code></pre>　    
+<pre><code>字典遍历
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionaryWithCapacity:10];
+    方式一
+    for(NSString *compKey in dictionary) {    // 正确的字典遍历方式
+    BYComponent *comp = [dictionary objectForKey:compKey];
+    ...
+    }
+    
+    方式二
+    [randomDict enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOLBOOL *stop) {  
+    ...
+    }];
+ </code></pre>　   
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h4 id="ios">IOS数组和字典介绍</h4>
+
+<table>
+    <tbody><tr>
+        <td>NSArray</td>
+        <td>数组</td>
+        <td>对象有序集合</td>
+    </tr>
+    <tr>
+        <td>NSMutableArray</td>
+        <td>动态数组</td>
+        <td>对象有序集合,允许添加和删除数组元素</td>
+    </tr>
+    <tr>
+        <td>NSDictionary</td>
+        <td>字典</td>
+        <td>键值映射</td>
+    </tr>
+    <tr>
+        <td>NSMutableDictionary</td>
+        <td>动态字典</td>
+        <td>键值映射,允许添加和删除key和value</td>
+    </tr>
+</tbody></table>
+
+<p>注：这些集合类只能容纳cocoa对象（NSOjbect对象），如果想保存一些原始的C数据（例如，int, float, double, BOOL等），则需要将这些原始的C数据封装成NSNumber类型进行存储。NSNumber对象是cocoa对象，可以被保存在集合类中。</p>
+
+<p>nil不能作为空值存储到集合中，只能使用[NSNull null]存储到集合中。如</p>
+
+<pre><code>[myArray addObject:[NSNull null]];
+</code></pre>
+
+<p>NSArray初始化</p>
+
+<pre><code>方式一
+        NSArray *array = [[NSArray alloc] initWithObjects:@"One",@"Two",@"Three",@"Four",nil];
+    方式二
+        NSArray *monthNames = [NSArray arrayWithObjects:@"January",@"February",@"March",@"April",@"May",nil];
+    方式三
+        NSArray *array=@[@"defaultArray",@"queryArray"];
+</code></pre>　
+
+NSMutableArray初始化
+<pre><code>方式一
+        NSMutableArray *array = [NSMutableArray arrayWithObjects:@"One",@"Two",@"Three",nil];
+    方式二
+        NSArray *array = [NSMutableArray arrayWithCapacity:20];
+    [array addObject:@"One"];
+    [array addObject:@"Two"];
+</code></pre>　
+
+NSDictionary初始化
+ <pre><code>方式一
+        NSDictionary *dictionary = [[NSDictionary alloc]initWithObjectsAndKeys:@"One",@"1",@"Two",@"2",@"Three",@"3",nil];
+    方式二
+        NSDictionary *parameters = @{@"search_key": self.searchBar.text,@"current_count":@"0",@"page_size":kPageSize};
+</code></pre>　
+
+NSMutableDictionary初始化
+<pre><code>方式一
+        NSMutableDictionary *dictionary = [[NSMutableDictionary alloc] init];
+    方式二
+        NSMutableDictionary *dictionary = [NSMutableDictionary dictionary]; 
+
+    方式三
+        NSMutableDictionary *dictionary =[NSMutableDictionary dictionaryWithCapacity:5];
+
+    //添加字典
+    [dictionary setObject:@"One" forKey:@"1"];
+    [dictionary setObject:@"Two" forKey:@"2"];
+    [dictionary setObject:@"Three" forKey:@"3"];
+    [dictionary setObject:@"Four" forKey:@"4"];
+    NSLog(@"dictionary:%@",dictionary);
+</code></pre>
+
+<p>遍历
+</p><pre><code>数组遍历
+    NSMutableArray *test = [NSMutableArray array];
+    方式一
+    for (int i= 0; i &lt; test.count; i++) {
+        ...
+    }
+    方式二
+    for (id obj in test) {
+        ...
+    }<p></p>
+
+<pre><code>方式三
+[test enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
+    ...
+}];
+参数讲解:
+*obj:数组中的元素,该参数可以直接指定类型，如BnlogModel * model
+*idx:当前数组下标
+*stop:设为YES，就跳出循环，不继续遍历了
+</code></pre>
+
+</code><p><code></code></p></pre>　 <br>
+<pre><code>字典遍历
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionaryWithCapacity:10];
+    方式一
+    for(NSString *compKey in dictionary) {    // 正确的字典遍历方式
+    BYComponent *comp = [dictionary objectForKey:compKey];
+    ...
+    }<p></p>
+
+<pre><code>方式二
+[randomDict enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOLBOOL *stop) {  
+...
+}];
+</code></pre>
+
+</code><p><code></code></p></pre>　   <p></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "jquery-plug-ins.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

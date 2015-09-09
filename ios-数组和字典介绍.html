@@ -56,33 +56,33 @@ nil不能作为空值存储到集合中，只能使用[NSNull null]存储到集�
 
 
 NSArray初始化
-
-	方式一
+<pre><code>方式一
         NSArray *array = [[NSArray alloc] initWithObjects:@"One",@"Two",@"Three",@"Four",nil];
     方式二
         NSArray *monthNames = [NSArray arrayWithObjects:@"January",@"February",@"March",@"April",@"May",nil];
     方式三
         NSArray *array=@[@"defaultArray",@"queryArray"];
+</code></pre>　
     
 NSMutableArray初始化
-    
-    方式一
+<pre><code>方式一
         NSMutableArray *array = [NSMutableArray arrayWithObjects:@"One",@"Two",@"Three",nil];
     方式二
         NSArray *array = [NSMutableArray arrayWithCapacity:20];
     [array addObject:@"One"];
     [array addObject:@"Two"];
-    
+</code></pre>　
+
 NSDictionary初始化
-    
-    方式一
+ <pre><code>方式一
         NSDictionary *dictionary = [[NSDictionary alloc]initWithObjectsAndKeys:@"One",@"1",@"Two",@"2",@"Three",@"3",nil];
     方式二
         NSDictionary *parameters = @{@"search_key": self.searchBar.text,@"current_count":@"0",@"page_size":kPageSize};
+</code></pre>　
 
 NSMutableDictionary初始化
-    
-    方式一
+
+<pre><code>方式一
         NSMutableDictionary *dictionary = [[NSMutableDictionary alloc] init];
     方式二
         NSMutableDictionary *dictionary = [NSMutableDictionary dictionary]; 
@@ -96,10 +96,9 @@ NSMutableDictionary初始化
     [dictionary setObject:@"Three" forKey:@"3"];
     [dictionary setObject:@"Four" forKey:@"4"];
     NSLog(@"dictionary:%@",dictionary);
-
+</code></pre>　
 遍历
-
-    数组遍历
+<pre><code>数组遍历
     
     NSMutableArray *test = [NSMutableArray array];
     方式一
@@ -120,9 +119,9 @@ NSMutableDictionary初始化
     *obj:数组中的元素,该参数可以直接指定类型，如BnlogModel * model
     *idx:当前数组下标
     *stop:设为YES，就跳出循环，不继续遍历了
-    
-    
-    字典遍历
+</code></pre>　  
+  
+<pre><code>字典遍历
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionaryWithCapacity:10];
     方式一
     for(NSString *compKey in dictionary) {    // 正确的字典遍历方式
@@ -134,7 +133,7 @@ NSMutableDictionary初始化
     [randomDict enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOLBOOL *stop) {  
     ...
     }];
-    
+ </code></pre>　   
 <!-- markdown end -->
 </div>
 <div class="entry" id="main">
@@ -171,42 +170,39 @@ NSMutableDictionary初始化
 <pre><code>[myArray addObject:[NSNull null]];
 </code></pre>
 
-<p>NSArray初始化</p>
+<p>NSArray初始化
+</p><pre><code>方式一
+        NSArray *array = [[NSArray alloc] initWithObjects:@"One",@"Two",@"Three",@"Four",nil];
+    方式二
+        NSArray *monthNames = [NSArray arrayWithObjects:@"January",@"February",@"March",@"April",@"May",nil];
+    方式三
+        NSArray *array=@[@"defaultArray",@"queryArray"];
+</code></pre>　<p></p>
 
-<pre><code>方式一
-    NSArray *array = [[NSArray alloc] initWithObjects:@"One",@"Two",@"Three",@"Four",nil];
-方式二
-    NSArray *monthNames = [NSArray arrayWithObjects:@"January",@"February",@"March",@"April",@"May",nil];
-方式三
-    NSArray *array=@[@"defaultArray",@"queryArray"];
-</code></pre>
+<p>NSMutableArray初始化
+</p><pre><code>方式一
+        NSMutableArray *array = [NSMutableArray arrayWithObjects:@"One",@"Two",@"Three",nil];
+    方式二
+        NSArray *array = [NSMutableArray arrayWithCapacity:20];
+    [array addObject:@"One"];
+    [array addObject:@"Two"];
+</code></pre>　<p></p>
 
-<p>NSMutableArray初始化</p>
-
-<pre><code>方式一
-    NSMutableArray *array = [NSMutableArray arrayWithObjects:@"One",@"Two",@"Three",nil];
-方式二
-    NSArray *array = [NSMutableArray arrayWithCapacity:20];
-[array addObject:@"One"];
-[array addObject:@"Two"];
-</code></pre>
-
-<p>NSDictionary初始化</p>
-
-<pre><code>方式一
-    NSDictionary *dictionary = [[NSDictionary alloc]initWithObjectsAndKeys:@"One",@"1",@"Two",@"2",@"Three",@"3",nil];
-方式二
-    NSDictionary *parameters = @{@"search_key": self.searchBar.text,@"current_count":@"0",@"page_size":kPageSize};
-</code></pre>
+<p>NSDictionary初始化
+ </p><pre><code>方式一
+        NSDictionary *dictionary = [[NSDictionary alloc]initWithObjectsAndKeys:@"One",@"1",@"Two",@"2",@"Three",@"3",nil];
+    方式二
+        NSDictionary *parameters = @{@"search<em>key": self.searchBar.text,@"current</em>count":@"0",@"page_size":kPageSize};
+</code></pre>　<p></p>
 
 <p>NSMutableDictionary初始化</p>
 
-<pre><code>方式一
-    NSMutableDictionary *dictionary = [[NSMutableDictionary alloc] init];
-方式二
-    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary]; 
+<p></p><pre><code>方式一
+        NSMutableDictionary *dictionary = [[NSMutableDictionary alloc] init];
+    方式二
+        NSMutableDictionary *dictionary = [NSMutableDictionary dictionary]; <p></p>
 
-方式三
+<pre><code>方式三
     NSMutableDictionary *dictionary =[NSMutableDictionary dictionaryWithCapacity:5];
 
 //添加字典
@@ -217,11 +213,11 @@ NSMutableDictionary初始化
 NSLog(@"dictionary:%@",dictionary);
 </code></pre>
 
-<p>遍历</p>
+</code><p><code></code></p></pre>　
+遍历
+<pre><code>数组遍历<p></p>
 
-<pre><code>数组遍历
-
-NSMutableArray *test = [NSMutableArray array];
+<pre><code>NSMutableArray *test = [NSMutableArray array];
 方式一
 for (int i= 0; i &lt; test.count; i++) {
     ...
@@ -240,21 +236,25 @@ for (id obj in test) {
 *obj:数组中的元素,该参数可以直接指定类型，如BnlogModel * model
 *idx:当前数组下标
 *stop:设为YES，就跳出循环，不继续遍历了
+</code></pre>
 
+</code><p><code></code></p></pre>　  <p></p>
 
-字典遍历
-NSMutableDictionary *dictionary = [NSMutableDictionary dictionaryWithCapacity:10];
-方式一
-for(NSString *compKey in dictionary) {    // 正确的字典遍历方式
-BYComponent *comp = [dictionary objectForKey:compKey];
-...
-}
+<p></p><pre><code>字典遍历
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionaryWithCapacity:10];
+    方式一
+    for(NSString *compKey in dictionary) {    // 正确的字典遍历方式
+    BYComponent *comp = [dictionary objectForKey:compKey];
+    ...
+    }<p></p>
 
-方式二
+<pre><code>方式二
 [randomDict enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOLBOOL *stop) {  
 ...
 }];
 </code></pre>
+
+</code><p><code></code></p></pre>　   <p></p>
 <!-- content end -->
 </div>
 <br>

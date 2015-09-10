@@ -1,0 +1,350 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-CocoaPods
+<p>&nbsp;&nbsp;&nbsp;&nbsp;当你开发iOS应用时，会经常使用到很多第三方开源类库，比如JSONKit，AFNetWorking等等。可能某个类库又用到其他类库，所以要使用它，必须得另外下载其他类库，而其他类库又用到其他类库，“子子孙孙无穷尽也”，这也许是比较特殊的情况。总之小编的意思就是，手动一个个去下载所需类库十分麻烦。另外一种常见情况是，你项目中用到的类库有更新，你必须得重新下载新版本，重新加入到项目中，十分麻烦。如果能有什么工具能解决这些恼人的问题，那将“善莫大焉”。所以，你需要 CocoaPods。
+</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;CocoaPods应该是iOS最常用最有名的类库管理工具了，上述两个烦人的问题，通过cocoaPods，只需要一行命令就可以完全解决，当然前提是你必须正确设置它。重要的是，绝大部分有名的开源类库，都支持CocoaPods。所以，作为iOS程序员的我们，掌握CocoaPods的使用是必不可少的基本技能了。
+</p>
+
+[下载和安装CocoaPods请参考：]<http://code4app.com/article/cocoapods-install-usage>
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;在使用cocoapods 进行update 或者 install的时候 每次回去更新获取的pod specs，每次速度都不是很理想，如果不想在pod install pod update的时候不想升级specs库 可以使用参数忽略掉
+<pre><code>
+pod install --verbose --no-repo-update
+pod update --verbose --no-repo-update
+</code></pre>
+
+当在update或install时遇到这个问题
+<pre><code>
+Unable to find a specification for `xxxxx (~> 1.x.x)` depended upon by Podfile.
+</code></pre>
+
+只需要把当前Pod的目录清理一下就行了。在终端执行以下命令
+<pre><code>
+pod repo remove master  
+pod setup  
+</code></pre>
+setup成功后执行install或update即可。
+
+----
+
+####开源框架介绍
+######AFNetworking
+&nbsp;&nbsp;&nbsp;&nbsp;AFNetworking是一个轻量级的iOS网络通信类库。AFNetworking 是当前 iOS 和 Mac OS X 开发中最广泛使用的开源项目之一。它帮助了成千上万叫好又叫座的应用，也为其它出色的开源库提供了基础。这个项目是社区里最活跃、最有影响力的项目之一，拥有 8700 个 star、2200 个 fork 和 130 名贡献者。
+
+安装：
+<pre><code>
+在Podfile中增加下列代码
+platform :ios, '7.0'
+pod 'AFNetworking', '~> 2.0'
+</code></pre>
+[官方地址:]<https://github.com/AFNetworking/AFNetworking>
+
+----
+
+######SDWebImage
+&nbsp;&nbsp;&nbsp;&nbsp;提供一个UIImageView类别以支持加载来自网络的远程图片。具有缓存管理、异步下载、同一个URL下载次数控制和优化等特征。
+特点:
+
+
+- 依赖的库很少(MapKit.framework).功能全面。 
+- 自动实现磁盘缓存: 
+- 缓存图片名字是以MD5进行加密的后的名字进行命名.(因为加密那堆字串是唯一的)
+
+安装：
+<pre><code>
+platform :ios, '6.1'
+pod 'SDWebImage', '~>3.6'
+</code></pre>
+[官网地址]<https://github.com/rs/SDWebImage>
+
+----
+
+####YISplashScreen
+&nbsp;&nbsp;&nbsp;&nbsp;可帮你轻松实现应用启动加载屏的动画效果。
+安装
+<pre><code>
+在Podfile中增加下列代码
+platform :ios, '7.0'
+pod 'YISplashScreen'
+</code></pre>
+[官网地址:]<https://github.com/aking88/YISplashScreen>
+
+----
+
+####MJRefresh
+&nbsp;&nbsp;&nbsp;&nbsp;用法最简单的下拉刷新框架：一行代码搞定.
+安装
+<pre><code>
+在Podfile中增加下列代码
+platform :ios, '7.0'
+pod 'MJRefresh', '~> 1.4.6'
+</code></pre>
+
+[官网地址:]<https://github.com/CoderMJLee/MJRefresh>
+
+----
+
+####Crashlytics
+&nbsp;&nbsp;&nbsp;&nbsp;Crashlytic 成立于2011年，是专门为移动应用开者发提供的保存和分析应用崩溃信息的工具。Crashlytics的使用者包括：支付工具Paypal, 点评应用Yelp, 照片分享应用Path, 团购应用GroupOn等移动应用。
+
+&nbsp;&nbsp;&nbsp;&nbsp;2013年1月，Crashlytics被Twitter收购，成为又一个成功的创业产品。被收购之后，由于没有了创业公司的不稳定因素，我们更有理由使用它来分析应用崩溃信息。
+
+申请账号
+
+&nbsp;&nbsp;&nbsp;&nbsp;Crashlytics的服务是免费提供的，但是并不能直接注册使用，需要先申请，打开Crashlytic的官网 ，输入自己的邮箱申请使用。
+
+设置工程
+
+&nbsp;&nbsp;&nbsp;&nbsp;Crashlytics专门做了一个Mac端的App来帮助你进行配置，应用下载后，运行该应用并登录帐号。然后选择应用中的"New App"按钮，然后选择自己要增加Crashlytics的工程，然后Crashlytics的应用会提示你为工程增加一个Run Script，如果你不知道如何添加，参考：http://www.runscriptbuildphase.com/
+
+&nbsp;&nbsp;&nbsp;&nbsp;注意:在这一步会得到两个key，一个是40位一个是64位。只需要40位的key。
+
+&nbsp;&nbsp;&nbsp;&nbsp;Crashlytics的本地应用会提示你将Crashlytics相关的framework拖到工程中。
+按照提示做完之后，就到了最后一步了，在AppDelegate的didFinishLaunchingWithOptions方法中加入如下代码
+
+![Crashlytics](http://scottmaxiao.github.io/Crashlytics.png)
+
+注意：必须增加下面红色的代码，这样Crashlytics才会起作用。
+<pre><code>
+	[Fabric with:@[CrashlyticsKit]];
+	[Crashlytics startWithAPIKey:@"40位的key"];
+</code></pre>
+
+[参考资料:]<http://www.infoq.com/cn/articles/crashlytics-crash-statistics-tools>
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="ioscocoapods">IOS-CocoaPods</h2>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;当你开发iOS应用时，会经常使用到很多第三方开源类库，比如JSONKit，AFNetWorking等等。可能某个类库又用到其他类库，所以要使用它，必须得另外下载其他类库，而其他类库又用到其他类库，“子子孙孙无穷尽也”，这也许是比较特殊的情况。总之小编的意思就是，手动一个个去下载所需类库十分麻烦。另外一种常见情况是，你项目中用到的类库有更新，你必须得重新下载新版本，重新加入到项目中，十分麻烦。如果能有什么工具能解决这些恼人的问题，那将“善莫大焉”。所以，你需要 CocoaPods。
+</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;CocoaPods应该是iOS最常用最有名的类库管理工具了，上述两个烦人的问题，通过cocoaPods，只需要一行命令就可以完全解决，当然前提是你必须正确设置它。重要的是，绝大部分有名的开源类库，都支持CocoaPods。所以，作为iOS程序员的我们，掌握CocoaPods的使用是必不可少的基本技能了。
+</p>
+
+<p>[下载和安装CocoaPods请参考：]<a href="http://code4app.com/article/cocoapods-install-usage">http://code4app.com/article/cocoapods-install-usage</a></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在使用cocoapods 进行update 或者 install的时候 每次回去更新获取的pod specs，每次速度都不是很理想，如果不想在pod install pod update的时候不想升级specs库 可以使用参数忽略掉</p>
+
+<pre><code>
+pod install --verbose --no-repo-update
+pod update --verbose --no-repo-update
+</code></pre>
+
+<p>当在update或install时遇到这个问题</p>
+
+<pre><code>
+Unable to find a specification for `xxxxx (~&gt; 1.x.x)` depended upon by Podfile.
+</code></pre>
+
+<p>只需要把当前Pod的目录清理一下就行了。在终端执行以下命令</p>
+
+<pre><code>
+pod repo remove master  
+pod setup  
+</code></pre>
+
+<p>setup成功后执行install或update即可。</p>
+
+<hr>
+
+<h4 id="">开源框架介绍</h4>
+
+<h6 id="afnetworking">AFNetworking</h6>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;AFNetworking是一个轻量级的iOS网络通信类库。AFNetworking 是当前 iOS 和 Mac OS X 开发中最广泛使用的开源项目之一。它帮助了成千上万叫好又叫座的应用，也为其它出色的开源库提供了基础。这个项目是社区里最活跃、最有影响力的项目之一，拥有 8700 个 star、2200 个 fork 和 130 名贡献者。</p>
+
+<p>安装：</p>
+
+<pre><code>
+在Podfile中增加下列代码
+platform :ios, '7.0'
+pod 'AFNetworking', '~&gt; 2.0'
+</code></pre>
+
+<p>[官方地址:]<a href="https://github.com/AFNetworking/AFNetworking">https://github.com/AFNetworking/AFNetworking</a></p>
+
+<hr>
+
+<h6 id="sdwebimage">SDWebImage</h6>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;提供一个UIImageView类别以支持加载来自网络的远程图片。具有缓存管理、异步下载、同一个URL下载次数控制和优化等特征。
+特点:</p>
+
+<ul>
+<li>依赖的库很少(MapKit.framework).功能全面。 </li>
+<li>自动实现磁盘缓存: </li>
+<li>缓存图片名字是以MD5进行加密的后的名字进行命名.(因为加密那堆字串是唯一的)</li>
+</ul>
+
+<p>安装：</p>
+
+<pre><code>
+platform :ios, '6.1'
+pod 'SDWebImage', '~&gt;3.6'
+</code></pre>
+
+<p>[官网地址]<a href="https://github.com/rs/SDWebImage">https://github.com/rs/SDWebImage</a></p>
+
+<hr>
+
+<h4 id="yisplashscreen">YISplashScreen</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;可帮你轻松实现应用启动加载屏的动画效果。
+安装</p>
+
+<pre><code>
+在Podfile中增加下列代码
+platform :ios, '7.0'
+pod 'YISplashScreen'
+</code></pre>
+
+<p>[官网地址:]<a href="https://github.com/aking88/YISplashScreen">https://github.com/aking88/YISplashScreen</a></p>
+
+<hr>
+
+<h4 id="mjrefresh">MJRefresh</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;用法最简单的下拉刷新框架：一行代码搞定.
+安装</p>
+
+<pre><code>
+在Podfile中增加下列代码
+platform :ios, '7.0'
+pod 'MJRefresh', '~&gt; 1.4.6'
+</code></pre>
+
+<p>[官网地址:]<a href="https://github.com/CoderMJLee/MJRefresh">https://github.com/CoderMJLee/MJRefresh</a></p>
+
+<hr>
+
+<h4 id="crashlytics">Crashlytics</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Crashlytic 成立于2011年，是专门为移动应用开者发提供的保存和分析应用崩溃信息的工具。Crashlytics的使用者包括：支付工具Paypal, 点评应用Yelp, 照片分享应用Path, 团购应用GroupOn等移动应用。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;2013年1月，Crashlytics被Twitter收购，成为又一个成功的创业产品。被收购之后，由于没有了创业公司的不稳定因素，我们更有理由使用它来分析应用崩溃信息。</p>
+
+<p>申请账号</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Crashlytics的服务是免费提供的，但是并不能直接注册使用，需要先申请，打开Crashlytic的官网 ，输入自己的邮箱申请使用。</p>
+
+<p>设置工程</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Crashlytics专门做了一个Mac端的App来帮助你进行配置，应用下载后，运行该应用并登录帐号。然后选择应用中的"New App"按钮，然后选择自己要增加Crashlytics的工程，然后Crashlytics的应用会提示你为工程增加一个Run Script，如果你不知道如何添加，参考：http://www.runscriptbuildphase.com/</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;注意:在这一步会得到两个key，一个是40位一个是64位。只需要40位的key。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Crashlytics的本地应用会提示你将Crashlytics相关的framework拖到工程中。
+按照提示做完之后，就到了最后一步了，在AppDelegate的didFinishLaunchingWithOptions方法中加入如下代码</p>
+
+<p><img src="http://scottmaxiao.github.io/Crashlytics.png" alt="Crashlytics" title=""></p>
+
+<p>注意：必须增加下面红色的代码，这样Crashlytics才会起作用。</p>
+
+<pre><code>
+    [Fabric with:@[CrashlyticsKit]];
+    [Crashlytics startWithAPIKey:@"40位的key"];
+</code></pre>
+
+<p>[参考资料:]<a href="http://www.infoq.com/cn/articles/crashlytics-crash-statistics-tools">http://www.infoq.com/cn/articles/crashlytics-crash-statistics-tools</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-CocoaPods.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-xcode-插件管理
+&nbsp;&nbsp;&nbsp;&nbsp;Xcode是iOS的集成开发环境，虽然苹果一直在不断改进Xcode，但程序员总是有各种新奇的想法和需求，当Xcode无法满足他们时，于是他们就会通过插件的方式来为Xcode增加新的功能。本节将会给大家介绍一些常用的Xcode增强插件。
+
+&nbsp;&nbsp;&nbsp;&nbsp;Xcode所有的插件都安装在目录~/Library/Application Support/Developer/Shared/Xcode/Plug-ins/下，每个插件为一个子目录，你也可以手工切换到这个目录来增加或删除插件。
+
+####插件介绍
+######Alcatraz
+&nbsp;&nbsp;&nbsp;&nbsp;Alcatraz（<https://github.com/supermarin/Alcatraz>）是管理Xcode所有插件的插件，它可以直接集成到Xcode的图形界面中，让你感觉就像在使用Xcode自带的功能一样。Alcatraz不但可以管理Xcode的插件，它另外还提供了管理Xcode工程模版以及颜色配置的功能。
+
+
+[参考:] <http://blog.devtang.com/blog/2014/03/05/use-alcatraz-to-manage-xcode-plugins/>
+
+----
+
+######Auto-Importer
+&nbsp;&nbsp;&nbsp;&nbsp;该项目是一个Xcode 插件，可快速导入头文件。可通过匹配其名称来快速导入class/protocol/category的头文件，也可以快速导入所有的classes/protocols/categories列表。
+
+[参考：]<https://github.com/lucholaf/Auto-Importer-for-Xcode>
+
+----
+
+
+######KSImageNamed
+&nbsp;&nbsp;&nbsp;&nbsp;KSImageNamed（<https://github.com/ksuther/KSImageNamed-Xcode>）是一个帮助你输入[UIImage imageNamed:]中的资源名的插件。当你输入[UIImage imageNamed:]时，会自动的弹出上下文菜单，供你选择你需要输入的图片资源名字，另外在选择图片资源时，还可以在左侧预览该资源。
+
+----
+
+
+######XVim
+&nbsp;&nbsp;&nbsp;&nbsp;XVim（<https://github.com/XVimProject/XVim>）是一个Xcode的vim插件，可以在Xcode的编辑窗口中开启vim模式。
+
+&nbsp;&nbsp;&nbsp;&nbsp;vim模式最大的好处是可以全键盘操作，可以方便地移动光标以及复制、粘贴代码。XVim对于Xcode的分栏模式也有很好的支持，与vim自带的分栏模式一样，可以用快捷键ctrl + w来切换当前编辑的分栏。
+
+----
+
+更多插件参考：<http://devtang.com/blog/2014/06/29/ios-dev-tools/>
+
+
+####Xcode升级后插件不能使用的解决方案
+<pre><code>
+1.打开xcode插件所在的目录：
+~/{当前用户名}/library/Application Support/Developer/Shared/Xcode/Plug-ins
+2.选择已经安装的插件例如VVDocument，右键点击show package contents，
+3.找到info.plist 文件，找到DVTPlugInCompatibilityUUIDs的项目，
+4.添加C4A681B0-4A26-480E-93EC-1218098B9AA0（当前xcode的一个号码），这个号码怎么得到？
+ 在终端执行 defaults read /Applications/Xcode.app/Contents/Info DVTPlugInCompatibilityUUID 即可
+5.再右键“打开报内容”双击contents\MacOS目录下的一个黑色图标，会打开终端窗口，最后打印“进程已完成”之类，
+6重启xcode
+</code></pre>
+
+
+
+
+
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosxcode">IOS-xcode-插件管理</h2>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Xcode是iOS的集成开发环境，虽然苹果一直在不断改进Xcode，但程序员总是有各种新奇的想法和需求，当Xcode无法满足他们时，于是他们就会通过插件的方式来为Xcode增加新的功能。本节将会给大家介绍一些常用的Xcode增强插件。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Xcode所有的插件都安装在目录~/Library/Application Support/Developer/Shared/Xcode/Plug-ins/下，每个插件为一个子目录，你也可以手工切换到这个目录来增加或删除插件。</p>
+
+<h4 id="">插件介绍</h4>
+
+<h6 id="alcatraz">Alcatraz</h6>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Alcatraz（<a href="https://github.com/supermarin/Alcatraz">https://github.com/supermarin/Alcatraz</a>）是管理Xcode所有插件的插件，它可以直接集成到Xcode的图形界面中，让你感觉就像在使用Xcode自带的功能一样。Alcatraz不但可以管理Xcode的插件，它另外还提供了管理Xcode工程模版以及颜色配置的功能。</p>
+
+<p>[参考:] <a href="http://blog.devtang.com/blog/2014/03/05/use-alcatraz-to-manage-xcode-plugins/">http://blog.devtang.com/blog/2014/03/05/use-alcatraz-to-manage-xcode-plugins/</a></p>
+
+<hr>
+
+<h6 id="autoimporter">Auto-Importer</h6>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;该项目是一个Xcode 插件，可快速导入头文件。可通过匹配其名称来快速导入class/protocol/category的头文件，也可以快速导入所有的classes/protocols/categories列表。</p>
+
+<p>[参考：]<a href="https://github.com/lucholaf/Auto-Importer-for-Xcode">https://github.com/lucholaf/Auto-Importer-for-Xcode</a></p>
+
+<hr>
+
+<h6 id="ksimagenamed">KSImageNamed</h6>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;KSImageNamed（<a href="https://github.com/ksuther/KSImageNamed-Xcode">https://github.com/ksuther/KSImageNamed-Xcode</a>）是一个帮助你输入[UIImage imageNamed:]中的资源名的插件。当你输入[UIImage imageNamed:]时，会自动的弹出上下文菜单，供你选择你需要输入的图片资源名字，另外在选择图片资源时，还可以在左侧预览该资源。</p>
+
+<hr>
+
+<h6 id="xvim">XVim</h6>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;XVim（<a href="https://github.com/XVimProject/XVim">https://github.com/XVimProject/XVim</a>）是一个Xcode的vim插件，可以在Xcode的编辑窗口中开启vim模式。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;vim模式最大的好处是可以全键盘操作，可以方便地移动光标以及复制、粘贴代码。XVim对于Xcode的分栏模式也有很好的支持，与vim自带的分栏模式一样，可以用快捷键ctrl + w来切换当前编辑的分栏。</p>
+
+<hr>
+
+<p>更多插件参考：<a href="http://devtang.com/blog/2014/06/29/ios-dev-tools/">http://devtang.com/blog/2014/06/29/ios-dev-tools/</a></p>
+
+<h4 id="xcode">Xcode升级后插件不能使用的解决方案</h4>
+
+<pre><code>
+1.打开xcode插件所在的目录：
+~/{当前用户名}/library/Application Support/Developer/Shared/Xcode/Plug-ins
+2.选择已经安装的插件例如VVDocument，右键点击show package contents，
+3.找到info.plist 文件，找到DVTPlugInCompatibilityUUIDs的项目，
+4.添加C4A681B0-4A26-480E-93EC-1218098B9AA0（当前xcode的一个号码），这个号码怎么得到？
+ 在终端执行 defaults read /Applications/Xcode.app/Contents/Info DVTPlugInCompatibilityUUID 即可
+5.再右键“打开报内容”双击contents\MacOS目录下的一个黑色图标，会打开终端窗口，最后打印“进程已完成”之类，
+6重启xcode
+</code></pre>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "ios-xcode-plugins.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

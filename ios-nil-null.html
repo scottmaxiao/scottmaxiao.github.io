@@ -1,0 +1,197 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-空值介绍
+
+在IOS开发中会使用到NULL，nil,Nil和NSNull,每个使用的场景是不一样的，在这里简单介绍一下。
+
+####NULL
+NULL 是C语言提供的空值，可以设置基本类型的空值。
+<pre><code>
+int *pointerInt = NULL;
+</code></pre>
+
+
+nil,Nil和NSNull都是OC提供的空值。
+####nil
+nil表示一个对象指针为空
+<pre><code>
+NSURL *url = nil;
+NSString *str= nil;
+id obj=nil;
+</code></pre>
+
+在数组或者字典初始化时，使用nil表示结束。
+<pre><code>
+NSArray *array = [[NSArray alloc] initWithObjects:@"First", @"Second", nil];  
+
+NSDictionary *dictionary = [NSDictionary dictionaryWithObjectsAndKeys:  
+    @"iPhone", @"First", @"iPad", @"Second", nil]; 
+</code></pre>
+
+
+####Nil
+Nil表示一个类指针为空
+<pre><code>
+Class  class = Nil;
+</code></pre>
+
+
+####NSNull
+Foundation定义了NSNull，即一个类方法+null，它返回一个单独的NSNull对象。NSNull与nil以及NULL不同，因为它是一个实际的对象，而不是一个零值。
+在Objective-c中，对于像NSArray这样的类型，nil或NULL不能做为加到其中的Object，如果定义了一个NSArray，为其分配了内存，又想设置其中的内容为空，则可以用[NSNULL null]返回的对对象来初始化NSArray中的内容
+<pre><code>
+NSArray *array = [[NSArray alloc] initWithObjects:@"First", [NSNULL null],@"Second", nil]; 
+</code></pre>
+
+[参考]<http://nshipster.cn/nil/>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="ios">IOS-空值介绍</h2>
+
+<p>在IOS开发中会使用到NULL，nil,Nil和NSNull,每个使用的场景是不一样的，在这里简单介绍一下。</p>
+
+<h4 id="null">NULL</h4>
+
+<p>NULL 是C语言提供的空值，可以设置基本类型的空值。</p>
+
+<pre><code>
+int *pointerInt = NULL;
+</code></pre>
+
+<p>nil,Nil和NSNull都是OC提供的空值。</p>
+
+<h4 id="nil">nil</h4>
+
+<p>nil表示一个对象指针为空</p>
+
+<pre><code>
+NSURL *url = nil;
+NSString *str= nil;
+id obj=nil;
+</code></pre>
+
+<p>在数组或者字典初始化时，使用nil表示结束。</p>
+
+<pre><code>
+NSArray *array = [[NSArray alloc] initWithObjects:@"First", @"Second", nil];  
+
+NSDictionary *dictionary = [NSDictionary dictionaryWithObjectsAndKeys:  
+    @"iPhone", @"First", @"iPad", @"Second", nil]; 
+</code></pre>
+
+<h4 id="nil">Nil</h4>
+
+<p>Nil表示一个类指针为空</p>
+
+<pre><code>
+Class  class = Nil;
+</code></pre>
+
+<h4 id="nsnull">NSNull</h4>
+
+<p>Foundation定义了NSNull，即一个类方法+null，它返回一个单独的NSNull对象。NSNull与nil以及NULL不同，因为它是一个实际的对象，而不是一个零值。
+在Objective-c中，对于像NSArray这样的类型，nil或NULL不能做为加到其中的Object，如果定义了一个NSArray，为其分配了内存，又想设置其中的内容为空，则可以用[NSNULL null]返回的对对象来初始化NSArray中的内容</p>
+
+<pre><code>
+NSArray *array = [[NSArray alloc] initWithObjects:@"First", [NSNULL null],@"Second", nil]; 
+</code></pre>
+
+<p>[参考]<a href="http://nshipster.cn/nil/">http://nshipster.cn/nil/</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "ios-nil-null.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

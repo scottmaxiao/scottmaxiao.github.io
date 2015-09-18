@@ -1,0 +1,192 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+####IOS-NsLog介绍
+在Objective-C中，NSLog相当于C语言中的printf，常用于文字输出。
+<pre><code>
+NSLog (@"this is a test");
+//控制台中就会输出this is a test
+
+NSString *string=@"this is a test";
+NSLog (@"string is :%@", string);
+//控制台中就会输出this is a test
+
+NSLog (@"x=%d, y=%d", 10, 20);
+//控制台中就会输出x=10, y=20
+</code></pre>
+
+NSLog的占位符格式如下所示：
+<table>
+<tr><td>%@</td><td>对象</td></tr>
+<tr><td>%d, %i</td><td>整数, %和d之间可以指定位数。如02：表示整数位数至少为2位。不足则补0</td></tr>
+<tr><td>%f</td><td>浮点数, %.2f：保留两位小数</td></tr>
+<tr><td>%u</td><td>无符号整形</td></tr>
+</table>
+
+####输出当前调用的方法名
+<pre><code>
+NSLog(@"%s", __FUNCTION__);
+</code></pre>
+
+####输出应用程序目录的路径
+<pre><code>
+NSLog(@"%@",NSHomeDirectory());
+</code></pre>
+
+####输出CGPoint,CGSize,CGRect的值
+<pre><code>
+CGPoint point = CGPointMake(0.0f, 0.0f);
+CGSize size = CGSizeMake(10.0f, 10.0f);
+CGRect rect = CGRectMake(point.x, point.y, size.width, size.height);
+
+NSLog(@"point: %@", NSStringFromCGPoint(point));
+NSLog(@"size: %@", NSStringFromCGSize(size));
+NSLog(@"rect: %@", NSStringFromCGRect(rect));
+</code></pre>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h4 id="iosnslog">IOS-NsLog介绍</h4>
+
+<p>在Objective-C中，NSLog相当于C语言中的printf，常用于文字输出。</p>
+
+<pre><code>
+NSLog (@"this is a test");
+//控制台中就会输出this is a test
+
+NSString *string=@"this is a test";
+NSLog (@"string is :%@", string);
+//控制台中就会输出this is a test
+
+NSLog (@"x=%d, y=%d", 10, 20);
+//控制台中就会输出x=10, y=20
+</code></pre>
+
+<p>NSLog的占位符格式如下所示：</p>
+
+<table>
+<tbody><tr><td>%@</td><td>对象</td></tr>
+<tr><td>%d, %i</td><td>整数, %和d之间可以指定位数。如02：表示整数位数至少为2位。不足则补0</td></tr>
+<tr><td>%f</td><td>浮点数, %.2f：保留两位小数</td></tr>
+<tr><td>%u</td><td>无符号整形</td></tr>
+</tbody></table>
+
+<h4 id="">输出当前调用的方法名</h4>
+
+<pre><code>
+NSLog(@"%s", __FUNCTION__);
+</code></pre>
+
+<h4 id="">输出应用程序目录的路径</h4>
+
+<pre><code>
+NSLog(@"%@",NSHomeDirectory());
+</code></pre>
+
+<h4 id="cgpointcgsizecgrect">输出CGPoint,CGSize,CGRect的值</h4>
+
+<pre><code>
+CGPoint point = CGPointMake(0.0f, 0.0f);
+CGSize size = CGSizeMake(10.0f, 10.0f);
+CGRect rect = CGRectMake(point.x, point.y, size.width, size.height);
+
+NSLog(@"point: %@", NSStringFromCGPoint(point));
+NSLog(@"size: %@", NSStringFromCGSize(size));
+NSLog(@"rect: %@", NSStringFromCGRect(rect));
+</code></pre>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "ios-nslog.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

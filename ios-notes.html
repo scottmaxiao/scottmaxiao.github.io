@@ -1,0 +1,451 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS开发笔记
+####添加framework
+
+点击自己的project,然后选择target，点击Build Phases,选择Link Binary With Libraries，贴图如下：
+![framework](http://scottmaxiao.github.io/ios-Notes/notes01.png)
+点击+或-就可以方便的添加xcode自带的库了。
+
+####图片管理
+
+IOS提供了images.xcassets来管理图片。使用[UIImage imageNamed:]来引用图片;    比如说 最开始有一张叫aaaa.png的图片 加入images.xcassets中，[UIImage imageNamed:@"aaaa"]    然后在images.xcassets中把这张图替换为 文件名叫bbbb.png的图片，代码是不用改的。
+
+[参考资料：]<http://www.cnblogs.com/liufan9/p/3136064.html>
+
+####iphone6适配
+在images.xcassets中的 LaunchImage(启动图片)选择支持ios8
+![adaptation](http://scottmaxiao.github.io/ios-Notes/notes03.png)
+
+Retina HD 5.5的启动图片尺寸为1242 × 2208 pixels
+
+Retina HD 4.7的启动图片尺寸为750 × 1334 pixels
+
+
+####启动图片
+首先在images.xcassets中点击右键，选择“New Launch Image”。命名为“LaunchImage”（必须）。
+![LaunchImage](http://scottmaxiao.github.io/ios-Notes/notes02.png)
+
+然后把启动图片拖拽到其中。
+
+接着在“AppDelegate.m”中的“didFinishLaunchingWithOptions”方法中增加下列代码：
+<pre><code>
+	//启动画面设置
+	[YISplashScreen show];
+	
+	[YISplashScreen hideWithAnimationBlock:^(CALayer* splashLayer, CALayer* rootLayer) {
+		
+		// splashLayer moves up
+		[CATransaction begin];
+		[CATransaction setAnimationDuration:0.5];
+		[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
+		
+		splashLayer.position = CGPointMake(splashLayer.position.x, splashLayer.position.y-splashLayer.bounds.size.height);
+		
+		[CATransaction commit];
+		
+	}];
+</code></pre>
+
+####设置UIImage的渲染模式
+ 着色（Tint Color）是iOS7界面中的一个重大改变，你可以设置一个UIImage在渲染时是否使用当前视图的Tint Color。UIImage新增了一个只读属性：renderingMode，对应的还有一个新增方法：imageWithRenderingMode:，它使用UIImageRenderingMode枚举值来设置图片的renderingMode属性。该枚举中包含下列值：
+
+ 
+- UIImageRenderingModeAutomatic  // 根据图片的使用环境和所处的绘图上下文自动调整渲染模式。  
+- UIImageRenderingModeAlwaysOriginal  // 始终绘制图片原始状态，不使用Tint Color。  
+- UIImageRenderingModeAlwaysTemplate  // 始终根据Tint Color绘制图片，忽略图片的颜色信息。  
+ 
+renderingMode属性的默认值是UIImageRenderingModeAutomatic，即UIImage是否使用Tint Color取决于它显示的位置。其他情况可以看下面的图例
+![UIImage](http://scottmaxiao.github.io/ios-Notes/notes04.png)
+
+以下的代码说明了使用一个既定的rendering模式创建图片是多么简单：
+
+<pre><code>
+UIImage *img = [UIImage imageNamed:@ "myimage" ]; 
+img = [img imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]; 
+</code></pre>
+
+####颜色的HEX码转为RGB
+我们在显示颜色的时候都会使用到HEX码，如白色的HEX码为#FFFFFF。而UIColor使用的是RGB码。下面的代码提供了HEX码转为RGB的功能。可以参考UIColor+ColorWithHexValue.h。
+
+<pre><code>
++ (UIColor *)colorFromHexRGB:(NSString *)inColorString{
+	UIColor *result = nil;
+	unsigned int colorCode = 0;
+	unsigned char redByte, greenByte, blueByte;
+	
+	if (nil != inColorString)
+	{
+		NSScanner *scanner = [NSScanner scannerWithString:inColorString];
+		(void) [scanner scanHexInt:&colorCode]; // ignore error
+	}
+	redByte = (unsigned char) (colorCode >> 16);
+	greenByte = (unsigned char) (colorCode >> 8);
+	blueByte = (unsigned char) (colorCode); // masks off high bits
+	result = [UIColor
+			  colorWithRed: (float)redByte / 0xff
+			  green: (float)greenByte/ 0xff
+			  blue: (float)blueByte / 0xff
+			  alpha:1.0];
+	return result;
+}
+</code></pre>
+
+####设置提示音
+要在项目中使用系统声音服务，首先要导入AudioToolbox.h
+<pre><code>
+#import <AudioToolbox/AudioToolbox.h>
+//播放提示音
+AudioServicesPlayAlertSound(1007);
+//播放系统声音
+AudioServicesPlaySystemSound(1007);
+</code></pre>
+
+对于提醒音来说，与系统声音之间的差别在于，如果手机处于静音状态，提醒音将自动触发震动。
+
+
+[系统提示音列表: ]<http://iphonedevwiki.net/index.php/AudioServices>
+
+####判断是否允许访问相册
+需添加AssetsLibrary.framework
+<pre><code>
+#import &lt;AssetsLibrary/AssetsLibrary.h&gt;
+ALAuthorizationStatus author = [ALAssetsLibrary authorizationStatus];
+if (author!=ALAuthorizationStatusAuthorized) {
+      UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"存储失败"
+													   message:@"请打开 设置-隐私-照片 来进行设置"
+													  delegate:nil
+											 cancelButtonTitle:@"确定"
+											 otherButtonTitles:nil, nil];
+		[alert show];
+
+
+/*
+ typedef NS_ENUM(NSInteger, ALAuthorizationStatus) {
+ ALAuthorizationStatusNotDetermined = 0, 用户尚未做出了选择这个应用程序的问候
+ ALAuthorizationStatusRestricted,        此应用程序没有被授权访问的照片数据。可能是家长控制权限。
+ ALAuthorizationStatusDenied,            用户已经明确否认了这一照片数据的应用程序访问.
+ ALAuthorizationStatusAuthorized         用户已授权应用访问照片数据.
+ }
+ */
+</code></pre>
+
+####图片保存至用户的相册中
+IOS的UIKit Framework提供了UIImageWriteToSavedPhotosAlbum方法对图像进行保存，该方法会将image保存至用户的相册中
+<pre><code>
+void UIImageWriteToSavedPhotosAlbum (
+   UIImage  *image,
+   id       completionTarget,
+   SEL      completionSelector,
+   void     *contextInfo
+);
+</code></pre>
+
+参数说明：
+
+ 
+        image 
+            带保存的图片UImage对象 
+
+        completionTarget 
+            图像保存至相册后调用completionTarget指定的selector（可选） 
+
+        completionSelector 
+                completionTarget的方法对应的选择器，相当于回调方法，需满足以下格式
+
+当我们需要异步获得图像保存结果的消息时，我们需要指定completionTarget对象以及其completionSelector对应的选择器。示例如下：
+<pre><code>
+UIImageWriteToSavedPhotosAlbum(self.imageview.image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+
+//显示保存成功或者失败的后继操作
+- (void)image:(UIImage *)image didFinishSavingWithError:(NSError*)error contextInfo:(void*)contextInfo {
+ if (error){
+	 [self alertShowTitle:error.localizedRecoverySuggestion message:error.localizedDescription];
+ }else {
+	 [self alertShowTitle:NSLocalizedString(@"img_download_title", @"图片下载提示") message:NSLocalizedString(@"img_download_success", @"图片保存成功")];
+ }
+}
+</code></pre>
+
+[参考地址:]<http://my.oschina.net/hmj/blog/99970>
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="ios">IOS开发笔记</h2>
+
+<h4 id="framework">添加framework</h4>
+
+<p>点击自己的project,然后选择target，点击Build Phases,选择Link Binary With Libraries，贴图如下：
+<img src="http://scottmaxiao.github.io/ios-Notes/notes01.png" alt="framework" title="">
+点击+或-就可以方便的添加xcode自带的库了。</p>
+
+<h4 id="">图片管理</h4>
+
+<p>IOS提供了images.xcassets来管理图片。使用[UIImage imageNamed:]来引用图片;    比如说 最开始有一张叫aaaa.png的图片 加入images.xcassets中，[UIImage imageNamed:@"aaaa"]    然后在images.xcassets中把这张图替换为 文件名叫bbbb.png的图片，代码是不用改的。</p>
+
+<p>[参考资料：]<a href="http://www.cnblogs.com/liufan9/p/3136064.html">http://www.cnblogs.com/liufan9/p/3136064.html</a></p>
+
+<h4 id="iphone6">iphone6适配</h4>
+
+<p>在images.xcassets中的 LaunchImage(启动图片)选择支持ios8
+<img src="http://scottmaxiao.github.io/ios-Notes/notes03.png" alt="adaptation" title=""></p>
+
+<p>Retina HD 5.5的启动图片尺寸为1242 × 2208 pixels</p>
+
+<p>Retina HD 4.7的启动图片尺寸为750 × 1334 pixels</p>
+
+<h4 id="">启动图片</h4>
+
+<p>首先在images.xcassets中点击右键，选择“New Launch Image”。命名为“LaunchImage”（必须）。
+<img src="http://scottmaxiao.github.io/ios-Notes/notes02.png" alt="LaunchImage" title=""></p>
+
+<p>然后把启动图片拖拽到其中。</p>
+
+<p>接着在“AppDelegate.m”中的“didFinishLaunchingWithOptions”方法中增加下列代码：</p>
+
+<pre><code>
+    //启动画面设置
+    [YISplashScreen show];
+
+    [YISplashScreen hideWithAnimationBlock:^(CALayer* splashLayer, CALayer* rootLayer) {
+
+        // splashLayer moves up
+        [CATransaction begin];
+        [CATransaction setAnimationDuration:0.5];
+        [CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
+
+        splashLayer.position = CGPointMake(splashLayer.position.x, splashLayer.position.y-splashLayer.bounds.size.height);
+
+        [CATransaction commit];
+
+    }];
+</code></pre>
+
+<h4 id="uiimage">设置UIImage的渲染模式</h4>
+
+<p>着色（Tint Color）是iOS7界面中的一个重大改变，你可以设置一个UIImage在渲染时是否使用当前视图的Tint Color。UIImage新增了一个只读属性：renderingMode，对应的还有一个新增方法：imageWithRenderingMode:，它使用UIImageRenderingMode枚举值来设置图片的renderingMode属性。该枚举中包含下列值：</p>
+
+<ul>
+<li>UIImageRenderingModeAutomatic  // 根据图片的使用环境和所处的绘图上下文自动调整渲染模式。  </li>
+<li>UIImageRenderingModeAlwaysOriginal  // 始终绘制图片原始状态，不使用Tint Color。  </li>
+<li>UIImageRenderingModeAlwaysTemplate  // 始终根据Tint Color绘制图片，忽略图片的颜色信息。  </li>
+</ul>
+
+<p>renderingMode属性的默认值是UIImageRenderingModeAutomatic，即UIImage是否使用Tint Color取决于它显示的位置。其他情况可以看下面的图例
+<img src="http://scottmaxiao.github.io/ios-Notes/notes04.png" alt="UIImage" title=""></p>
+
+<p>以下的代码说明了使用一个既定的rendering模式创建图片是多么简单：</p>
+
+<pre><code>
+UIImage *img = [UIImage imageNamed:@ "myimage" ]; 
+img = [img imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]; 
+</code></pre>
+
+<h4 id="hexrgb">颜色的HEX码转为RGB</h4>
+
+<p>我们在显示颜色的时候都会使用到HEX码，如白色的HEX码为#FFFFFF。而UIColor使用的是RGB码。下面的代码提供了HEX码转为RGB的功能。可以参考UIColor+ColorWithHexValue.h。</p>
+
+<pre><code>
++ (UIColor *)colorFromHexRGB:(NSString *)inColorString{
+    UIColor *result = nil;
+    unsigned int colorCode = 0;
+    unsigned char redByte, greenByte, blueByte;
+
+    if (nil != inColorString)
+    {
+        NSScanner *scanner = [NSScanner scannerWithString:inColorString];
+        (void) [scanner scanHexInt:&amp;colorCode]; // ignore error
+    }
+    redByte = (unsigned char) (colorCode &gt;&gt; 16);
+    greenByte = (unsigned char) (colorCode &gt;&gt; 8);
+    blueByte = (unsigned char) (colorCode); // masks off high bits
+    result = [UIColor
+              colorWithRed: (float)redByte / 0xff
+              green: (float)greenByte/ 0xff
+              blue: (float)blueByte / 0xff
+              alpha:1.0];
+    return result;
+}
+</code></pre>
+
+<h4 id="">设置提示音</h4>
+
+<p>要在项目中使用系统声音服务，首先要导入AudioToolbox.h</p>
+
+<pre><code>
+#import <audiotoolbox audiotoolbox.h="">
+//播放提示音
+AudioServicesPlayAlertSound(1007);
+//播放系统声音
+AudioServicesPlaySystemSound(1007);
+</audiotoolbox></code></pre>
+
+<p>对于提醒音来说，与系统声音之间的差别在于，如果手机处于静音状态，提醒音将自动触发震动。</p>
+
+<p>[系统提示音列表: ]<a href="http://iphonedevwiki.net/index.php/AudioServices">http://iphonedevwiki.net/index.php/AudioServices</a></p>
+
+<h4 id="">判断是否允许访问相册</h4>
+
+<p>需添加AssetsLibrary.framework</p>
+
+<pre><code>
+#import &lt;AssetsLibrary/AssetsLibrary.h&gt;
+ALAuthorizationStatus author = [ALAssetsLibrary authorizationStatus];
+if (author!=ALAuthorizationStatusAuthorized) {
+      UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"存储失败"
+                                                       message:@"请打开 设置-隐私-照片 来进行设置"
+                                                      delegate:nil
+                                             cancelButtonTitle:@"确定"
+                                             otherButtonTitles:nil, nil];
+        [alert show];
+
+
+/*
+ typedef NS_ENUM(NSInteger, ALAuthorizationStatus) {
+ ALAuthorizationStatusNotDetermined = 0, 用户尚未做出了选择这个应用程序的问候
+ ALAuthorizationStatusRestricted,        此应用程序没有被授权访问的照片数据。可能是家长控制权限。
+ ALAuthorizationStatusDenied,            用户已经明确否认了这一照片数据的应用程序访问.
+ ALAuthorizationStatusAuthorized         用户已授权应用访问照片数据.
+ }
+ */
+</code></pre>
+
+<h4 id="">图片保存至用户的相册中</h4>
+
+<p>IOS的UIKit Framework提供了UIImageWriteToSavedPhotosAlbum方法对图像进行保存，该方法会将image保存至用户的相册中</p>
+
+<pre><code>
+void UIImageWriteToSavedPhotosAlbum (
+   UIImage  *image,
+   id       completionTarget,
+   SEL      completionSelector,
+   void     *contextInfo
+);
+</code></pre>
+
+<p>参数说明：</p>
+
+<pre><code>    image 
+        带保存的图片UImage对象 
+
+    completionTarget 
+        图像保存至相册后调用completionTarget指定的selector（可选） 
+
+    completionSelector 
+            completionTarget的方法对应的选择器，相当于回调方法，需满足以下格式
+</code></pre>
+
+<p>当我们需要异步获得图像保存结果的消息时，我们需要指定completionTarget对象以及其completionSelector对应的选择器。示例如下：</p>
+
+<pre><code>
+UIImageWriteToSavedPhotosAlbum(self.imageview.image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+
+//显示保存成功或者失败的后继操作
+- (void)image:(UIImage *)image didFinishSavingWithError:(NSError*)error contextInfo:(void*)contextInfo {
+ if (error){
+     [self alertShowTitle:error.localizedRecoverySuggestion message:error.localizedDescription];
+ }else {
+     [self alertShowTitle:NSLocalizedString(@"img_download_title", @"图片下载提示") message:NSLocalizedString(@"img_download_success", @"图片保存成功")];
+ }
+}
+</code></pre>
+
+<p>[参考地址:]<a href="http://my.oschina.net/hmj/blog/99970">http://my.oschina.net/hmj/blog/99970</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "ios-notes.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

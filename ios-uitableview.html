@@ -1,0 +1,676 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-UITableView开发笔记
+实现列表有两种方式
+方式一
+
+继承UIViewController，实现UITableViewDataSource和UITableViewDelegate协议。声明UITableView。
+
+UserInfoViewController.h
+<pre><code>
+@interface UserInfoViewController : UIViewController&lt;UITableViewDataSource,UITableViewDelegate&gt;{
+
+}
+@end
+</code></pre>
+
+UserInfoViewController.m
+<pre><code>
+@interface UserViewController (){
+
+}
+@property(nonatomic,strong)UITableView *tableView;
+@end
+
+@implementation UserViewController
+- (void)viewDidLoad {
+	self.tableView=[[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.heigh style:UITableViewStyleGrouped];
+	self.tableView.delegate=self;
+	self.tableView.dataSource=self;
+	[self.view addSubview:self.tableView];
+}
+@end
+
+</code></pre>
+
+
+方式二
+
+继承UITableViewController,UITableViewController默认实现UITableViewDataSource和UITableViewDelegate协议。默认声明UITableView。
+
+UserViewController.h
+<pre><code>
+@interface UserInfoViewController : UITableViewController
+
+@end
+</code></pre>
+
+UserViewController.m
+<pre><code>
+@interface UserInfoViewController (){
+
+}
+@end
+
+@implementation UserInfoViewController
+- (void)viewDidLoad {
+
+}
+@end 
+</code></pre>
+
+
+
+######UITableViewDataSource
+
+主要为UITableView提供显示用的数据(UITableViewCell)，指定UITableViewCell支持的编辑操作类型(insert，delete和reordering)，并根据用户的操作进行相应的数据更新操作，如果数据没有更具操作进行正确的更新，可能会导致显示异常，甚至crush。
+
+<pre><code>
+必须实现的方法
+
+//返回列表显示行数
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
+- 
+//返回每行显示的UITableViewCell
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
+
+选择实现的方法
+//返回列表中Section的数量，默认返回1
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView;
+
+//设置标题头的名称
+-(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section;
+
+//设置标题脚的名称
+-(NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section
+
+//是否支持对列表的行进行增，删功能
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath;
+
+//是否支持对列表进行的行进行移动顺序功能
+- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath;
+
+//根据编辑样式调整数据
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath;
+
+
+//根据移动前后的NSIndexPath调整数据
+- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)sourceIndexPath toIndexPath:(NSIndexPath *)destinationIndexPath;
+
+</code></pre>
+
+######UITableViewDelegate
+主要提供一些可选的方法，用来控制tableView的选择、指定section的头和尾的显示以及协助完成cell的删除和排序等功能。
+<pre><code>
+/*-----自定义显示,可以实现隔行显示不同的颜色----*/     
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath;
+- 
+- (void)tableView:(UITableView *)tableView willDisplayHeaderView:(UIView *)view forSection:(NSInteger)section NS_AVAILABLE_IOS(6_0);
+- 
+- (void)tableView:(UITableView *)tableView willDisplayFooterView:(UIView *)view forSection:(NSInteger)section NS_AVAILABLE_IOS(6_0);
+- 
+- (void)tableView:(UITableView *)tableView didEndDisplayingCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath*)indexPath NS_AVAILABLE_IOS(6_0);
+- 
+- (void)tableView:(UITableView *)tableView didEndDisplayingHeaderView:(UIView *)view forSection:(NSInteger)section NS_AVAILABLE_IOS(6_0);
+- 
+- (void)tableView:(UITableView *)tableView didEndDisplayingFooterView:(UIView *)view forSection:(NSInteger)section NS_AVAILABLE_IOS(6_0);
+
+
+/*-----返回每行，表头，表尾的高度----*/   
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath;
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section;
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section;
+
+/*-----返回每行，表头，表尾的预估高度----*/  
+- (CGFloat)tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath NS_AVAILABLE_IOS(7_0);
+
+- (CGFloat)tableView:(UITableView *)tableView estimatedHeightForHeaderInSection:(NSInteger)section NS_AVAILABLE_IOS(7_0);
+
+- (CGFloat)tableView:(UITableView *)tableView estimatedHeightForFooterInSection:(NSInteger)section NS_AVAILABLE_IOS(7_0);
+
+/*-----custom view for header----*/ 
+- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section;   
+
+- (nullable UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section; 
+
+
+/*-----选中和取消选中----*/ 
+- (nullable NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+
+- (nullable NSIndexPath *)tableView:(UITableView *)tableView willDeselectRowAtIndexPath:(NSIndexPath *)indexPath NS_AVAILABLE_IOS(3_0);
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+
+- (void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath NS_AVAILABLE_IOS(3_0);
+
+/*-----设置编辑状态时的样式,可以返回
+UITableViewCellEditingStyleInsert(表示增加)
+UITableViewCellEditingStyleDelete(表示删除)
+UITableViewCellEditingStyleDelete | UITableViewCellEditingStyleInsert(表示多选)
+----*/ 
+- (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath;
+
+/*-----设置删除按钮的名字----*/
+- (nullable NSString *)tableView:(UITableView *)tableView titleForDeleteConfirmationButtonForRowAtIndexPath:(NSIndexPath *)indexPath NS_AVAILABLE_IOS(3_0);
+
+/*-----设置滑动删除时的多个按钮----*/ 
+- (nullable NSArray<UITableViewRowAction *> *)tableView:(UITableView *)tableView editActionsForRowAtIndexPath:(NSIndexPath *)indexPath NS_AVAILABLE_IOS(8_0);
+
+
+</code></pre>
+###UITableView不显示多余的表格分割线
+
+<pre><code>
+UIView *view =[ [UIView alloc]init];
+view.backgroundColor = [UIColor clearColor];
+[tableView setTableFooterView:view];
+[tableView setTableHeaderView:view];
+</code></pre>
+
+###设置UITableView分割线间隔
+我们在使用tableview时会发现分割线的左边会短一些，通常可以使用 setSeparatorInset:UIEdgeInsetsZero 来解决。但是升级到XCode6之后，在iOS8里发现没有效果。下面给出解决办法：
+
+首先在viewDidLayoutSubviews方法中加上如下代码：
+<pre><code>
+- (void) viewDidLayoutSubviews {
+	
+	[super viewDidLayoutSubviews];
+	
+	if ([self.tableView respondsToSelector:@selector(setSeparatorInset:)]) {
+		[self.tableView setSeparatorInset:UIEdgeInsetsMake(0,10,0,10)];
+	}
+	
+	if ([self.tableView respondsToSelector:@selector(setLayoutMargins:)]) {
+		[self.tableView setLayoutMargins:UIEdgeInsetsMake(0,10,0,10)];
+	}
+}
+</code></pre>
+
+然后在willDisplayCell方法中加入如下代码：
+<pre><code>
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
+
+{
+	if ([cell respondsToSelector:@selector(setSeparatorInset:)]) {
+		[cell setSeparatorInset:UIEdgeInsetsMake(0,10,0,10)];
+	}
+	if ([cell respondsToSelector:@selector(setLayoutMargins:)]) {
+		[cell setLayoutMargins:UIEdgeInsetsMake(0,10,0,10)];
+	}
+}
+</code></pre>
+
+###UITableViewCell复用机制
+我们通常编写UITableViewCell的时候，都会像下面代码一样声明UITableViewCell，这样编写是为了解决什么问题呢？
+<pre><code>
+static NSString *CheckMarkCellIdentifier = @"CheckMarkCellIdentifier";
+   
+ UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:<#(NSString *)identifier#>]
+   
+if (cell == nil) {
+    <#statements#>
+}
+</code></pre>
+这个问题答案核心是这个机制要解决什么样的问题。
+关键点在"一个屏幕显示的cell数量"是有限的
+当屏幕滚动时候，就会调用方法获取新的cell，而老的cell会在屏幕外面就不显示了
+
+reuse机制就是这样。当cell需要显示的时候，从queue里面找，找到了，设置一下内容，显示出来
+滚动界面当有cell被移出屏幕时，把这个cell丢到queue里面
+显示新的cell时，如果有“相同类型”(identifier)的cell，就从队列拿一个出来，设置数据，显示出来
+至于queue里面会有多少cell，这个会自动控制
+
+要注意的是，queue里面存储的是cell的实例，不是“原型”
+因此就会出现上面说的“假设每页有 5个。 则 第6个复用第1个cell； 第7个复用第2个；”
+这样的结果是不管你的table有多少行，内存里实际上都只需要存储一个屏幕那么多行的cell就搞定了。
+
+
+###获取UITableViewCell相对于UITableView的坐标
+在使用 UITableViewCell  的frame属性获取origin得到的坐标是不变的.也就是说如果UITableView初始化完毕后,每个cell的坐标是固定的,x不变,y 随index递增的.
+
+经过测试发现,任何一个cell拖拽或则滑动到UITableView的任意相对位置,cell的frame属性都没有改变.
+
+
+那怎样获取UITableViewCell相对于UITableView的坐标?
+<pre><code>
+CGRect rectInTableView = [tableView rectForRowAtIndexPath:indexPath];   
+CGRect rect = [tableView convertRect:rectInTableView toView:[tableView superview]];
+</code></pre>
+
+###UITableView通过长按手势定位获取indexPath
+<pre><code>
+- (void)longPress:(UILongPressGestureRecognizer *)recognizer{
+if (recognizer.state == UIGestureRecognizerStateBegan) {
+//通过定位获取indexPath
+CGPoint point = [recognizer locationInView:self.tableView]; 
+self.cellIndexPath=[self.tableView indexPathForRowAtPoint: point];
+}
+}
+</code></pre>
+
+###表格刷新
+<pre><code>
+//整表刷新
+[self.tableView reloadData];
+
+
+//当行刷新
+[self.tableView reloadRowsAtIndexPaths:@[indexPath]withRowAnimation:UITableViewRowAnimationAutomatic];
+</code></pre>
+
+
+###表格删除
+
+<pre><code>
+[self.tableView beginUpdates];
+
+[self.tableView deleteRowsAtIndexPaths:[NSArray arrayWithArray:[self.deleteDic allKeys]] withRowAnimation:UITableViewRowAnimationFade];
+
+[self.tableView endUpdates];
+</code></pre>
+
+
+这两个方法，是配合起来使用的，标记了一个tableView的动画块。分别代表动画的开始开始和结束。两者成对出现，可以嵌套使用。
+
+
+一般，在添加，删除，选择 tableView中使用，并实现动画效果。在动画块内，不建议使用reloadData方法，如果使用，会影响动画。
+
+
+
+<pre><code>
+
+</code></pre>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosuitableview">IOS-UITableView开发笔记</h2>
+
+<p>实现列表有两种方式
+方式一</p>
+
+<p>继承UIViewController，实现UITableViewDataSource和UITableViewDelegate协议。声明UITableView。</p>
+
+<p>UserInfoViewController.h</p>
+
+<pre><code>
+@interface UserInfoViewController : UIViewController&lt;UITableViewDataSource,UITableViewDelegate&gt;{
+
+}
+@end
+</code></pre>
+
+<p>UserInfoViewController.m</p>
+
+<pre><code>
+@interface UserViewController (){
+
+}
+@property(nonatomic,strong)UITableView *tableView;
+@end
+
+@implementation UserViewController
+- (void)viewDidLoad {
+    self.tableView=[[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.heigh style:UITableViewStyleGrouped];
+    self.tableView.delegate=self;
+    self.tableView.dataSource=self;
+    [self.view addSubview:self.tableView];
+}
+@end
+
+</code></pre>
+
+<p>方式二</p>
+
+<p>继承UITableViewController,UITableViewController默认实现UITableViewDataSource和UITableViewDelegate协议。默认声明UITableView。</p>
+
+<p>UserViewController.h</p>
+
+<pre><code>
+@interface UserInfoViewController : UITableViewController
+
+@end
+</code></pre>
+
+<p>UserViewController.m</p>
+
+<pre><code>
+@interface UserInfoViewController (){
+
+}
+@end
+
+@implementation UserInfoViewController
+- (void)viewDidLoad {
+
+}
+@end 
+</code></pre>
+
+<h6 id="uitableviewdatasource">UITableViewDataSource</h6>
+
+<p>主要为UITableView提供显示用的数据(UITableViewCell)，指定UITableViewCell支持的编辑操作类型(insert，delete和reordering)，并根据用户的操作进行相应的数据更新操作，如果数据没有更具操作进行正确的更新，可能会导致显示异常，甚至crush。</p>
+
+<pre><code>
+必须实现的方法
+
+//返回列表显示行数
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
+- 
+//返回每行显示的UITableViewCell
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
+
+选择实现的方法
+//返回列表中Section的数量，默认返回1
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView;
+
+//设置标题头的名称
+-(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section;
+
+//设置标题脚的名称
+-(NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section
+
+//是否支持对列表的行进行增，删功能
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath;
+
+//是否支持对列表进行的行进行移动顺序功能
+- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath;
+
+//根据编辑样式调整数据
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath;
+
+
+//根据移动前后的NSIndexPath调整数据
+- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)sourceIndexPath toIndexPath:(NSIndexPath *)destinationIndexPath;
+
+</code></pre>
+
+<h6 id="uitableviewdelegate">UITableViewDelegate</h6>
+
+<p>主要提供一些可选的方法，用来控制tableView的选择、指定section的头和尾的显示以及协助完成cell的删除和排序等功能。</p>
+
+<pre><code>
+/*-----自定义显示,可以实现隔行显示不同的颜色----*/     
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath;
+- 
+- (void)tableView:(UITableView *)tableView willDisplayHeaderView:(UIView *)view forSection:(NSInteger)section NS_AVAILABLE_IOS(6_0);
+- 
+- (void)tableView:(UITableView *)tableView willDisplayFooterView:(UIView *)view forSection:(NSInteger)section NS_AVAILABLE_IOS(6_0);
+- 
+- (void)tableView:(UITableView *)tableView didEndDisplayingCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath*)indexPath NS_AVAILABLE_IOS(6_0);
+- 
+- (void)tableView:(UITableView *)tableView didEndDisplayingHeaderView:(UIView *)view forSection:(NSInteger)section NS_AVAILABLE_IOS(6_0);
+- 
+- (void)tableView:(UITableView *)tableView didEndDisplayingFooterView:(UIView *)view forSection:(NSInteger)section NS_AVAILABLE_IOS(6_0);
+
+
+/*-----返回每行，表头，表尾的高度----*/   
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath;
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section;
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section;
+
+/*-----返回每行，表头，表尾的预估高度----*/  
+- (CGFloat)tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath NS_AVAILABLE_IOS(7_0);
+
+- (CGFloat)tableView:(UITableView *)tableView estimatedHeightForHeaderInSection:(NSInteger)section NS_AVAILABLE_IOS(7_0);
+
+- (CGFloat)tableView:(UITableView *)tableView estimatedHeightForFooterInSection:(NSInteger)section NS_AVAILABLE_IOS(7_0);
+
+/*-----custom view for header----*/ 
+- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section;   
+
+- (nullable UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section; 
+
+
+/*-----选中和取消选中----*/ 
+- (nullable NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+
+- (nullable NSIndexPath *)tableView:(UITableView *)tableView willDeselectRowAtIndexPath:(NSIndexPath *)indexPath NS_AVAILABLE_IOS(3_0);
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+
+- (void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath NS_AVAILABLE_IOS(3_0);
+
+/*-----设置编辑状态时的样式,可以返回
+UITableViewCellEditingStyleInsert(表示增加)
+UITableViewCellEditingStyleDelete(表示删除)
+UITableViewCellEditingStyleDelete | UITableViewCellEditingStyleInsert(表示多选)
+----*/ 
+- (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath;
+
+/*-----设置删除按钮的名字----*/
+- (nullable NSString *)tableView:(UITableView *)tableView titleForDeleteConfirmationButtonForRowAtIndexPath:(NSIndexPath *)indexPath NS_AVAILABLE_IOS(3_0);
+
+/*-----设置滑动删除时的多个按钮----*/ 
+- (nullable NSArray<uitableviewrowaction *=""> *)tableView:(UITableView *)tableView editActionsForRowAtIndexPath:(NSIndexPath *)indexPath NS_AVAILABLE_IOS(8_0);
+
+
+</uitableviewrowaction></code></pre>
+
+<h3 id="uitableview">UITableView不显示多余的表格分割线</h3>
+
+<pre><code>
+UIView *view =[ [UIView alloc]init];
+view.backgroundColor = [UIColor clearColor];
+[tableView setTableFooterView:view];
+[tableView setTableHeaderView:view];
+</code></pre>
+
+<h3 id="uitableview">设置UITableView分割线间隔</h3>
+
+<p>我们在使用tableview时会发现分割线的左边会短一些，通常可以使用 setSeparatorInset:UIEdgeInsetsZero 来解决。但是升级到XCode6之后，在iOS8里发现没有效果。下面给出解决办法：</p>
+
+<p>首先在viewDidLayoutSubviews方法中加上如下代码：</p>
+
+<pre><code>
+- (void) viewDidLayoutSubviews {
+
+    [super viewDidLayoutSubviews];
+
+    if ([self.tableView respondsToSelector:@selector(setSeparatorInset:)]) {
+        [self.tableView setSeparatorInset:UIEdgeInsetsMake(0,10,0,10)];
+    }
+
+    if ([self.tableView respondsToSelector:@selector(setLayoutMargins:)]) {
+        [self.tableView setLayoutMargins:UIEdgeInsetsMake(0,10,0,10)];
+    }
+}
+</code></pre>
+
+<p>然后在willDisplayCell方法中加入如下代码：</p>
+
+<pre><code>
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
+
+{
+    if ([cell respondsToSelector:@selector(setSeparatorInset:)]) {
+        [cell setSeparatorInset:UIEdgeInsetsMake(0,10,0,10)];
+    }
+    if ([cell respondsToSelector:@selector(setLayoutMargins:)]) {
+        [cell setLayoutMargins:UIEdgeInsetsMake(0,10,0,10)];
+    }
+}
+</code></pre>
+
+<h3 id="uitableviewcell">UITableViewCell复用机制</h3>
+
+<p>我们通常编写UITableViewCell的时候，都会像下面代码一样声明UITableViewCell，这样编写是为了解决什么问题呢？</p>
+
+<pre><code>
+static NSString *CheckMarkCellIdentifier = @"CheckMarkCellIdentifier";
+
+ UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:&lt;#(NSString *)identifier#&gt;]
+
+if (cell == nil) {
+    &lt;#statements#&gt;
+}
+</code></pre>
+
+<p>这个问题答案核心是这个机制要解决什么样的问题。
+关键点在"一个屏幕显示的cell数量"是有限的
+当屏幕滚动时候，就会调用方法获取新的cell，而老的cell会在屏幕外面就不显示了</p>
+
+<p>reuse机制就是这样。当cell需要显示的时候，从queue里面找，找到了，设置一下内容，显示出来
+滚动界面当有cell被移出屏幕时，把这个cell丢到queue里面
+显示新的cell时，如果有“相同类型”(identifier)的cell，就从队列拿一个出来，设置数据，显示出来
+至于queue里面会有多少cell，这个会自动控制</p>
+
+<p>要注意的是，queue里面存储的是cell的实例，不是“原型”
+因此就会出现上面说的“假设每页有 5个。 则 第6个复用第1个cell； 第7个复用第2个；”
+这样的结果是不管你的table有多少行，内存里实际上都只需要存储一个屏幕那么多行的cell就搞定了。</p>
+
+<h3 id="uitableviewcelluitableview">获取UITableViewCell相对于UITableView的坐标</h3>
+
+<p>在使用 UITableViewCell  的frame属性获取origin得到的坐标是不变的.也就是说如果UITableView初始化完毕后,每个cell的坐标是固定的,x不变,y 随index递增的.</p>
+
+<p>经过测试发现,任何一个cell拖拽或则滑动到UITableView的任意相对位置,cell的frame属性都没有改变.</p>
+
+<p>那怎样获取UITableViewCell相对于UITableView的坐标?</p>
+
+<pre><code>
+CGRect rectInTableView = [tableView rectForRowAtIndexPath:indexPath];   
+CGRect rect = [tableView convertRect:rectInTableView toView:[tableView superview]];
+</code></pre>
+
+<h3 id="uitableviewindexpath">UITableView通过长按手势定位获取indexPath</h3>
+
+<pre><code>
+- (void)longPress:(UILongPressGestureRecognizer *)recognizer{
+if (recognizer.state == UIGestureRecognizerStateBegan) {
+//通过定位获取indexPath
+CGPoint point = [recognizer locationInView:self.tableView]; 
+self.cellIndexPath=[self.tableView indexPathForRowAtPoint: point];
+}
+}
+</code></pre>
+
+<h3 id="">表格刷新</h3>
+
+<pre><code>
+//整表刷新
+[self.tableView reloadData];
+
+
+//当行刷新
+[self.tableView reloadRowsAtIndexPaths:@[indexPath]withRowAnimation:UITableViewRowAnimationAutomatic];
+</code></pre>
+
+<h3 id="">表格删除</h3>
+
+<pre><code>
+[self.tableView beginUpdates];
+
+[self.tableView deleteRowsAtIndexPaths:[NSArray arrayWithArray:[self.deleteDic allKeys]] withRowAnimation:UITableViewRowAnimationFade];
+
+[self.tableView endUpdates];
+</code></pre>
+
+<p>这两个方法，是配合起来使用的，标记了一个tableView的动画块。分别代表动画的开始开始和结束。两者成对出现，可以嵌套使用。</p>
+
+<p>一般，在添加，删除，选择 tableView中使用，并实现动画效果。在动画块内，不建议使用reloadData方法，如果使用，会影响动画。</p>
+
+<pre><code>
+
+</code></pre>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "ios-uitableview.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

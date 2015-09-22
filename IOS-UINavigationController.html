@@ -1,0 +1,310 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-UINavigationController介绍
+
+UINavigationController为导航控制器，在iOS里经常用到。
+
+下面的图显示了导航控制器的流程。最左侧是根视图，当用户点击其中的General项时 ，General视图会滑入屏幕；当用户继续点击Auto-Lock项时，Auto-Lock视图将滑入屏幕。
+
+![UINavigationController00](http://scottmaxiao.github.io/img/UINavigationController/UINavigationController00.png)
+
+UINavigationController有Navigation bar  ,Navigation View ,Navigation toobar等组成。
+![UINavigationController01](http://scottmaxiao.github.io/img/UINavigationController/UINavigationController01.jpg)
+
+声明UINavigationController
+<pre><code>
+@property (strong, nonatomic) UINavigationController *navController;  
+
+self.navController = [[UINavigationController alloc] init];  
+</code></pre>
+
+在对象管理上，导航控制器使用了导航堆栈。根视图控制器在堆栈最底层，接下来入栈的是General视图控制器和Auto-Lock视图控制器。
+
+<pre><code>
+//跳转到下一个视图
+[self.navigationController pushViewController:nextViewController animated:YES]
+
+//返回上一个试图
+[self.navigationController popViewControllerAnimated:YES];
+
+//返回某个上级试图
+[self.navigationController popToViewController:viewController animated:YES]
+
+//返回最顶层试图
+[self.navigationController popToRootViewControllerAnimated:YES];
+
+</code></pre>
+
+####导航栏属性设置
+<pre><code>
+//设置导航栏是否显示
+setNavigationBarHidden:BOOL animated:BOOL
+
+// 设置为不透明
+self.navigationController.navigationBar.translucent = NO;
+
+//设置导航栏的背景颜色
+navController.navigationBar.barTintColor=[UIColor gap_colorFromHexRGB:@"5978ab"];
+
+//设置导航栏标题的字体
+NSDictionary *attributes=[NSDictionary dictionaryWithObjectsAndKeys:[UIColor whiteColor],NSForegroundColorAttributeName,
+							  [UIFont systemFontOfSize:18], NSFontAttributeName, nil];
+[navController.navigationBar setTitleTextAttributes:attributes];
+
+</code></pre>
+
+####添加UIBarButtonItem
+navigationController的viewController都会有一个对应的navigationItem，该对象由viewController以懒加载的方式创建，稍后我们可以在对象中堆navigationItem进行配置，可以设置leftBarButtonItem, rightBarButtonItem, backBarButtonItem。
+
+<pre><code>
+初始化UIBarButtonItem的方法有以下几种方法：
+
+- (id)initWithImage:(UIImage *)image style:(UIBarButtonItemStyle)style target:(id)target action:(SEL)action;
+ 
+- (id)initWithTitle:(NSString *)title style:(UIBarButtonItemStyle)style target:(id)target action:(SEL)action;
+
+- (id)initWithBarButtonSystemItem:(UIBarButtonSystemItem)systemItem target:(id)target action:(SEL)action;
+
+//这个方法可以用来自定UIBarButtonItem
+- (id)initWithCustomView:(UIView *)customView; 
+</code></pre>
+
+
+
+<pre><code>
+//定义左侧ButtonItem
+UIButton *leftBtn=[UIButton buttonWithType:UIButtonTypeCustom];
+
+leftBtn.frame =CGRectMake(0, 0, 24, 24);
+
+[leftBtn setBackgroundImage:[UIImage imageNamed:@"return"] forState:UIControlStateNormal];
+
+[leftBtn addTarget:self action:@selector(imNewViewClickLeft:) forControlEvents:UIControlEventTouchUpInside];
+
+[self.navigationItem setLeftBarButtonItem:[[UIBarButtonItem alloc] initWithCustomView:leftBtn]];
+	
+//定义右侧ButtonItem
+UIButton *rightBtn=[UIButton buttonWithType:UIButtonTypeCustom];
+
+rightBtn.frame =CGRectMake(0, 0, 24, 24);
+
+[rightBtn setBackgroundImage:[UIImage imageNamed:@"write"] forState:UIControlStateNormal];
+
+[rightBtn addTarget:self action:@selector(imNewViewClickRight:) forControlEvents:UIControlEventTouchUpInside];
+
+[self.navigationItem setRightBarButtonItem:[[UIBarButtonItem alloc] initWithCustomView:rightBtn]];
+</code></pre>
+
+
+####开启iOS7的滑动返回效果
+iOS 7中在传统的左上角返回键之外,提供了右滑返回上一级界面的手势。
+<pre><code>
+if ([self.navigationController respondsToSelector:@selector(interactivePopGestureRecognizer)]) {
+	self.navigationController.interactivePopGestureRecognizer.delegate = nil;
+}
+</code></pre>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosuinavigationcontroller">IOS-UINavigationController介绍</h2>
+
+<p>UINavigationController为导航控制器，在iOS里经常用到。</p>
+
+<p>下面的图显示了导航控制器的流程。最左侧是根视图，当用户点击其中的General项时 ，General视图会滑入屏幕；当用户继续点击Auto-Lock项时，Auto-Lock视图将滑入屏幕。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/UINavigationController/UINavigationController00.png" alt="UINavigationController00" title=""></p>
+
+<p>UINavigationController有Navigation bar  ,Navigation View ,Navigation toobar等组成。
+<img src="http://scottmaxiao.github.io/img/UINavigationController/UINavigationController01.jpg" alt="UINavigationController01" title=""></p>
+
+<p>声明UINavigationController</p>
+
+<pre><code>
+@property (strong, nonatomic) UINavigationController *navController;  
+
+self.navController = [[UINavigationController alloc] init];  
+</code></pre>
+
+<p>在对象管理上，导航控制器使用了导航堆栈。根视图控制器在堆栈最底层，接下来入栈的是General视图控制器和Auto-Lock视图控制器。</p>
+
+<pre><code>
+//跳转到下一个视图
+[self.navigationController pushViewController:nextViewController animated:YES]
+
+//返回上一个试图
+[self.navigationController popViewControllerAnimated:YES];
+
+//返回某个上级试图
+[self.navigationController popToViewController:viewController animated:YES]
+
+//返回最顶层试图
+[self.navigationController popToRootViewControllerAnimated:YES];
+
+</code></pre>
+
+<h4 id="">导航栏属性设置</h4>
+
+<pre><code>
+//设置导航栏是否显示
+setNavigationBarHidden:BOOL animated:BOOL
+
+// 设置为不透明
+self.navigationController.navigationBar.translucent = NO;
+
+//设置导航栏的背景颜色
+navController.navigationBar.barTintColor=[UIColor gap_colorFromHexRGB:@"5978ab"];
+
+//设置导航栏标题的字体
+NSDictionary *attributes=[NSDictionary dictionaryWithObjectsAndKeys:[UIColor whiteColor],NSForegroundColorAttributeName,
+                              [UIFont systemFontOfSize:18], NSFontAttributeName, nil];
+[navController.navigationBar setTitleTextAttributes:attributes];
+
+</code></pre>
+
+<h4 id="uibarbuttonitem">添加UIBarButtonItem</h4>
+
+<p>navigationController的viewController都会有一个对应的navigationItem，该对象由viewController以懒加载的方式创建，稍后我们可以在对象中堆navigationItem进行配置，可以设置leftBarButtonItem, rightBarButtonItem, backBarButtonItem。</p>
+
+<pre><code>
+初始化UIBarButtonItem的方法有以下几种方法：
+
+- (id)initWithImage:(UIImage *)image style:(UIBarButtonItemStyle)style target:(id)target action:(SEL)action;
+
+- (id)initWithTitle:(NSString *)title style:(UIBarButtonItemStyle)style target:(id)target action:(SEL)action;
+
+- (id)initWithBarButtonSystemItem:(UIBarButtonSystemItem)systemItem target:(id)target action:(SEL)action;
+
+//这个方法可以用来自定UIBarButtonItem
+- (id)initWithCustomView:(UIView *)customView; 
+</code></pre>
+
+<pre><code>
+//定义左侧ButtonItem
+UIButton *leftBtn=[UIButton buttonWithType:UIButtonTypeCustom];
+
+leftBtn.frame =CGRectMake(0, 0, 24, 24);
+
+[leftBtn setBackgroundImage:[UIImage imageNamed:@"return"] forState:UIControlStateNormal];
+
+[leftBtn addTarget:self action:@selector(imNewViewClickLeft:) forControlEvents:UIControlEventTouchUpInside];
+
+[self.navigationItem setLeftBarButtonItem:[[UIBarButtonItem alloc] initWithCustomView:leftBtn]];
+
+//定义右侧ButtonItem
+UIButton *rightBtn=[UIButton buttonWithType:UIButtonTypeCustom];
+
+rightBtn.frame =CGRectMake(0, 0, 24, 24);
+
+[rightBtn setBackgroundImage:[UIImage imageNamed:@"write"] forState:UIControlStateNormal];
+
+[rightBtn addTarget:self action:@selector(imNewViewClickRight:) forControlEvents:UIControlEventTouchUpInside];
+
+[self.navigationItem setRightBarButtonItem:[[UIBarButtonItem alloc] initWithCustomView:rightBtn]];
+</code></pre>
+
+<h4 id="ios7">开启iOS7的滑动返回效果</h4>
+
+<p>iOS 7中在传统的左上角返回键之外,提供了右滑返回上一级界面的手势。</p>
+
+<pre><code>
+if ([self.navigationController respondsToSelector:@selector(interactivePopGestureRecognizer)]) {
+    self.navigationController.interactivePopGestureRecognizer.delegate = nil;
+}
+</code></pre>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-UINavigationController.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

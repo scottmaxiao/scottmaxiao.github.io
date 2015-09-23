@@ -26,6 +26,15 @@
 <div id="md" style="display: none;">
 <!-- markdown -->
 ##IOS开发笔记
+
+####常用数学函数  
+<pre><code>
+round():四舍五入函数。如果参数是小数，则求本身的四舍五入。
+ceil():向下取整函数。如果参数是小数，则求最小的整数但不小于本身.
+floor():向上取整函数。如果参数是小数，则求最大的整数但不大于本身. 
+fabs():绝对值函数。
+</code></pre>
+
 ####添加framework
 
 点击自己的project,然后选择target，点击Build Phases,选择Link Binary With Libraries，贴图如下：
@@ -194,11 +203,92 @@ UIImageWriteToSavedPhotosAlbum(self.imageview.image, self, @selector(image:didFi
 
 [参考地址:]<http://my.oschina.net/hmj/blog/99970>
 
+
+####从Navigation Bar底部开始计算y值
+iOS7以后view默认是全屏模式，而所有的bar(navigation bar, tool bar, search bars 与scope bars都是半透明)，status bar则是全透明。
+
+iOS7以前是从Navigation Bar底部开始计算y值的，现在却是从Status Bar开始计算y值。
+苹果提供的解决方案为：
+<pre><code>
+- (void)viewDidLoad {
+   [super viewDidLoad];
+     //从Navigation Bar底部开始计算y值
+     self.edgesForExtendedLayout = UIRectEdgeNone;
+}
+</code></pre>
+
+
+####判断ios版本
+
+<pre><code>
+(floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_6_1)
+
+</code></pre>
+
+
+####取得设备屏幕宽和高
+<pre><code>
+[UIScreen mainScreen].bounds.size.width
+
+[UIScreen mainScreen].bounds.size.height
+</code></pre>
+
+
+####获取状态栏的高度
+<pre><code>
+[[UIApplication sharedApplication] statusBarFrame].size.height
+</code></pre>
+
+####获取导航栏的高度
+<pre><code>
+self.navigationController.navigationBar.frame.size.height
+
+</code></pre>
+
+####单例模式创建对象
+<pre><code>
++(SchoolManager *)sharedInstance  
+{  
+    static SchoolManager *sharedManager;  
+      
+    static dispatch_once_t onceToken;  
+    dispatch_once(&onceToken, ^{  
+        sharedManager = [[SchoolManager alloc] init];  
+    });  
+      
+    return sharedManager;  
+}  
+</code></pre>
+
+####返回类型instancetype和id的区别
+一个相关的返回类型可以明确地规定用 instancetype 关键字作为返回类型，并且它可以在一些工厂方法或者构造器方法的场景下很有用。它可以提示编译器正确地检查类型，并且更加重要的是，这同时适用于它的子类。
+<pre><code>
+@interface ZOCPerson
++ (instancetype)personWithName:(NSString *)name;
+@end
+
+personWithName方法返回的是ZOCPerson对象实例。
+</code></pre>
+
+返回类型为id，表示返回一个对象实例，但是没有指明具体类。如下例:
+<pre><code>
+- (id)copy;
+</code></pre>
+
 <!-- markdown end -->
 </div>
 <div class="entry" id="main">
 <!-- content -->
 <h2 id="ios">IOS开发笔记</h2>
+
+<h4 id="">常用数学函数</h4>
+
+<pre><code>
+round():四舍五入函数。如果参数是小数，则求本身的四舍五入。
+ceil():向下取整函数。如果参数是小数，则求最小的整数但不小于本身.
+floor():向上取整函数。如果参数是小数，则求最大的整数但不大于本身. 
+fabs():绝对值函数。
+</code></pre>
 
 <h4 id="framework">添加framework</h4>
 
@@ -378,6 +468,83 @@ UIImageWriteToSavedPhotosAlbum(self.imageview.image, self, @selector(image:didFi
 </code></pre>
 
 <p>[参考地址:]<a href="http://my.oschina.net/hmj/blog/99970">http://my.oschina.net/hmj/blog/99970</a></p>
+
+<h4 id="navigationbary">从Navigation Bar底部开始计算y值</h4>
+
+<p>iOS7以后view默认是全屏模式，而所有的bar(navigation bar, tool bar, search bars 与scope bars都是半透明)，status bar则是全透明。</p>
+
+<p>iOS7以前是从Navigation Bar底部开始计算y值的，现在却是从Status Bar开始计算y值。
+苹果提供的解决方案为：</p>
+
+<pre><code>
+- (void)viewDidLoad {
+   [super viewDidLoad];
+     //从Navigation Bar底部开始计算y值
+     self.edgesForExtendedLayout = UIRectEdgeNone;
+}
+</code></pre>
+
+<h4 id="ios">判断ios版本</h4>
+
+<pre><code>
+(floor(NSFoundationVersionNumber) &gt; NSFoundationVersionNumber_iOS_6_1)
+
+</code></pre>
+
+<h4 id="">取得设备屏幕宽和高</h4>
+
+<pre><code>
+[UIScreen mainScreen].bounds.size.width
+
+[UIScreen mainScreen].bounds.size.height
+</code></pre>
+
+<h4 id="">获取状态栏的高度</h4>
+
+<pre><code>
+[[UIApplication sharedApplication] statusBarFrame].size.height
+</code></pre>
+
+<h4 id="">获取导航栏的高度</h4>
+
+<pre><code>
+self.navigationController.navigationBar.frame.size.height
+
+</code></pre>
+
+<h4 id="">单例模式创建对象</h4>
+
+<pre><code>
++(SchoolManager *)sharedInstance  
+{  
+    static SchoolManager *sharedManager;  
+
+    static dispatch_once_t onceToken;  
+    dispatch_once(&amp;onceToken, ^{  
+        sharedManager = [[SchoolManager alloc] init];  
+    });  
+
+    return sharedManager;  
+}  
+</code></pre>
+
+<h4 id="instancetypeid">返回类型instancetype和id的区别</h4>
+
+<p>一个相关的返回类型可以明确地规定用 instancetype 关键字作为返回类型，并且它可以在一些工厂方法或者构造器方法的场景下很有用。它可以提示编译器正确地检查类型，并且更加重要的是，这同时适用于它的子类。</p>
+
+<pre><code>
+@interface ZOCPerson
++ (instancetype)personWithName:(NSString *)name;
+@end
+
+personWithName方法返回的是ZOCPerson对象实例。
+</code></pre>
+
+<p>返回类型为id，表示返回一个对象实例，但是没有指明具体类。如下例:</p>
+
+<pre><code>
+- (id)copy;
+</code></pre>
 <!-- content end -->
 </div>
 <br>

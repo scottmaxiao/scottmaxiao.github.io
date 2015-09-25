@@ -1,0 +1,846 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##Java开发FAQ
+
+####使用axis开发webservice服务java.net.ConnectException: Connection refused: connect异常的解决办法
+
+问题描述: 
+
+    项目部署使用venusTools2010部署在win7上，使用接口服务平台发布服务，拷贝wsdl地址，使用接口服务平台的外部服务管理功能声称桩程序时候报错，错误信息为java.net.ConnectException: Connection refused: connect。
+
+问题分析：
+
+    该服务使用localhost可以访问，使用127.0.0.1和本机的IP地址不能访问。在命令行中输入”ping localhost”，localhost指向了::1, ::1是IPv6的格式。怀疑是因为win7使用IPV6地址，tomcat不能使用127.0.0.1和本机的IP地址访问造成。
+
+解决方案：
+
+    1. 修改C:\Windows\System32\drivers\etc\hosts文件，让localhost指向127.0.0.1。把”# 127.0.0.1       localhost”中的注释符”#”去掉，在命令行中输入”ping localhost”，localhost指向了127.0.0.1。
+
+    2. 修改C:\VenusTools2010\appserver\apache-tomcat-5.5.27\conf\server.xml，让系统监听IPV4地址。在”9999”端口的配置中增加address=“0.0.0.0"。
+    <Connector port="9999" maxHttpHeaderSize="8192" address="0.0.0.0"
+               maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
+               URIEncoding="UTF-8"
+               enableLookups="false" redirectPort="8443" acceptCount="100"
+               connectionTimeout="20000" disableUploadTimeout="true" />
+
+
+启动服务，经过测试该问题不会出现。
+令，venusTools2010中内置的是tomcat5.5,tomcat6中默认监听IPV4地址。
+
+[参考资料]
+
+<http://blog.csdn.net/fullbug/article/details/6958223>
+
+<http://social.microsoft.com/Forums/pt-BR/da18a390-79dd-44da-a19f-981245bfd6d6/windows-7-iplocalhost>
+
+----
+
+####如何解决修改tomcat http端口后，GAP-IDE中“在浏览器中查看”报错
+
+问题描述：
+
+    GAP-IDE中默认的Tomcat http端口号是”9999”，修改Tomcat http端口为”8888”后，在GAP-IDE中选中“在浏览器中查看”报错。
+
+解决方案：
+
+    1. 首先要关闭GAP-IDE，
+
+    2. 然后修改C:\VenusTools2009\add-ons\tomcatplugin-3.2.1\eclipse\plugins\com.sysdeo.eclipse.tomcat_3.2.1路径下的tomcat.jar中resources.properties文件中port.label = 9999修改为tomcat http的端口号。
+
+    3. 启动GAP-IDE。
+
+----
+
+
+####如何设置数据库重新获取连接的次数
+
+问题描述：
+
+    在db.xml中配置了数据库连接信息后，启动应用，如果连不上数据库，应用会一直不断的去连接，造成应用死机状态。
+
+问题分析：
+
+    在浏览器中输入http://127.0.0.1:9999/depWeb/proxool，进入数据库连接池信息页面，数据库连接池默认是每隔0.5秒尝试连接一下，一共尝试10次(delay-time:500, retry-count:10)。
+
+问题解决：
+
+    在db.xml或者其他spring的配置文件中，在数据库连接池配置信息页面增加或者修改retryCount属性。如下例：
+
+<pre><code>
+&lt;DB_SRC name="MAIN" 
+useProvider="1" 
+conProvider="venus.frames.mainframe.db.conpool.provider.ProxoolProvider" 
+drvName="oracle.jdbc.OracleDriver" 
+port="1521"
+usrName="gap35" 
+pwd="gap35" 
+databaseName="orcl" 
+conUrl="jdbc:oracle:thin:@localhost:1521:orcl" 
+maxActiveTime="1800000"
+maxActive="200"
+retryCount="3"
+/&gt;
+</code></pre>
+
+----
+
+
+####如何解决WebLogic启动报java.lang.ClassCastException: weblogic.xml.jaxp.RegistrySAXTransformerFactory错误
+
+问题描述：
+
+&nbsp;&nbsp;&nbsp;&nbsp;操作系统为Linux,部署服务器为weblogic9.2，启动时报
+<pre><code>
+	WARN  2010-06-23 15:07:45,609 net.sf.hibernate.xml.XMLDatabinder Problem opening output stylesheet - databinding disabled
+java.lang.ClassCastException: weblogic.xml.jaxp.RegistrySAXTransformerFactory
+	at javax.xml.transform.TransformerFactory.newInstance(Unknown Source)
+	at net.sf.hibernate.xml.XMLDatabinder.getOutputStyleSheetTemplates(XMLDatabinder.java:254)
+	at net.sf.hibernate.impl.SessionFactoryImpl.<init>(SessionFactoryImpl.java:160)
+	at net.sf.hibernate.cfg.Configuration.buildSessionFactory(Configuration.java:791)
+</code></pre>
+
+问题解决：
+
+    解决方案1,修改weblogic.xml，把prefer-web-inf-classes属性的值改为false。
+
+    解决方案2, 修改log4j.properties，修改日志级别为ERROR(log4j.rootCategory=ERROR,F,CON)。
+
+    解决方案3,加入xalan.jar
+
+----
+
+####如何让mysql在linux环境上忽略大小写
+编辑/etc/my.cnf，如下
+<pre><code>
+lower_case_table_names=1
+</code></pre>
+
+----
+
+####如何在spring的配置文件中依赖注入资源文件中的值
+&nbsp;&nbsp;&nbsp;&nbsp;Spring 的PropertyPlaceholderConfigurer 类用于Spring 从外部属性文件中载入属性，并使用这些属性值替换Spring 配置文件中的占位符变量（${varible}）。
+<pre><code>
+&lt;bean id="propertyConfigurer" 
+class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"&gt;
+	&lt;property name="locations"&gt;
+    &lt;list&gt;
+	&lt;value>classpath:mail.properties&lt;/value&gt;
+    &lt;/list&gt;
+	&lt;/property&gt;
+&lt;/bean&gt;
+
+&lt;!-- 使用Spring封装的Mail Sender --&gt;
+&lt;bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl"&gt;
+&lt;property name="host" value="${mail.host}"/&gt;
+&lt;property name="username" value="${mail.username}"/&gt;
+&lt;property name="password" value="${mail.password}"/&gt;
+&lt;property name="javaMailProperties"&gt;
+    &lt;props&gt;
+	&lt;prop key="mail.smtp.auth"&gt;true&lt;/prop&gt;
+	&lt;prop key="mail.smtp.timeout"&gt;25000&lt;/prop&gt;
+    &lt;/props&gt;
+&lt;/property&gt;
+&lt;/bean&gt;
+
+</code></pre>
+
+----
+
+####java的JDBC连接mysql数据库时对于Datetime类型出现Cannot convert value '0000-00-00 00:00:00' from column 9 to TIMESTAMP
+
+问题描述:
+&nbsp;&nbsp;&nbsp;&nbsp;采用Hibernate连接mysql5的数据库，由于表中采用了一个datetime时段为此老是出现如下的
+<pre><code>
+java.sql.SQLException: Cannot convert value '0000-00-00 00:00:00' from column 9 to TIMESTAMP.
+ at com.mysql.jdbc.ResultSet.getTimestampFromBytes(ResultSet.java:6864)
+ at com.mysql.jdbc.ResultSet.getTimestampInternal(ResultSet.java:6899)
+ at com.mysql.jdbc.ResultSet.getTimestamp(ResultSet.java:6218)
+ at com.mysql.jdbc.ResultSet.getTimestamp(ResultSet.java:6256)
+ at org.hibernate.type.TimestampType.get(TimestampType.java:30)
+ at org.hibernate.type.NullableType.nullSafeGet(NullableType.java:113)
+ at org.hibernate.type.NullableType.nullSafeGet(NullableType.java:102)
+
+</code></pre>
+
+
+问题分析:
+
+
+     查看了mysql5的帮助文档对于datetime的解释如下
+
+     Datetimes with all-zero components (0000-00-00 ...) — These values can not be represented 关于所有Datetime类型由0组成的数据，这些值不能在java中被可靠的表示
+     reliably in Java. 
+     Connector/J 3.0.x always converted them to NULL when being read from a ResultSet. 
+     当这些值正在从ResultSet容器中读取时候，Connector/J 3.0.x 一直把他们转换为NULL值。
+
+     Connector/J 3.1 throws an exception by default when these values are encountered as this is the most correct behavior according to the JDBC and SQL standards.
+     依照JDBC和SQL的标准这些值碰到的最正确的处理方式就是在缺省情况下产生异常
+     This behavior can be modified using the zeroDateTimeBehavior configuration property. The allowable values are: 
+     JDBC允许用下列的值对zeroDateTimeBehavior 属性来设置这些处理方式，
+
+    exception (the default), which throws an SQLException with an SQLState of S1009. 
+    设置为exception 异常（缺省）用一个SQLState的s1009错误号来抛出一个异常
+    convertToNull, which returns NULL instead of the date. 
+    设置为convertToNull，用NULL值来代替这个日期类型
+    round, which rounds the date to the nearest closest value which is 0001-01-01. 
+    设置为round，则围绕这个日期最接近的值（0001-01-01）来代替
+
+问题解决:
+
+
+    你可以修改你的jdbc连接
+    jdbc:mysql://localhost/schoolmis? zeroDateTimeBehavior=convertToNull
+
+[参考：]<http://blog.csdn.net/cchaha/archive/2009/03/12/3983061.aspx>
+
+----
+
+####dwr+weblogic10.3.6报”Session error”
+
+问题描述:
+
+    瑞泰项目部署环境为linux+weblogic10.3.6,点击左侧菜单"数据字典"，访问数据字典的基础数据管理页面，页面上把"session error"的提示，后台日志显示"A request has been denied as a potential CSRF attack.  "
+ 
+
+ 
+问题分析:
+    
+
+    DWR的需要在浏览器中的会话cookie的访问令牌，因为它使用会话cookie来防止CSRF的。而weblogic10.3.6不允许客户端读取会话cookie 。
+ 
+
+ 
+解决方案:
+
+解决方案一:修改Weblogic.xml
+<pre><code>
+&lt;session-descriptor&gt;
+&lt;cookie-http-only&gt;false&lt;/cookie-http-only&gt;
+&lt;/session-descriptor&gt;
+</code></pre>
+
+解决方案二:修改Web.xml中的,DWR的servlet配置,容许跨域访问。
+<pre><code>
+    &lt;init-param&gt;       
+        &lt;param-name&gt;crossDomainSessionSecurity&lt;/param-name&gt;        
+        &lt;param-value&gt;false&lt;/param-value&gt;       
+    &lt;/init-param&gt;   
+
+</code></pre>
+
+----
+
+####Oracle 10g 异常：ORA-12514: TNS: 监听程序当前无法识别连接描述符中请求的服务
+问题描述:
+
+
+    安装好Oracle 10g后，OracleOraDb10g_home1TNSListener和OracleServiceORCL服务已经启动，在命令行中输入sqlplus zgzhms/zgzhms@orcl，后显示“监听程序当前无法识别连接描述符中请求的服务”。
+
+解决方案:
+    
+
+    修改product\10.2.0\db_1\NETWORK\ADMIN下的listener.ora文件。增加下面SID_DESC的部分。
+<pre><code>
+
+SID_LIST_LISTENER =
+  (SID_LIST =
+    (SID_DESC =
+      (SID_NAME = PLSExtProc)
+      (ORACLE_HOME = C:\oracle\product\10.2.0\db_1)
+      (PROGRAM = extproc)
+    )
+
+	(SID_DESC = 
+	       (GLOBAL_DBNAME = ORCL) 
+	       (ORACLE_HOME = C:/oracle/product/10.2.0/db_1)  
+	       (SID_NAME = ORCl) 
+	      )
+  )
+
+LISTENER =
+  (DESCRIPTION_LIST =
+    (DESCRIPTION =
+      (ADDRESS = (PROTOCOL = IPC)(KEY = EXTPROC1))
+      (ADDRESS = (PROTOCOL = TCP)(HOST = maxiao9dca)(PORT = 1521))
+    )
+  )
+
+</code></pre>
+
+----
+
+####如何解决服务启动的时候报net.sf.hibernate.tool.hbm2ddl.SchemaUpdate错误的问题
+问题描述:
+服务启用，后台日志中出现：
+<pre><code>
+ERROR 2012-09-13 10:14:31 net.sf.hibernate.tool.hbm2ddl.SchemaUpdate Unsuccessful: alter table ewp_doctype_relation add index FK7783274A91907F3E (CHILD_ID), add constraint FK7783274A91907F3E foreign key (CHILD_ID) references ewp_doctype (ID)
+
+ERROR 2012-09-13 10:14:31 net.sf.hibernate.tool.hbm2ddl.SchemaUpdate Duplicate key name 'FK7783274A91907F3E'
+
+</code></pre>
+
+解决方案:
+   这是在applicationContext.xml中配置的hibernate.hbm2ddl.auto属性为update导致的。
+
+    <property name="hibernateProperties">
+    <props>
+    <prop key="hibernate.hbm2ddl.auto">update</prop>
+    </props>
+    </property>
+
+它包含4个属性: 
+
+- create : 每次加载hibernate时都会删除上一次的生成的表，然后根据你的model类再重新来生成新表，哪怕两次没有任何改变也要这样执行，这就是导致数据库表数据丢失的一个重要原因。
+
+- create-drop : 每次加载hibernate时根据model类生成表，但是sessionFactory一关闭,表就自动删除。
+
+- update : 最常用的属性，第一次加载hibernate时根据model类会自动建立起表的结构（前提是先建立好数据库），以后加载hibernate时根据 model类自动更新表结构，即使表结构改变了但表中的行仍然存在不会删除以前的行。要注意的是当部署到服务器后，表结构是不会被马上建立起来的，是要等 应用第一次运行起来后才会。
+
+- validate : 每次加载hibernate时，验证创建数据库表结构，只会和数据库中的表进行比较，不会创建新表，但是会插入新值。
+
+- none:什么都不做。
+
+----
+
+####jcaptcha生成的验证码如何忽略大小写验证？
+第一种方式
+
+    WordGenerator参数大写或小写只用一种，那么在校验时将用户输入uppercase或lowercase
+
+    
+第二种方式
+<pre><code>
+修改修改源码Gimpy类中的 
+private final Boolean validateResponse(final String response){
+　　　　return new Boolean(response.equals(this.response));
+}
+，把equals 换成equalsIgnoreCase，重新编译打成jar包
+
+</code></pre>
+
+
+[参考:]<http://my.oschina.net/william1/blog/4729>
+
+----
+
+####GAP-IDE启动Tomcat的时候，控制台报错:java.lang.ClassNotFoundException: org.apache.catalina.loader.DevLoader
+
+&nbsp;&nbsp;&nbsp;&nbsp;控制台报错:java.lang.ClassNotFoundException: org.apache.catalina.loader.DevLoader 经检查，是因为.tomcatplugin文件中出现下面代码
+
+    <webclasspathentries>
+     <webclasspathentry>/GAP-DD/web/WEB-INF/classes</webclasspathentry>
+    </webclasspathentries>
+
+造成部署的时候生成的部署文件中包含下面的代码
+    
+
+    <loader classname="org.apache.catalina.loader.DevLoader" reloadable="true" 
+    debug="1" usesystemclassloaderasparent="false"/>
+
+解决方案： 
+
+    选中当前项目，点击右键，选择属性，选中tomcate,选中第二个页面"DevLoader classPath"，取消“Activate DevLoader”， 然后查看.tomcatplugin文件，webClassPathEntries标签已经取消，然后部署，部署文件中Loader标签已经取消。
+
+----
+
+####java编译静态常量的机制
+    java虚拟机编译机制，静态常量在编译后，成为了常量，而不是原先的代码，例如：
+    Contant.java里面有一些静态常量
+
+    public static final String GONGDAN = "gongdan@ceopen.cn";
+    public static final String ICT = "ictnetwork@ceopen.cn";
+
+    然后在程序中有使用这些常量，Contant.GONGDAN
+    在那些程序编译后的.class文件中，这些常量编译成了相应的值，即gongdan@ceopen.cn，而不是Contant.GONGDAN
+
+
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;
+
+
+
+<pre><code>
+
+
+</code></pre>
+
+
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="javafaq">Java开发FAQ</h2>
+
+<h4 id="axiswebservicejavanetconnectexceptionconnectionrefusedconnect">使用axis开发webservice服务java.net.ConnectException: Connection refused: connect异常的解决办法</h4>
+
+<p>问题描述: </p>
+
+<pre><code>项目部署使用venusTools2010部署在win7上，使用接口服务平台发布服务，拷贝wsdl地址，使用接口服务平台的外部服务管理功能声称桩程序时候报错，错误信息为java.net.ConnectException: Connection refused: connect。
+</code></pre>
+
+<p>问题分析：</p>
+
+<pre><code>该服务使用localhost可以访问，使用127.0.0.1和本机的IP地址不能访问。在命令行中输入”ping localhost”，localhost指向了::1, ::1是IPv6的格式。怀疑是因为win7使用IPV6地址，tomcat不能使用127.0.0.1和本机的IP地址访问造成。
+</code></pre>
+
+<p>解决方案：</p>
+
+<pre><code>1. 修改C:\Windows\System32\drivers\etc\hosts文件，让localhost指向127.0.0.1。把”# 127.0.0.1       localhost”中的注释符”#”去掉，在命令行中输入”ping localhost”，localhost指向了127.0.0.1。
+
+2. 修改C:\VenusTools2010\appserver\apache-tomcat-5.5.27\conf\server.xml，让系统监听IPV4地址。在”9999”端口的配置中增加address=“0.0.0.0"。
+&lt;Connector port="9999" maxHttpHeaderSize="8192" address="0.0.0.0"
+           maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
+           URIEncoding="UTF-8"
+           enableLookups="false" redirectPort="8443" acceptCount="100"
+           connectionTimeout="20000" disableUploadTimeout="true" /&gt;
+</code></pre>
+
+<p>启动服务，经过测试该问题不会出现。
+令，venusTools2010中内置的是tomcat5.5,tomcat6中默认监听IPV4地址。</p>
+
+<p>[参考资料]</p>
+
+<p><a href="http://blog.csdn.net/fullbug/article/details/6958223">http://blog.csdn.net/fullbug/article/details/6958223</a></p>
+
+<p><a href="http://social.microsoft.com/Forums/pt-BR/da18a390-79dd-44da-a19f-981245bfd6d6/windows-7-iplocalhost">http://social.microsoft.com/Forums/pt-BR/da18a390-79dd-44da-a19f-981245bfd6d6/windows-7-iplocalhost</a></p>
+
+<hr>
+
+<h4 id="tomcathttpgapide">如何解决修改tomcat http端口后，GAP-IDE中“在浏览器中查看”报错</h4>
+
+<p>问题描述：</p>
+
+<pre><code>GAP-IDE中默认的Tomcat http端口号是”9999”，修改Tomcat http端口为”8888”后，在GAP-IDE中选中“在浏览器中查看”报错。
+</code></pre>
+
+<p>解决方案：</p>
+
+<pre><code>1. 首先要关闭GAP-IDE，
+
+2. 然后修改C:\VenusTools2009\add-ons\tomcatplugin-3.2.1\eclipse\plugins\com.sysdeo.eclipse.tomcat_3.2.1路径下的tomcat.jar中resources.properties文件中port.label = 9999修改为tomcat http的端口号。
+
+3. 启动GAP-IDE。
+</code></pre>
+
+<hr>
+
+<h4 id="">如何设置数据库重新获取连接的次数</h4>
+
+<p>问题描述：</p>
+
+<pre><code>在db.xml中配置了数据库连接信息后，启动应用，如果连不上数据库，应用会一直不断的去连接，造成应用死机状态。
+</code></pre>
+
+<p>问题分析：</p>
+
+<pre><code>在浏览器中输入http://127.0.0.1:9999/depWeb/proxool，进入数据库连接池信息页面，数据库连接池默认是每隔0.5秒尝试连接一下，一共尝试10次(delay-time:500, retry-count:10)。
+</code></pre>
+
+<p>问题解决：</p>
+
+<pre><code>在db.xml或者其他spring的配置文件中，在数据库连接池配置信息页面增加或者修改retryCount属性。如下例：
+</code></pre>
+
+<pre><code>
+&lt;DB_SRC name="MAIN" 
+useProvider="1" 
+conProvider="venus.frames.mainframe.db.conpool.provider.ProxoolProvider" 
+drvName="oracle.jdbc.OracleDriver" 
+port="1521"
+usrName="gap35" 
+pwd="gap35" 
+databaseName="orcl" 
+conUrl="jdbc:oracle:thin:@localhost:1521:orcl" 
+maxActiveTime="1800000"
+maxActive="200"
+retryCount="3"
+/&gt;
+</code></pre>
+
+<hr>
+
+<h4 id="weblogicjavalangclasscastexceptionweblogicxmljaxpregistrysaxtransformerfactory">如何解决WebLogic启动报java.lang.ClassCastException: weblogic.xml.jaxp.RegistrySAXTransformerFactory错误</h4>
+
+<p>问题描述：</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;操作系统为Linux,部署服务器为weblogic9.2，启动时报</p>
+
+<pre><code>
+    WARN  2010-06-23 15:07:45,609 net.sf.hibernate.xml.XMLDatabinder Problem opening output stylesheet - databinding disabled
+java.lang.ClassCastException: weblogic.xml.jaxp.RegistrySAXTransformerFactory
+    at javax.xml.transform.TransformerFactory.newInstance(Unknown Source)
+    at net.sf.hibernate.xml.XMLDatabinder.getOutputStyleSheetTemplates(XMLDatabinder.java:254)
+    at net.sf.hibernate.impl.SessionFactoryImpl.<init>(SessionFactoryImpl.java:160)
+    at net.sf.hibernate.cfg.Configuration.buildSessionFactory(Configuration.java:791)
+</init></code></pre>
+
+<p>问题解决：</p>
+
+<pre><code>解决方案1,修改weblogic.xml，把prefer-web-inf-classes属性的值改为false。
+
+解决方案2, 修改log4j.properties，修改日志级别为ERROR(log4j.rootCategory=ERROR,F,CON)。
+
+解决方案3,加入xalan.jar
+</code></pre>
+
+<hr>
+
+<h4 id="mysqllinux">如何让mysql在linux环境上忽略大小写</h4>
+
+<p>编辑/etc/my.cnf，如下</p>
+
+<pre><code>
+lower_case_table_names=1
+</code></pre>
+
+<hr>
+
+<h4 id="spring">如何在spring的配置文件中依赖注入资源文件中的值</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Spring 的PropertyPlaceholderConfigurer 类用于Spring 从外部属性文件中载入属性，并使用这些属性值替换Spring 配置文件中的占位符变量（${varible}）。</p>
+
+<pre><code>
+&lt;bean id="propertyConfigurer" 
+class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"&gt;
+    &lt;property name="locations"&gt;
+    &lt;list&gt;
+    &lt;value&gt;classpath:mail.properties&lt;/value&gt;
+    &lt;/list&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;
+
+&lt;!-- 使用Spring封装的Mail Sender --&gt;
+&lt;bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl"&gt;
+&lt;property name="host" value="${mail.host}"/&gt;
+&lt;property name="username" value="${mail.username}"/&gt;
+&lt;property name="password" value="${mail.password}"/&gt;
+&lt;property name="javaMailProperties"&gt;
+    &lt;props&gt;
+    &lt;prop key="mail.smtp.auth"&gt;true&lt;/prop&gt;
+    &lt;prop key="mail.smtp.timeout"&gt;25000&lt;/prop&gt;
+    &lt;/props&gt;
+&lt;/property&gt;
+&lt;/bean&gt;
+
+</code></pre>
+
+<hr>
+
+<h4 id="javajdbcmysqldatetimecannotconvertvalue00000000000000fromcolumn9totimestamp">java的JDBC连接mysql数据库时对于Datetime类型出现Cannot convert value '0000-00-00 00:00:00' from column 9 to TIMESTAMP</h4>
+
+<p>问题描述:
+&nbsp;&nbsp;&nbsp;&nbsp;采用Hibernate连接mysql5的数据库，由于表中采用了一个datetime时段为此老是出现如下的</p>
+
+<pre><code>
+java.sql.SQLException: Cannot convert value '0000-00-00 00:00:00' from column 9 to TIMESTAMP.
+ at com.mysql.jdbc.ResultSet.getTimestampFromBytes(ResultSet.java:6864)
+ at com.mysql.jdbc.ResultSet.getTimestampInternal(ResultSet.java:6899)
+ at com.mysql.jdbc.ResultSet.getTimestamp(ResultSet.java:6218)
+ at com.mysql.jdbc.ResultSet.getTimestamp(ResultSet.java:6256)
+ at org.hibernate.type.TimestampType.get(TimestampType.java:30)
+ at org.hibernate.type.NullableType.nullSafeGet(NullableType.java:113)
+ at org.hibernate.type.NullableType.nullSafeGet(NullableType.java:102)
+
+</code></pre>
+
+<p>问题分析:</p>
+
+<pre><code> 查看了mysql5的帮助文档对于datetime的解释如下
+
+ Datetimes with all-zero components (0000-00-00 ...) — These values can not be represented 关于所有Datetime类型由0组成的数据，这些值不能在java中被可靠的表示
+ reliably in Java. 
+ Connector/J 3.0.x always converted them to NULL when being read from a ResultSet. 
+ 当这些值正在从ResultSet容器中读取时候，Connector/J 3.0.x 一直把他们转换为NULL值。
+
+ Connector/J 3.1 throws an exception by default when these values are encountered as this is the most correct behavior according to the JDBC and SQL standards.
+ 依照JDBC和SQL的标准这些值碰到的最正确的处理方式就是在缺省情况下产生异常
+ This behavior can be modified using the zeroDateTimeBehavior configuration property. The allowable values are: 
+ JDBC允许用下列的值对zeroDateTimeBehavior 属性来设置这些处理方式，
+
+exception (the default), which throws an SQLException with an SQLState of S1009. 
+设置为exception 异常（缺省）用一个SQLState的s1009错误号来抛出一个异常
+convertToNull, which returns NULL instead of the date. 
+设置为convertToNull，用NULL值来代替这个日期类型
+round, which rounds the date to the nearest closest value which is 0001-01-01. 
+设置为round，则围绕这个日期最接近的值（0001-01-01）来代替
+</code></pre>
+
+<p>问题解决:</p>
+
+<pre><code>你可以修改你的jdbc连接
+jdbc:mysql://localhost/schoolmis? zeroDateTimeBehavior=convertToNull
+</code></pre>
+
+<p>[参考：]<a href="http://blog.csdn.net/cchaha/archive/2009/03/12/3983061.aspx">http://blog.csdn.net/cchaha/archive/2009/03/12/3983061.aspx</a></p>
+
+<hr>
+
+<h4 id="dwrweblogic1036sessionerror">dwr+weblogic10.3.6报”Session error”</h4>
+
+<p>问题描述:</p>
+
+<pre><code>瑞泰项目部署环境为linux+weblogic10.3.6,点击左侧菜单"数据字典"，访问数据字典的基础数据管理页面，页面上把"session error"的提示，后台日志显示"A request has been denied as a potential CSRF attack.  "
+</code></pre>
+
+<p>问题分析:</p>
+
+<pre><code>DWR的需要在浏览器中的会话cookie的访问令牌，因为它使用会话cookie来防止CSRF的。而weblogic10.3.6不允许客户端读取会话cookie 。
+</code></pre>
+
+<p>解决方案:</p>
+
+<p>解决方案一:修改Weblogic.xml</p>
+
+<pre><code>
+&lt;session-descriptor&gt;
+&lt;cookie-http-only&gt;false&lt;/cookie-http-only&gt;
+&lt;/session-descriptor&gt;
+</code></pre>
+
+<p>解决方案二:修改Web.xml中的,DWR的servlet配置,容许跨域访问。</p>
+
+<pre><code>
+    &lt;init-param&gt;       
+        &lt;param-name&gt;crossDomainSessionSecurity&lt;/param-name&gt;        
+        &lt;param-value&gt;false&lt;/param-value&gt;       
+    &lt;/init-param&gt;   
+
+</code></pre>
+
+<hr>
+
+<h4 id="oracle10gora12514tns">Oracle 10g 异常：ORA-12514: TNS: 监听程序当前无法识别连接描述符中请求的服务</h4>
+
+<p>问题描述:</p>
+
+<pre><code>安装好Oracle 10g后，OracleOraDb10g_home1TNSListener和OracleServiceORCL服务已经启动，在命令行中输入sqlplus zgzhms/zgzhms@orcl，后显示“监听程序当前无法识别连接描述符中请求的服务”。
+</code></pre>
+
+<p>解决方案:</p>
+
+<pre><code>修改product\10.2.0\db_1\NETWORK\ADMIN下的listener.ora文件。增加下面SID_DESC的部分。
+</code></pre>
+
+<pre><code>
+
+SID_LIST_LISTENER =
+  (SID_LIST =
+    (SID_DESC =
+      (SID_NAME = PLSExtProc)
+      (ORACLE_HOME = C:\oracle\product\10.2.0\db_1)
+      (PROGRAM = extproc)
+    )
+
+    (SID_DESC = 
+           (GLOBAL_DBNAME = ORCL) 
+           (ORACLE_HOME = C:/oracle/product/10.2.0/db_1)  
+           (SID_NAME = ORCl) 
+          )
+  )
+
+LISTENER =
+  (DESCRIPTION_LIST =
+    (DESCRIPTION =
+      (ADDRESS = (PROTOCOL = IPC)(KEY = EXTPROC1))
+      (ADDRESS = (PROTOCOL = TCP)(HOST = maxiao9dca)(PORT = 1521))
+    )
+  )
+
+</code></pre>
+
+<hr>
+
+<h4 id="netsfhibernatetoolhbm2ddlschemaupdate">如何解决服务启动的时候报net.sf.hibernate.tool.hbm2ddl.SchemaUpdate错误的问题</h4>
+
+<p>问题描述:
+服务启用，后台日志中出现：</p>
+
+<pre><code>
+ERROR 2012-09-13 10:14:31 net.sf.hibernate.tool.hbm2ddl.SchemaUpdate Unsuccessful: alter table ewp_doctype_relation add index FK7783274A91907F3E (CHILD_ID), add constraint FK7783274A91907F3E foreign key (CHILD_ID) references ewp_doctype (ID)
+
+ERROR 2012-09-13 10:14:31 net.sf.hibernate.tool.hbm2ddl.SchemaUpdate Duplicate key name 'FK7783274A91907F3E'
+
+</code></pre>
+
+<p>解决方案:
+   这是在applicationContext.xml中配置的hibernate.hbm2ddl.auto属性为update导致的。</p>
+
+<pre><code>&lt;property name="hibernateProperties"&gt;
+&lt;props&gt;
+&lt;prop key="hibernate.hbm2ddl.auto"&gt;update&lt;/prop&gt;
+&lt;/props&gt;
+&lt;/property&gt;
+</code></pre>
+
+<p>它包含4个属性: </p>
+
+<ul>
+<li><p>create : 每次加载hibernate时都会删除上一次的生成的表，然后根据你的model类再重新来生成新表，哪怕两次没有任何改变也要这样执行，这就是导致数据库表数据丢失的一个重要原因。</p></li>
+<li><p>create-drop : 每次加载hibernate时根据model类生成表，但是sessionFactory一关闭,表就自动删除。</p></li>
+<li><p>update : 最常用的属性，第一次加载hibernate时根据model类会自动建立起表的结构（前提是先建立好数据库），以后加载hibernate时根据 model类自动更新表结构，即使表结构改变了但表中的行仍然存在不会删除以前的行。要注意的是当部署到服务器后，表结构是不会被马上建立起来的，是要等 应用第一次运行起来后才会。</p></li>
+<li><p>validate : 每次加载hibernate时，验证创建数据库表结构，只会和数据库中的表进行比较，不会创建新表，但是会插入新值。</p></li>
+<li><p>none:什么都不做。</p></li>
+</ul>
+
+<hr>
+
+<h4 id="jcaptcha">jcaptcha生成的验证码如何忽略大小写验证？</h4>
+
+<p>第一种方式</p>
+
+<pre><code>WordGenerator参数大写或小写只用一种，那么在校验时将用户输入uppercase或lowercase
+</code></pre>
+
+<p>第二种方式</p>
+
+<pre><code>
+修改修改源码Gimpy类中的 
+private final Boolean validateResponse(final String response){
+　　　　return new Boolean(response.equals(this.response));
+}
+，把equals 换成equalsIgnoreCase，重新编译打成jar包
+
+</code></pre>
+
+<p>[参考:]<a href="http://my.oschina.net/william1/blog/4729">http://my.oschina.net/william1/blog/4729</a></p>
+
+<hr>
+
+<h4 id="gapidetomcatjavalangclassnotfoundexceptionorgapachecatalinaloaderdevloader">GAP-IDE启动Tomcat的时候，控制台报错:java.lang.ClassNotFoundException: org.apache.catalina.loader.DevLoader</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;控制台报错:java.lang.ClassNotFoundException: org.apache.catalina.loader.DevLoader 经检查，是因为.tomcatplugin文件中出现下面代码</p>
+
+<pre><code>&lt;webclasspathentries&gt;
+ &lt;webclasspathentry&gt;/GAP-DD/web/WEB-INF/classes&lt;/webclasspathentry&gt;
+&lt;/webclasspathentries&gt;
+</code></pre>
+
+<p>造成部署的时候生成的部署文件中包含下面的代码</p>
+
+<pre><code>&lt;loader classname="org.apache.catalina.loader.DevLoader" reloadable="true" 
+debug="1" usesystemclassloaderasparent="false"/&gt;
+</code></pre>
+
+<p>解决方案： </p>
+
+<pre><code>选中当前项目，点击右键，选择属性，选中tomcate,选中第二个页面"DevLoader classPath"，取消“Activate DevLoader”， 然后查看.tomcatplugin文件，webClassPathEntries标签已经取消，然后部署，部署文件中Loader标签已经取消。
+</code></pre>
+
+<hr>
+
+<h4 id="java">java编译静态常量的机制</h4>
+
+<pre><code>java虚拟机编译机制，静态常量在编译后，成为了常量，而不是原先的代码，例如：
+Contant.java里面有一些静态常量
+
+public static final String GONGDAN = "gongdan@ceopen.cn";
+public static final String ICT = "ictnetwork@ceopen.cn";
+
+然后在程序中有使用这些常量，Contant.GONGDAN
+在那些程序编译后的.class文件中，这些常量编译成了相应的值，即gongdan@ceopen.cn，而不是Contant.GONGDAN
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
+
+<pre><code>
+
+
+</code></pre>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "Java开发FAQ.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

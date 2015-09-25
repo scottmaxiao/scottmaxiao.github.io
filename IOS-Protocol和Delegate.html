@@ -1,0 +1,359 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-Protocol和Delegate
+###介绍
+Protocol（协议），简单来说就是一系列不属于任何类的方法列表，其中声明的方法可以被任何类实现。和Java语言中的接口很类似。
+
+Delegate（委托）模式把某个对象要做的事情委托给别的对象去做。那么别的对象就是这个对象的代理，代替它来打理要做的事。委托模式在IOS中经常会使用到的模式,如UITableViewDataSource,UITableViewDelegate。在IOS中使用Protocol来实现实现委托模式。
+
+
+###Protocol（协议）
+
+####声明协议：
+Protocol代码可以单独放在一个h文件中，也可以写在相关类的h文件中，可以视具体情况而定。
+<pre><code>
+@protocol ProcessDataDelegate <NSObject>
+-(void)methodA;
+
+@required
+- (void) processSuccessful: (BOOL)success;
+
+@optional
+- (id) submitOrder: (NSNumber *) orderid;
+@end
+</code></pre>
+
+- @required:表示该方法必须被实现。
+- @optional:表示该方法可选择实现。
+
+默认情况下，在Protocol中定义的方法都是@required的。
+
+####协议继承
+Protocol本身是可以继承的
+<pre><code>
+@protocol A
+ -(void)methodA;
+@end
+
+@protocol B < A >
+ -(void)methodB;
+@end
+</code></pre>
+
+如果你要实现B，那么methodA和methodB都需要实现。
+
+####协议实现
+如果实现Protocol，需要在类的h文件中引入包含Protocol的h文件，之后声明实现这个Protocol即可,如下面代码所示，用尖括号（<...>）括起来的就是我们实现的Protocol。如果要实现多个Protocol，可以在尖括号内引入多个Protocol名称，并用逗号隔开即可。
+<pre><code>
+@interface SettingViewController : UIViewController&lt;UITableViewDataSource,UITableViewDelegate&gt;
+
+@end
+</code></pre>
+
+如果要判断类是否实现了莫个协议，使用下面的代码即可
+<pre><code>
+[obj conformsToProtocol:@protocol(ProcessDataDelegate)] 
+</code></pre>
+
+
+###Delegate（委托）
+场景说明：在列表展现的时候，自定义每行展现内容。
+
+####声明委托
+在GapCustomBaseTableViewCell.h文件中声明了GapCustomTableViewCellDelegate协议，在GapCustomBaseTableViewCell中定义了一个委托对象gapCustomTableViewCelldelegate。
+<pre><code>
+@protocol GapCustomTableViewCellDelegate <NSObject>
+
+@optional
+-(void)labelCellLayoutSubviews:(UILabel*)valueLabel cellFrame:(GapCustomTableViewCellFrame*) cellFrame;
+
+@end
+
+@interface GapCustomBaseTableViewCell : UITableViewCell
+
+@property (nonatomic,weak) id<GapCustomTableViewCellDelegate> gapCustomTableViewCelldelegate;
+
+@end
+</code></pre>
+
+###实现委托
+在TaskViewController.h文件中声明实现GapCustomTableViewCellDelegate委托协议。
+<pre><code>
+@interface TaskViewController : BaseTableViewController&lt;GapCustomTableViewCellDelegate&gt;{
+
+}
+
+@end
+</code></pre>
+
+在TaskViewController.m文件中指定委托对象
+<pre><code>
+GapCustomBaseTableViewCell  *cell=[GapCustomBaseTableViewCell alloc] init];
+cell.gapCustomTableViewCelldelegate=self;
+</code></pre>
+
+
+在TaskViewController.m文件中实现GapCustomTableViewCellDelegate委托协议中定义的方法。
+<pre><code>
+#pragma mark GapCustomTableViewCellDelegate Source
+
+-(void)labelCellLayoutSubviews:(UILabel*)valueLabel cellFrame:(GapCustomTableViewCellFrame*) cellFrame{
+	
+...
+	
+}
+</code></pre>
+
+
+###委托调用
+在GapCustomBaseTableViewCell.m文件中调用委托对象的方法。
+<pre><code>
+-(void)layoutSubviews{
+	[super layoutSubviews];
+	
+	if ([self.gapCustomTableViewCelldelegate respondsToSelector:@selector(labelCellLayoutSubviews:cellFrame:)]) {
+		[self.gapCustomTableViewCelldelegate labelCellLayoutSubviews:self.valueLabel cellFrame:self.cellFrame];
+	}
+}
+</code></pre>
+
+- (BOOL)respondsToSelector:(SEL)aSelector:这个方法是判断委托对象中是否实现了aSelector方法。
+
+
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosprotocoldelegate">IOS-Protocol和Delegate</h2>
+
+<h3 id="">介绍</h3>
+
+<p>Protocol（协议），简单来说就是一系列不属于任何类的方法列表，其中声明的方法可以被任何类实现。和Java语言中的接口很类似。</p>
+
+<p>Delegate（委托）模式把某个对象要做的事情委托给别的对象去做。那么别的对象就是这个对象的代理，代替它来打理要做的事。委托模式在IOS中经常会使用到的模式,如UITableViewDataSource,UITableViewDelegate。在IOS中使用Protocol来实现实现委托模式。</p>
+
+<h3 id="protocol">Protocol（协议）</h3>
+
+<h4 id="">声明协议：</h4>
+
+<p>Protocol代码可以单独放在一个h文件中，也可以写在相关类的h文件中，可以视具体情况而定。</p>
+
+<pre><code>
+@protocol ProcessDataDelegate <nsobject>
+-(void)methodA;
+
+@required
+- (void) processSuccessful: (BOOL)success;
+
+@optional
+- (id) submitOrder: (NSNumber *) orderid;
+@end
+</nsobject></code></pre>
+
+<ul>
+<li>@required:表示该方法必须被实现。</li>
+<li>@optional:表示该方法可选择实现。</li>
+</ul>
+
+<p>默认情况下，在Protocol中定义的方法都是@required的。</p>
+
+<h4 id="">协议继承</h4>
+
+<p>Protocol本身是可以继承的</p>
+
+<pre><code>
+@protocol A
+ -(void)methodA;
+@end
+
+@protocol B &lt; A &gt;
+ -(void)methodB;
+@end
+</code></pre>
+
+<p>如果你要实现B，那么methodA和methodB都需要实现。</p>
+
+<h4 id="">协议实现</h4>
+
+<p>如果实现Protocol，需要在类的h文件中引入包含Protocol的h文件，之后声明实现这个Protocol即可,如下面代码所示，用尖括号（&lt;...&gt;）括起来的就是我们实现的Protocol。如果要实现多个Protocol，可以在尖括号内引入多个Protocol名称，并用逗号隔开即可。</p>
+
+<pre><code>
+@interface SettingViewController : UIViewController&lt;UITableViewDataSource,UITableViewDelegate&gt;
+
+@end
+</code></pre>
+
+<p>如果要判断类是否实现了莫个协议，使用下面的代码即可</p>
+
+<pre><code>
+[obj conformsToProtocol:@protocol(ProcessDataDelegate)] 
+</code></pre>
+
+<h3 id="delegate">Delegate（委托）</h3>
+
+<p>场景说明：在列表展现的时候，自定义每行展现内容。</p>
+
+<h4 id="">声明委托</h4>
+
+<p>在GapCustomBaseTableViewCell.h文件中声明了GapCustomTableViewCellDelegate协议，在GapCustomBaseTableViewCell中定义了一个委托对象gapCustomTableViewCelldelegate。</p>
+
+<pre><code>
+@protocol GapCustomTableViewCellDelegate <nsobject>
+
+@optional
+-(void)labelCellLayoutSubviews:(UILabel*)valueLabel cellFrame:(GapCustomTableViewCellFrame*) cellFrame;
+
+@end
+
+@interface GapCustomBaseTableViewCell : UITableViewCell
+
+@property (nonatomic,weak) id<gapcustomtableviewcelldelegate> gapCustomTableViewCelldelegate;
+
+@end
+</gapcustomtableviewcelldelegate></nsobject></code></pre>
+
+<h3 id="">实现委托</h3>
+
+<p>在TaskViewController.h文件中声明实现GapCustomTableViewCellDelegate委托协议。</p>
+
+<pre><code>
+@interface TaskViewController : BaseTableViewController&lt;GapCustomTableViewCellDelegate&gt;{
+
+}
+
+@end
+</code></pre>
+
+<p>在TaskViewController.m文件中指定委托对象</p>
+
+<pre><code>
+GapCustomBaseTableViewCell  *cell=[GapCustomBaseTableViewCell alloc] init];
+cell.gapCustomTableViewCelldelegate=self;
+</code></pre>
+
+<p>在TaskViewController.m文件中实现GapCustomTableViewCellDelegate委托协议中定义的方法。</p>
+
+<pre><code>
+#pragma mark GapCustomTableViewCellDelegate Source
+
+-(void)labelCellLayoutSubviews:(UILabel*)valueLabel cellFrame:(GapCustomTableViewCellFrame*) cellFrame{
+
+...
+
+}
+</code></pre>
+
+<h3 id="">委托调用</h3>
+
+<p>在GapCustomBaseTableViewCell.m文件中调用委托对象的方法。</p>
+
+<pre><code>
+-(void)layoutSubviews{
+    [super layoutSubviews];
+
+    if ([self.gapCustomTableViewCelldelegate respondsToSelector:@selector(labelCellLayoutSubviews:cellFrame:)]) {
+        [self.gapCustomTableViewCelldelegate labelCellLayoutSubviews:self.valueLabel cellFrame:self.cellFrame];
+    }
+}
+</code></pre>
+
+<ul>
+<li>(BOOL)respondsToSelector:(SEL)aSelector:这个方法是判断委托对象中是否实现了aSelector方法。</li>
+</ul>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-Protocol和Delegate.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

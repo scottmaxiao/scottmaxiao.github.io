@@ -31,17 +31,17 @@
 
 问题描述: 
 
-    项目部署使用venusTools2010部署在win7上，使用接口服务平台发布服务，拷贝wsdl地址，使用接口服务平台的外部服务管理功能声称桩程序时候报错，错误信息为java.net.ConnectException: Connection refused: connect。
+&nbsp;&nbsp;&nbsp;&nbsp;项目部署使用venusTools2010部署在win7上，使用接口服务平台发布服务，拷贝wsdl地址，使用接口服务平台的外部服务管理功能声称桩程序时候报错，错误信息为java.net.ConnectException: Connection refused: connect。
 
 问题分析：
 
-    该服务使用localhost可以访问，使用127.0.0.1和本机的IP地址不能访问。在命令行中输入”ping localhost”，localhost指向了::1, ::1是IPv6的格式。怀疑是因为win7使用IPV6地址，tomcat不能使用127.0.0.1和本机的IP地址访问造成。
+&nbsp;&nbsp;&nbsp;&nbsp;该服务使用localhost可以访问，使用127.0.0.1和本机的IP地址不能访问。在命令行中输入”ping localhost”，localhost指向了::1, ::1是IPv6的格式。怀疑是因为win7使用IPV6地址，tomcat不能使用127.0.0.1和本机的IP地址访问造成。
 
 解决方案：
 
-    1. 修改C:\Windows\System32\drivers\etc\hosts文件，让localhost指向127.0.0.1。把”# 127.0.0.1       localhost”中的注释符”#”去掉，在命令行中输入”ping localhost”，localhost指向了127.0.0.1。
+&nbsp;&nbsp;&nbsp;&nbsp;1. 修改C:\Windows\System32\drivers\etc\hosts文件，让localhost指向127.0.0.1。把”# 127.0.0.1       localhost”中的注释符”#”去掉，在命令行中输入”ping localhost”，localhost指向了127.0.0.1。
 
-    2. 修改C:\VenusTools2010\appserver\apache-tomcat-5.5.27\conf\server.xml，让系统监听IPV4地址。在”9999”端口的配置中增加address=“0.0.0.0"。
+&nbsp;&nbsp;&nbsp;&nbsp;2. 修改C:\VenusTools2010\appserver\apache-tomcat-5.5.27\conf\server.xml，让系统监听IPV4地址。在”9999”端口的配置中增加address=“0.0.0.0"。
     <Connector port="9999" maxHttpHeaderSize="8192" address="0.0.0.0"
                maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
                URIEncoding="UTF-8"
@@ -64,15 +64,15 @@
 
 问题描述：
 
-    GAP-IDE中默认的Tomcat http端口号是”9999”，修改Tomcat http端口为”8888”后，在GAP-IDE中选中“在浏览器中查看”报错。
+&nbsp;&nbsp;&nbsp;&nbsp;GAP-IDE中默认的Tomcat http端口号是”9999”，修改Tomcat http端口为”8888”后，在GAP-IDE中选中“在浏览器中查看”报错。
 
 解决方案：
 
-    1. 首先要关闭GAP-IDE，
+&nbsp;&nbsp;&nbsp;&nbsp;1. 首先要关闭GAP-IDE，
 
-    2. 然后修改C:\VenusTools2009\add-ons\tomcatplugin-3.2.1\eclipse\plugins\com.sysdeo.eclipse.tomcat_3.2.1路径下的tomcat.jar中resources.properties文件中port.label = 9999修改为tomcat http的端口号。
+&nbsp;&nbsp;&nbsp;&nbsp;2. 然后修改C:\VenusTools2009\add-ons\tomcatplugin-3.2.1\eclipse\plugins\com.sysdeo.eclipse.tomcat_3.2.1路径下的tomcat.jar中resources.properties文件中port.label = 9999修改为tomcat http的端口号。
 
-    3. 启动GAP-IDE。
+&nbsp;&nbsp;&nbsp;&nbsp;3. 启动GAP-IDE。
 
 ----
 
@@ -81,15 +81,15 @@
 
 问题描述：
 
-    在db.xml中配置了数据库连接信息后，启动应用，如果连不上数据库，应用会一直不断的去连接，造成应用死机状态。
+&nbsp;&nbsp;&nbsp;&nbsp;在db.xml中配置了数据库连接信息后，启动应用，如果连不上数据库，应用会一直不断的去连接，造成应用死机状态。
 
 问题分析：
 
-    在浏览器中输入http://127.0.0.1:9999/depWeb/proxool，进入数据库连接池信息页面，数据库连接池默认是每隔0.5秒尝试连接一下，一共尝试10次(delay-time:500, retry-count:10)。
+&nbsp;&nbsp;&nbsp;&nbsp;在浏览器中输入http://127.0.0.1:9999/depWeb/proxool，进入数据库连接池信息页面，数据库连接池默认是每隔0.5秒尝试连接一下，一共尝试10次(delay-time:500, retry-count:10)。
 
 问题解决：
 
-    在db.xml或者其他spring的配置文件中，在数据库连接池配置信息页面增加或者修改retryCount属性。如下例：
+&nbsp;&nbsp;&nbsp;&nbsp;在db.xml或者其他spring的配置文件中，在数据库连接池配置信息页面增加或者修改retryCount属性。如下例：
 
 <pre><code>
 &lt;DB_SRC name="MAIN" 
@@ -126,11 +126,11 @@ java.lang.ClassCastException: weblogic.xml.jaxp.RegistrySAXTransformerFactory
 
 问题解决：
 
-    解决方案1,修改weblogic.xml，把prefer-web-inf-classes属性的值改为false。
+&nbsp;&nbsp;&nbsp;&nbsp;解决方案1,修改weblogic.xml，把prefer-web-inf-classes属性的值改为false。
 
-    解决方案2, 修改log4j.properties，修改日志级别为ERROR(log4j.rootCategory=ERROR,F,CON)。
+&nbsp;&nbsp;&nbsp;&nbsp;解决方案2, 修改log4j.properties，修改日志级别为ERROR(log4j.rootCategory=ERROR,F,CON)。
 
-    解决方案3,加入xalan.jar
+&nbsp;&nbsp;&nbsp;&nbsp;解决方案3,加入xalan.jar
 
 ----
 
@@ -191,19 +191,19 @@ java.sql.SQLException: Cannot convert value '0000-00-00 00:00:00' from column 9 
 问题分析:
 
 
-     查看了mysql5的帮助文档对于datetime的解释如下
+&nbsp;&nbsp;&nbsp;&nbsp;查看了mysql5的帮助文档对于datetime的解释如下
 
-     Datetimes with all-zero components (0000-00-00 ...) — These values can not be represented 关于所有Datetime类型由0组成的数据，这些值不能在java中被可靠的表示
+&nbsp;&nbsp;&nbsp;&nbsp;Datetimes with all-zero components (0000-00-00 ...) — These values can not be represented 关于所有Datetime类型由0组成的数据，这些值不能在java中被可靠的表示
      reliably in Java. 
      Connector/J 3.0.x always converted them to NULL when being read from a ResultSet. 
      当这些值正在从ResultSet容器中读取时候，Connector/J 3.0.x 一直把他们转换为NULL值。
 
-     Connector/J 3.1 throws an exception by default when these values are encountered as this is the most correct behavior according to the JDBC and SQL standards.
+&nbsp;&nbsp;&nbsp;&nbsp;Connector/J 3.1 throws an exception by default when these values are encountered as this is the most correct behavior according to the JDBC and SQL standards.
      依照JDBC和SQL的标准这些值碰到的最正确的处理方式就是在缺省情况下产生异常
      This behavior can be modified using the zeroDateTimeBehavior configuration property. The allowable values are: 
      JDBC允许用下列的值对zeroDateTimeBehavior 属性来设置这些处理方式，
 
-    exception (the default), which throws an SQLException with an SQLState of S1009. 
+&nbsp;&nbsp;&nbsp;&nbsp;exception (the default), which throws an SQLException with an SQLState of S1009. 
     设置为exception 异常（缺省）用一个SQLState的s1009错误号来抛出一个异常
     convertToNull, which returns NULL instead of the date. 
     设置为convertToNull，用NULL值来代替这个日期类型
@@ -213,7 +213,9 @@ java.sql.SQLException: Cannot convert value '0000-00-00 00:00:00' from column 9 
 问题解决:
 
 
-    你可以修改你的jdbc连接
+&nbsp;&nbsp;&nbsp;&nbsp;你可以修改你的jdbc连接
+
+
     jdbc:mysql://localhost/schoolmis? zeroDateTimeBehavior=convertToNull
 
 [参考：]<http://blog.csdn.net/cchaha/archive/2009/03/12/3983061.aspx>
@@ -224,14 +226,13 @@ java.sql.SQLException: Cannot convert value '0000-00-00 00:00:00' from column 9 
 
 问题描述:
 
-    瑞泰项目部署环境为linux+weblogic10.3.6,点击左侧菜单"数据字典"，访问数据字典的基础数据管理页面，页面上把"session error"的提示，后台日志显示"A request has been denied as a potential CSRF attack.  "
+&nbsp;&nbsp;&nbsp;&nbsp;项目部署环境为linux+weblogic10.3.6,点击左侧菜单"数据字典"，访问数据字典的基础数据管理页面，页面上把"session error"的提示，后台日志显示"A request has been denied as a potential CSRF attack.  "
  
 
  
 问题分析:
     
-
-    DWR的需要在浏览器中的会话cookie的访问令牌，因为它使用会话cookie来防止CSRF的。而weblogic10.3.6不允许客户端读取会话cookie 。
+&nbsp;&nbsp;&nbsp;&nbsp;DWR的需要在浏览器中的会话cookie的访问令牌，因为它使用会话cookie来防止CSRF的。而weblogic10.3.6不允许客户端读取会话cookie 。
  
 
  
@@ -258,13 +259,11 @@ java.sql.SQLException: Cannot convert value '0000-00-00 00:00:00' from column 9 
 ####Oracle 10g 异常：ORA-12514: TNS: 监听程序当前无法识别连接描述符中请求的服务
 问题描述:
 
-
-    安装好Oracle 10g后，OracleOraDb10g_home1TNSListener和OracleServiceORCL服务已经启动，在命令行中输入sqlplus zgzhms/zgzhms@orcl，后显示“监听程序当前无法识别连接描述符中请求的服务”。
+&nbsp;&nbsp;&nbsp;&nbsp;安装好Oracle 10g后，OracleOraDb10g_home1TNSListener和OracleServiceORCL服务已经启动，在命令行中输入sqlplus zgzhms/zgzhms@orcl，后显示“监听程序当前无法识别连接描述符中请求的服务”。
 
 解决方案:
     
-
-    修改product\10.2.0\db_1\NETWORK\ADMIN下的listener.ora文件。增加下面SID_DESC的部分。
+&nbsp;&nbsp;&nbsp;&nbsp;修改product\10.2.0\db_1\NETWORK\ADMIN下的listener.ora文件。增加下面SID_DESC的部分。
 <pre><code>
 
 SID_LIST_LISTENER =
@@ -330,7 +329,7 @@ ERROR 2012-09-13 10:14:31 net.sf.hibernate.tool.hbm2ddl.SchemaUpdate Duplicate k
 ####jcaptcha生成的验证码如何忽略大小写验证？
 第一种方式
 
-    WordGenerator参数大写或小写只用一种，那么在校验时将用户输入uppercase或lowercase
+&nbsp;&nbsp;&nbsp;&nbsp;WordGenerator参数大写或小写只用一种，那么在校验时将用户输入uppercase或lowercase
 
     
 第二种方式
@@ -364,31 +363,22 @@ private final Boolean validateResponse(final String response){
 
 解决方案： 
 
-    选中当前项目，点击右键，选择属性，选中tomcate,选中第二个页面"DevLoader classPath"，取消“Activate DevLoader”， 然后查看.tomcatplugin文件，webClassPathEntries标签已经取消，然后部署，部署文件中Loader标签已经取消。
+&nbsp;&nbsp;&nbsp;&nbsp;选中当前项目，点击右键，选择属性，选中tomcate,选中第二个页面"DevLoader classPath"，取消“Activate DevLoader”， 然后查看.tomcatplugin文件，webClassPathEntries标签已经取消，然后部署，部署文件中Loader标签已经取消。
 
 ----
 
 ####java编译静态常量的机制
-    java虚拟机编译机制，静态常量在编译后，成为了常量，而不是原先的代码，例如：
+&nbsp;&nbsp;&nbsp;&nbsp;java虚拟机编译机制，静态常量在编译后，成为了常量，而不是原先的代码，例如：
     Contant.java里面有一些静态常量
 
     public static final String GONGDAN = "gongdan@ceopen.cn";
     public static final String ICT = "ictnetwork@ceopen.cn";
 
-    然后在程序中有使用这些常量，Contant.GONGDAN
-    在那些程序编译后的.class文件中，这些常量编译成了相应的值，即gongdan@ceopen.cn，而不是Contant.GONGDAN
+&nbsp;&nbsp;&nbsp;&nbsp;然后在程序中有使用这些常量，Contant.GONGDAN
 
 
+&nbsp;&nbsp;&nbsp;&nbsp;在那些程序编译后的.class文件中，这些常量编译成了相应的值，即gongdan@ceopen.cn，而不是Contant.GONGDAN
 
-
-&nbsp;&nbsp;&nbsp;&nbsp;
-
-
-
-<pre><code>
-
-
-</code></pre>
 
 
 
@@ -402,25 +392,18 @@ private final Boolean validateResponse(final String response){
 
 <p>问题描述: </p>
 
-<pre><code>项目部署使用venusTools2010部署在win7上，使用接口服务平台发布服务，拷贝wsdl地址，使用接口服务平台的外部服务管理功能声称桩程序时候报错，错误信息为java.net.ConnectException: Connection refused: connect。
-</code></pre>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;项目部署使用venusTools2010部署在win7上，使用接口服务平台发布服务，拷贝wsdl地址，使用接口服务平台的外部服务管理功能声称桩程序时候报错，错误信息为java.net.ConnectException: Connection refused: connect。</p>
 
 <p>问题分析：</p>
 
-<pre><code>该服务使用localhost可以访问，使用127.0.0.1和本机的IP地址不能访问。在命令行中输入”ping localhost”，localhost指向了::1, ::1是IPv6的格式。怀疑是因为win7使用IPV6地址，tomcat不能使用127.0.0.1和本机的IP地址访问造成。
-</code></pre>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;该服务使用localhost可以访问，使用127.0.0.1和本机的IP地址不能访问。在命令行中输入”ping localhost”，localhost指向了::1, ::1是IPv6的格式。怀疑是因为win7使用IPV6地址，tomcat不能使用127.0.0.1和本机的IP地址访问造成。</p>
 
 <p>解决方案：</p>
 
-<pre><code>1. 修改C:\Windows\System32\drivers\etc\hosts文件，让localhost指向127.0.0.1。把”# 127.0.0.1       localhost”中的注释符”#”去掉，在命令行中输入”ping localhost”，localhost指向了127.0.0.1。
+<p>&nbsp;&nbsp;&nbsp;&nbsp;1. 修改C:\Windows\System32\drivers\etc\hosts文件，让localhost指向127.0.0.1。把”# 127.0.0.1       localhost”中的注释符”#”去掉，在命令行中输入”ping localhost”，localhost指向了127.0.0.1。</p>
 
-2. 修改C:\VenusTools2010\appserver\apache-tomcat-5.5.27\conf\server.xml，让系统监听IPV4地址。在”9999”端口的配置中增加address=“0.0.0.0"。
-&lt;Connector port="9999" maxHttpHeaderSize="8192" address="0.0.0.0"
-           maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
-           URIEncoding="UTF-8"
-           enableLookups="false" redirectPort="8443" acceptCount="100"
-           connectionTimeout="20000" disableUploadTimeout="true" /&gt;
-</code></pre>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;2. 修改C:\VenusTools2010\appserver\apache-tomcat-5.5.27\conf\server.xml，让系统监听IPV4地址。在”9999”端口的配置中增加address=“0.0.0.0"。
+    <connector port="9999" maxhttpheadersize="8192" address="0.0.0.0" maxthreads="150" minsparethreads="25" maxsparethreads="75" uriencoding="UTF-8" enablelookups="false" redirectport="8443" acceptcount="100" connectiontimeout="20000" disableuploadtimeout="true"></connector></p>
 
 <p>启动服务，经过测试该问题不会出现。
 令，venusTools2010中内置的是tomcat5.5,tomcat6中默认监听IPV4地址。</p>
@@ -437,17 +420,15 @@ private final Boolean validateResponse(final String response){
 
 <p>问题描述：</p>
 
-<pre><code>GAP-IDE中默认的Tomcat http端口号是”9999”，修改Tomcat http端口为”8888”后，在GAP-IDE中选中“在浏览器中查看”报错。
-</code></pre>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;GAP-IDE中默认的Tomcat http端口号是”9999”，修改Tomcat http端口为”8888”后，在GAP-IDE中选中“在浏览器中查看”报错。</p>
 
 <p>解决方案：</p>
 
-<pre><code>1. 首先要关闭GAP-IDE，
+<p>&nbsp;&nbsp;&nbsp;&nbsp;1. 首先要关闭GAP-IDE，</p>
 
-2. 然后修改C:\VenusTools2009\add-ons\tomcatplugin-3.2.1\eclipse\plugins\com.sysdeo.eclipse.tomcat_3.2.1路径下的tomcat.jar中resources.properties文件中port.label = 9999修改为tomcat http的端口号。
+<p>&nbsp;&nbsp;&nbsp;&nbsp;2. 然后修改C:\VenusTools2009\add-ons\tomcatplugin-3.2.1\eclipse\plugins\com.sysdeo.eclipse.tomcat_3.2.1路径下的tomcat.jar中resources.properties文件中port.label = 9999修改为tomcat http的端口号。</p>
 
-3. 启动GAP-IDE。
-</code></pre>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;3. 启动GAP-IDE。</p>
 
 <hr>
 
@@ -455,18 +436,15 @@ private final Boolean validateResponse(final String response){
 
 <p>问题描述：</p>
 
-<pre><code>在db.xml中配置了数据库连接信息后，启动应用，如果连不上数据库，应用会一直不断的去连接，造成应用死机状态。
-</code></pre>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在db.xml中配置了数据库连接信息后，启动应用，如果连不上数据库，应用会一直不断的去连接，造成应用死机状态。</p>
 
 <p>问题分析：</p>
 
-<pre><code>在浏览器中输入http://127.0.0.1:9999/depWeb/proxool，进入数据库连接池信息页面，数据库连接池默认是每隔0.5秒尝试连接一下，一共尝试10次(delay-time:500, retry-count:10)。
-</code></pre>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在浏览器中输入http://127.0.0.1:9999/depWeb/proxool，进入数据库连接池信息页面，数据库连接池默认是每隔0.5秒尝试连接一下，一共尝试10次(delay-time:500, retry-count:10)。</p>
 
 <p>问题解决：</p>
 
-<pre><code>在db.xml或者其他spring的配置文件中，在数据库连接池配置信息页面增加或者修改retryCount属性。如下例：
-</code></pre>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在db.xml或者其他spring的配置文件中，在数据库连接池配置信息页面增加或者修改retryCount属性。如下例：</p>
 
 <pre><code>
 &lt;DB_SRC name="MAIN" 
@@ -503,12 +481,11 @@ java.lang.ClassCastException: weblogic.xml.jaxp.RegistrySAXTransformerFactory
 
 <p>问题解决：</p>
 
-<pre><code>解决方案1,修改weblogic.xml，把prefer-web-inf-classes属性的值改为false。
+<p>&nbsp;&nbsp;&nbsp;&nbsp;解决方案1,修改weblogic.xml，把prefer-web-inf-classes属性的值改为false。</p>
 
-解决方案2, 修改log4j.properties，修改日志级别为ERROR(log4j.rootCategory=ERROR,F,CON)。
+<p>&nbsp;&nbsp;&nbsp;&nbsp;解决方案2, 修改log4j.properties，修改日志级别为ERROR(log4j.rootCategory=ERROR,F,CON)。</p>
 
-解决方案3,加入xalan.jar
-</code></pre>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;解决方案3,加入xalan.jar</p>
 
 <hr>
 
@@ -572,30 +549,30 @@ java.sql.SQLException: Cannot convert value '0000-00-00 00:00:00' from column 9 
 
 <p>问题分析:</p>
 
-<pre><code> 查看了mysql5的帮助文档对于datetime的解释如下
+<p>&nbsp;&nbsp;&nbsp;&nbsp;查看了mysql5的帮助文档对于datetime的解释如下</p>
 
- Datetimes with all-zero components (0000-00-00 ...) — These values can not be represented 关于所有Datetime类型由0组成的数据，这些值不能在java中被可靠的表示
- reliably in Java. 
- Connector/J 3.0.x always converted them to NULL when being read from a ResultSet. 
- 当这些值正在从ResultSet容器中读取时候，Connector/J 3.0.x 一直把他们转换为NULL值。
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Datetimes with all-zero components (0000-00-00 ...) — These values can not be represented 关于所有Datetime类型由0组成的数据，这些值不能在java中被可靠的表示
+     reliably in Java. 
+     Connector/J 3.0.x always converted them to NULL when being read from a ResultSet. 
+     当这些值正在从ResultSet容器中读取时候，Connector/J 3.0.x 一直把他们转换为NULL值。</p>
 
- Connector/J 3.1 throws an exception by default when these values are encountered as this is the most correct behavior according to the JDBC and SQL standards.
- 依照JDBC和SQL的标准这些值碰到的最正确的处理方式就是在缺省情况下产生异常
- This behavior can be modified using the zeroDateTimeBehavior configuration property. The allowable values are: 
- JDBC允许用下列的值对zeroDateTimeBehavior 属性来设置这些处理方式，
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Connector/J 3.1 throws an exception by default when these values are encountered as this is the most correct behavior according to the JDBC and SQL standards.
+     依照JDBC和SQL的标准这些值碰到的最正确的处理方式就是在缺省情况下产生异常
+     This behavior can be modified using the zeroDateTimeBehavior configuration property. The allowable values are: 
+     JDBC允许用下列的值对zeroDateTimeBehavior 属性来设置这些处理方式，</p>
 
-exception (the default), which throws an SQLException with an SQLState of S1009. 
-设置为exception 异常（缺省）用一个SQLState的s1009错误号来抛出一个异常
-convertToNull, which returns NULL instead of the date. 
-设置为convertToNull，用NULL值来代替这个日期类型
-round, which rounds the date to the nearest closest value which is 0001-01-01. 
-设置为round，则围绕这个日期最接近的值（0001-01-01）来代替
-</code></pre>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;exception (the default), which throws an SQLException with an SQLState of S1009. 
+    设置为exception 异常（缺省）用一个SQLState的s1009错误号来抛出一个异常
+    convertToNull, which returns NULL instead of the date. 
+    设置为convertToNull，用NULL值来代替这个日期类型
+    round, which rounds the date to the nearest closest value which is 0001-01-01. 
+    设置为round，则围绕这个日期最接近的值（0001-01-01）来代替</p>
 
 <p>问题解决:</p>
 
-<pre><code>你可以修改你的jdbc连接
-jdbc:mysql://localhost/schoolmis? zeroDateTimeBehavior=convertToNull
+<p>&nbsp;&nbsp;&nbsp;&nbsp;你可以修改你的jdbc连接</p>
+
+<pre><code>jdbc:mysql://localhost/schoolmis? zeroDateTimeBehavior=convertToNull
 </code></pre>
 
 <p>[参考：]<a href="http://blog.csdn.net/cchaha/archive/2009/03/12/3983061.aspx">http://blog.csdn.net/cchaha/archive/2009/03/12/3983061.aspx</a></p>
@@ -606,13 +583,11 @@ jdbc:mysql://localhost/schoolmis? zeroDateTimeBehavior=convertToNull
 
 <p>问题描述:</p>
 
-<pre><code>瑞泰项目部署环境为linux+weblogic10.3.6,点击左侧菜单"数据字典"，访问数据字典的基础数据管理页面，页面上把"session error"的提示，后台日志显示"A request has been denied as a potential CSRF attack.  "
-</code></pre>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;项目部署环境为linux+weblogic10.3.6,点击左侧菜单"数据字典"，访问数据字典的基础数据管理页面，页面上把"session error"的提示，后台日志显示"A request has been denied as a potential CSRF attack.  "</p>
 
 <p>问题分析:</p>
 
-<pre><code>DWR的需要在浏览器中的会话cookie的访问令牌，因为它使用会话cookie来防止CSRF的。而weblogic10.3.6不允许客户端读取会话cookie 。
-</code></pre>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;DWR的需要在浏览器中的会话cookie的访问令牌，因为它使用会话cookie来防止CSRF的。而weblogic10.3.6不允许客户端读取会话cookie 。</p>
 
 <p>解决方案:</p>
 
@@ -640,13 +615,11 @@ jdbc:mysql://localhost/schoolmis? zeroDateTimeBehavior=convertToNull
 
 <p>问题描述:</p>
 
-<pre><code>安装好Oracle 10g后，OracleOraDb10g_home1TNSListener和OracleServiceORCL服务已经启动，在命令行中输入sqlplus zgzhms/zgzhms@orcl，后显示“监听程序当前无法识别连接描述符中请求的服务”。
-</code></pre>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;安装好Oracle 10g后，OracleOraDb10g_home1TNSListener和OracleServiceORCL服务已经启动，在命令行中输入sqlplus zgzhms/zgzhms@orcl，后显示“监听程序当前无法识别连接描述符中请求的服务”。</p>
 
 <p>解决方案:</p>
 
-<pre><code>修改product\10.2.0\db_1\NETWORK\ADMIN下的listener.ora文件。增加下面SID_DESC的部分。
-</code></pre>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;修改product\10.2.0\db<em>1\NETWORK\ADMIN下的listener.ora文件。增加下面SID</em>DESC的部分。</p>
 
 <pre><code>
 
@@ -715,8 +688,7 @@ ERROR 2012-09-13 10:14:31 net.sf.hibernate.tool.hbm2ddl.SchemaUpdate Duplicate k
 
 <p>第一种方式</p>
 
-<pre><code>WordGenerator参数大写或小写只用一种，那么在校验时将用户输入uppercase或lowercase
-</code></pre>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;WordGenerator参数大写或小写只用一种，那么在校验时将用户输入uppercase或lowercase</p>
 
 <p>第二种方式</p>
 
@@ -750,29 +722,22 @@ debug="1" usesystemclassloaderasparent="false"/&gt;
 
 <p>解决方案： </p>
 
-<pre><code>选中当前项目，点击右键，选择属性，选中tomcate,选中第二个页面"DevLoader classPath"，取消“Activate DevLoader”， 然后查看.tomcatplugin文件，webClassPathEntries标签已经取消，然后部署，部署文件中Loader标签已经取消。
-</code></pre>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;选中当前项目，点击右键，选择属性，选中tomcate,选中第二个页面"DevLoader classPath"，取消“Activate DevLoader”， 然后查看.tomcatplugin文件，webClassPathEntries标签已经取消，然后部署，部署文件中Loader标签已经取消。</p>
 
 <hr>
 
 <h4 id="java">java编译静态常量的机制</h4>
 
-<pre><code>java虚拟机编译机制，静态常量在编译后，成为了常量，而不是原先的代码，例如：
-Contant.java里面有一些静态常量
+<p>&nbsp;&nbsp;&nbsp;&nbsp;java虚拟机编译机制，静态常量在编译后，成为了常量，而不是原先的代码，例如：
+    Contant.java里面有一些静态常量</p>
 
-public static final String GONGDAN = "gongdan@ceopen.cn";
+<pre><code>public static final String GONGDAN = "gongdan@ceopen.cn";
 public static final String ICT = "ictnetwork@ceopen.cn";
-
-然后在程序中有使用这些常量，Contant.GONGDAN
-在那些程序编译后的.class文件中，这些常量编译成了相应的值，即gongdan@ceopen.cn，而不是Contant.GONGDAN
 </code></pre>
 
-<p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;然后在程序中有使用这些常量，Contant.GONGDAN</p>
 
-<pre><code>
-
-
-</code></pre>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在那些程序编译后的.class文件中，这些常量编译成了相应的值，即gongdan@ceopen.cn，而不是Contant.GONGDAN</p>
 <!-- content end -->
 </div>
 <br>

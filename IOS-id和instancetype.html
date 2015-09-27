@@ -1,0 +1,249 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-id和instancetype
+
+在IOS中数据类型有以下几种
+
+
+1. 基本数据类型：int、float、double和char类型。
+2. 对象数据类型：就是类或协议所声明的指针类型，如NSArray * array
+3. id类型：指向OC对象的指针,可以映射任何对象指针类型指向它，或者映射它指向其他的对象。当然，也可以传递任何消息给id，但如果该id不支持这个消息就会返回一个运行时异常。
+
+以上三种类型可以用作传递的参数类型或者返回的参数类型。
+
+1. -(int)aaa:(int)num
+2. -(NSArray *)bbb:(NSArray *)array
+3. -(id)ccc:(id)num
+
+下面介绍一下只使用在返回值类型中的两种特殊类型
+
+1. void:无返回值类型
+2. instancetype：返回类自身的实例。
+
+void类型好理解，只要是程序员对知道它，在这里就不更多的描述了。
+
+&nbsp;&nbsp;&nbsp;&nbsp;nstancetype用来表示Related Result Types(关联返回类型)，对于简易构造函数(convenience constructor)，应该总是用instancetype。苹果在iOS 8中全面使用instancetype代替id。
+
+&nbsp;&nbsp;&nbsp;&nbsp;什么是关联返回类型呢？根据Cocoa的命名惯例，init, alloc这类的方法，如果以id作为返回类型，会返回类本身的类型。
+
+请看下面的例子
+<pre><code>
+@interface NSObject  
++ (id)alloc;  
+- (id)init;  
+@end  
+  
+@interface NSArray : NSObject  
+@end  
+
+</code></pre>
+当我们使用如下方式初始化NSArray时：
+<pre><code>
+NSArray *array = [[NSArray alloc] init];  
+
+</code></pre>
+&nbsp;&nbsp;&nbsp;&nbsp;按照Cocoa的命名规则，语句[NSArray alloc]的类型就是NSArray,因为alloc的返回类型属于关联返回类型。同样，[[NSArray alloc]init] 的返回结果也是NSArray。
+
+&nbsp;&nbsp;&nbsp;&nbsp;instancetype的作用，就是使那些非关联返回类型的方法返回所在类的类型！
+<pre><code>
+@interface Foo:NSObject
+ - (id)initWithBar:(NSInteger)bar; // initializer
+ + (instancetype)fooWithBar:(NSInteger)bar;  // convenience constructor
+@end
+
+</code></pre>
+上面代码中(id)initWithBar方法会被编译器自动编译成(instancetype)initWithBar。
+
+使用instancetype的好处，明确该方法的返回类型，编译阶段发现错误。
+
+<pre><code>
+[[[NSArray alloc] init] mediaPlaybackAllowsAirPlay]; //  "No visible @interface for `NSArray` declares the selector `mediaPlaybackAllowsAirPlay`"  
+  
+[[NSArray array] mediaPlaybackAllowsAirPlay]; // (No error)  
+</code></pre>
+
+&nbsp;&nbsp;&nbsp;&nbsp;上例中第一行代码，由于[[NSArray alloc]init]的结果是NSArray*，这样编译器就能够根据返回的数据类型检测出NSArray是否实现mediaPlaybackAllowsAirPlay方法。有利于开发者在编译阶段发现错误。
+
+&nbsp;&nbsp;&nbsp;&nbsp;第二行代码，由于array不属于关联返回类型方法，[NSArray array]返回的是id类型，编译器不知道id类型的对象是否实现了mediaPlaybackAllowsAirPlay方法，也就不能够替开发者及时发现错误。
+
+[参考:]
+<http://nshipster.cn/instancetype/>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosidinstancetype">IOS-id和instancetype</h2>
+
+<p>在IOS中数据类型有以下几种</p>
+
+<ol>
+<li>基本数据类型：int、float、double和char类型。</li>
+<li>对象数据类型：就是类或协议所声明的指针类型，如NSArray * array</li>
+<li>id类型：指向OC对象的指针,可以映射任何对象指针类型指向它，或者映射它指向其他的对象。当然，也可以传递任何消息给id，但如果该id不支持这个消息就会返回一个运行时异常。</li>
+</ol>
+
+<p>以上三种类型可以用作传递的参数类型或者返回的参数类型。</p>
+
+<ol>
+<li>-(int)aaa:(int)num</li>
+<li>-(NSArray *)bbb:(NSArray *)array</li>
+<li>-(id)ccc:(id)num</li>
+</ol>
+
+<p>下面介绍一下只使用在返回值类型中的两种特殊类型</p>
+
+<ol>
+<li>void:无返回值类型</li>
+<li>instancetype：返回类自身的实例。</li>
+</ol>
+
+<p>void类型好理解，只要是程序员对知道它，在这里就不更多的描述了。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;nstancetype用来表示Related Result Types(关联返回类型)，对于简易构造函数(convenience constructor)，应该总是用instancetype。苹果在iOS 8中全面使用instancetype代替id。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;什么是关联返回类型呢？根据Cocoa的命名惯例，init, alloc这类的方法，如果以id作为返回类型，会返回类本身的类型。</p>
+
+<p>请看下面的例子</p>
+
+<pre><code>
+@interface NSObject  
++ (id)alloc;  
+- (id)init;  
+@end  
+
+@interface NSArray : NSObject  
+@end  
+
+</code></pre>
+
+<p>当我们使用如下方式初始化NSArray时：</p>
+
+<pre><code>
+NSArray *array = [[NSArray alloc] init];  
+
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;按照Cocoa的命名规则，语句[NSArray alloc]的类型就是NSArray,因为alloc的返回类型属于关联返回类型。同样，[[NSArray alloc]init] 的返回结果也是NSArray。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;instancetype的作用，就是使那些非关联返回类型的方法返回所在类的类型！</p>
+
+<pre><code>
+@interface Foo:NSObject
+ - (id)initWithBar:(NSInteger)bar; // initializer
+ + (instancetype)fooWithBar:(NSInteger)bar;  // convenience constructor
+@end
+
+</code></pre>
+
+<p>上面代码中(id)initWithBar方法会被编译器自动编译成(instancetype)initWithBar。</p>
+
+<p>使用instancetype的好处，明确该方法的返回类型，编译阶段发现错误。</p>
+
+<pre><code>
+[[[NSArray alloc] init] mediaPlaybackAllowsAirPlay]; //  "No visible @interface for `NSArray` declares the selector `mediaPlaybackAllowsAirPlay`"  
+
+[[NSArray array] mediaPlaybackAllowsAirPlay]; // (No error)  
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;上例中第一行代码，由于[[NSArray alloc]init]的结果是NSArray*，这样编译器就能够根据返回的数据类型检测出NSArray是否实现mediaPlaybackAllowsAirPlay方法。有利于开发者在编译阶段发现错误。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;第二行代码，由于array不属于关联返回类型方法，[NSArray array]返回的是id类型，编译器不知道id类型的对象是否实现了mediaPlaybackAllowsAirPlay方法，也就不能够替开发者及时发现错误。</p>
+
+<p>[参考:]
+<a href="http://nshipster.cn/instancetype/">http://nshipster.cn/instancetype/</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-id和instancetype.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

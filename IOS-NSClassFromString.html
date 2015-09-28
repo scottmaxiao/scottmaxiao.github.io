@@ -1,0 +1,224 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-NSClassFromString
+
+&nbsp;&nbsp;&nbsp;&nbsp;在IOS开发中，如果要调用某个类的方法之前，都需要使用#import，引入该类的h文件，然后初始化该类，最后调用该类的方法。如下:
+
+<pre><code>
+#import "GapUtil.h"
+
+...
+
+//UITableView隐藏多余的分割线
+[GapUtil setExtraCellLineHidden:self.tableView];
+</code></pre>
+
+
+在一些特殊场景中，程序可能通过用户的选择后才能知道要去调用的类。
+<pre><code>
+self.viewControllers = @[//客户
+                          [self itemVC:@"TPLCustomerListController"],
+                          //保单
+                          [self itemVC:@"TPLPolicyInfoHomeController_new"],
+                          //计划
+                          [self itemVC:@"TPLAgendaHomeController"],
+                          //活动
+                          [self itemVC:@"TPLCallonHomeController"],
+                          //销售
+                          [self itemVC:@"TPLInsuplanHomeController"],
+                          //绩效
+                          [self itemVC:@"TPLReportHomeController"],                          
+                          //伙伴
+                          [self itemVC:@"TPLPartnerHomeController"],
+                          //设置
+                          [self itemVC:@"TPLSettingHomeController"],
+                          //消息
+                          [self itemVC:@"TPLMessageHomeController"],
+                          //工具
+                          [self itemVC:@"TPLToolHomeViewController"]];
+                          
+                          
+- (UIViewController*)itemVC:(NSString*)className {
+    TPLViewController* vc = (TPLViewController*)[[NSClassFromString(className) alloc] init];
+    if (nil == vc) {
+        return nil;
+    }
+    if (![vc isKindOfClass:[TPLTabItemViewController class]]) {
+       ...
+    }
+    vc.naviBarHidden = YES;
+    
+    return [[TPLNavigationController alloc] initWithRootViewController:vc];
+}
+</code></pre>
+
+NSClassFromString不需要使用import，因为类是动态加载的，只要存在就可以加载。
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;特殊介绍一下
+<pre><code>
+-(BOOL) isKindOfClass: classObj判断是否是这个类或者这个类的子类的实例
+-(BOOL) isMemberOfClass: classObj 判断是否是这个类的实例
+
+</code></pre>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosnsclassfromstring">IOS-NSClassFromString</h2>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在IOS开发中，如果要调用某个类的方法之前，都需要使用#import，引入该类的h文件，然后初始化该类，最后调用该类的方法。如下:</p>
+
+<pre><code>
+#import "GapUtil.h"
+
+...
+
+//UITableView隐藏多余的分割线
+[GapUtil setExtraCellLineHidden:self.tableView];
+</code></pre>
+
+<p>在一些特殊场景中，程序可能通过用户的选择后才能知道要去调用的类。</p>
+
+<pre><code>
+self.viewControllers = @[//客户
+                          [self itemVC:@"TPLCustomerListController"],
+                          //保单
+                          [self itemVC:@"TPLPolicyInfoHomeController_new"],
+                          //计划
+                          [self itemVC:@"TPLAgendaHomeController"],
+                          //活动
+                          [self itemVC:@"TPLCallonHomeController"],
+                          //销售
+                          [self itemVC:@"TPLInsuplanHomeController"],
+                          //绩效
+                          [self itemVC:@"TPLReportHomeController"],                          
+                          //伙伴
+                          [self itemVC:@"TPLPartnerHomeController"],
+                          //设置
+                          [self itemVC:@"TPLSettingHomeController"],
+                          //消息
+                          [self itemVC:@"TPLMessageHomeController"],
+                          //工具
+                          [self itemVC:@"TPLToolHomeViewController"]];
+
+
+- (UIViewController*)itemVC:(NSString*)className {
+    TPLViewController* vc = (TPLViewController*)[[NSClassFromString(className) alloc] init];
+    if (nil == vc) {
+        return nil;
+    }
+    if (![vc isKindOfClass:[TPLTabItemViewController class]]) {
+       ...
+    }
+    vc.naviBarHidden = YES;
+
+    return [[TPLNavigationController alloc] initWithRootViewController:vc];
+}
+</code></pre>
+
+<p>NSClassFromString不需要使用import，因为类是动态加载的，只要存在就可以加载。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;特殊介绍一下</p>
+
+<pre><code>
+-(BOOL) isKindOfClass: classObj判断是否是这个类或者这个类的子类的实例
+-(BOOL) isMemberOfClass: classObj 判断是否是这个类的实例
+
+</code></pre>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-NSClassFromString.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

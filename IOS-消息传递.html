@@ -1,0 +1,306 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-消息传递
+
+&nbsp;&nbsp;&nbsp;&nbsp;消息传递模型（Message Passing）是Objective-C语言的核心机制。在Objective-C中，没有方法调用这种说法，只有消息传递。在C++或Java中调用某个类的方法，在Objective-C中是给该类发送一个消息。在C++或Java里，类与类的行为方法之间的关系非常紧密，一个方法必定属于一个类，且于编译时就已经绑定在一起，所以你不可能调用一个类里没有的方法。而在Objective-C中就比较简单了，类和消息之间是松耦合的，方法调用只是向某个类发送一个消息，该类可以在运行时再确定怎么处理接受到的消息。也就是说，一个类不保证一定会响应接收到的消息，如果收到了一个无法处理的消息，那么程序就是简单报一个错。甚至你可以向一个值为nil的空对象发送消息，系统都不会出错或宕掉。这种设计本身也比较符合软件的隐喻。
+
+&nbsp;&nbsp;&nbsp;&nbsp;下图是在Objective-C中方法的定义
+![framework](http://scottmaxiao.github.io/img/messagePassing/messagePassing.jpg)
+
+
+###一般方法调用
+<pre><code>
+调用代码如下：
+[self insertObject:obj atIndex:index];
+</code></pre>
+
+
+###动态方法调用
+&nbsp;&nbsp;&nbsp;&nbsp;Objective-C在编译的时候，会根据方法的名字（包括参数序列），生成一个用来区分这个方法的唯一的一个ID，这个ID就是SEL类型的。
+SEL类型有两种声明方式：
+
+1. @selector(方法名字)
+2. NSSelectorFromString(方法名字的字符串)
+
+我们经常是在给UIButton对象实例声明点击操作的调用方法。如下例
+<pre><code>
+[leftBtn addTarget:self action:@selector(persionsViewClickLeft:) forControlEvents:UIControlEventTouchUpInside];
+
+
+SEL click=NSSelectorFromString(@"persionsViewClickLeft:");
+[leftBtn addTarget:self action:click forControlEvents:UIControlEventTouchUpInside];
+
+
+
+-(void)persionsViewClickLeft:(id)sender{
+    ...
+}
+</code></pre>
+
+
+另外，该方式多用于委托模式。
+<pre><code>
+	if([self.delegate respondsToSelector:@selector(complete:)]){
+		[self.delegate complete:self.checkedDictionary];
+		
+		[self.delegate performSelector:@selector(complete:) withObject:self.checkedDictionary];
+	}
+
+</code></pre>
+
+<pre><code>
+//判断是否有以某个名字命名的方法(aSelector)
+- (BOOL)respondsToSelector:(SEL)aSelector;
+
+//通过下面三个方法来调用aSelector和传递参数
+- (id)performSelector:(SEL)aSelector;
+- (id)performSelector:(SEL)aSelector withObject:(id)object;
+- (id)performSelector:(SEL)aSelector withObject:(id)object1 withObject:(id)object2;
+
+
+</code></pre>
+
+&nbsp;&nbsp;&nbsp;&nbsp;两个类之间，不管它们是父类与子类的关系，还是之间没有这种关系，只要方法名相同，那么方法的SEL就是一样的。每一个方法都对应着一个SEL。所以在 Objective-C同一个类(及类的继承体系)中，不能存在2个同名的方法，即使参数类型不同也不行。相同的方法只能对应一个SEL。这也就导致 Objective-C在处理相同方法名且参数个数相同但类型不同的方法方面的能力很差。如在某个类中定义以下两个方法：
+
+<pre><code>
+- (void)setWidth:(int)width;
+- (void)setWidth:(double)width;
+
+</code></pre>
+
+当然，不同的类可以拥有相同的selector，这个没有问题。不同类的实例对象执行相同的selector时，会在各自的方法列表中去根据selector去寻找自己对应的IMP。
+
+&nbsp;&nbsp;&nbsp;&nbsp;IMP是啥东东呢？
+
+IMP实际上是一个函数指针，指向方法实现的首地址。其定义如下：
+<pre><code>
+id (*IMP)(id, SEL, ...)
+
+</code></pre>
+
+&nbsp;&nbsp;&nbsp;&nbsp;这个函数使用当前CPU架构实现的标准的C调用约定。第一个参数是指向self的指针(如果是实例方法，则是类实例的内存地址；如果是类方法，则是指向元类的指针)，第二个参数是方法选择器(selector)，接下来是方法的实际参数列表。
+
+&nbsp;&nbsp;&nbsp;&nbsp;前面介绍过的SEL就是为了查找方法的最终实现IMP的。由于每个方法对应唯一的SEL，因此我们可以通过SEL方便快速准确地获得它所对应的 IMP，查找过程将在下面讨论。取得IMP后，我们就获得了执行这个方法代码的入口点，此时，我们就可以像调用普通的C语言函数一样来使用这个函数指针 了。
+
+&nbsp;&nbsp;&nbsp;&nbsp;通过取得IMP，我们可以跳过Runtime的消息传递机制，直接执行IMP指向的函数实现，这样省去了Runtime消息传递过程中所做的一系列查找操作，会比直接向对象发送消息高效一些。
+
+
+下面这段代码描述了，不同的方法调用httpGetDataByParameters方法中可以根据funArray参数执行多个方法。
+<pre><code>
+-(void)httpGetDataByParameters:(PersionCellFrame *)cellFrame funArray:(NSArray *) funArray{
+   for (NSDictionary *jsonObj in jsonArray) {
+      SEL customSelector = NSSelectorFromString([NSString stringWithFormat:@"%@DataAssembled:", funStr]);
+
+      IMP imp = [self methodForSelector:customSelector];
+
+      void (*func)(id, SEL, PersionCellFrame *) = (void *)imp;
+
+      func(self, customSelector, cellFrame);
+   }
+
+
+</code></pre>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="ios">IOS-消息传递</h2>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;消息传递模型（Message Passing）是Objective-C语言的核心机制。在Objective-C中，没有方法调用这种说法，只有消息传递。在C++或Java中调用某个类的方法，在Objective-C中是给该类发送一个消息。在C++或Java里，类与类的行为方法之间的关系非常紧密，一个方法必定属于一个类，且于编译时就已经绑定在一起，所以你不可能调用一个类里没有的方法。而在Objective-C中就比较简单了，类和消息之间是松耦合的，方法调用只是向某个类发送一个消息，该类可以在运行时再确定怎么处理接受到的消息。也就是说，一个类不保证一定会响应接收到的消息，如果收到了一个无法处理的消息，那么程序就是简单报一个错。甚至你可以向一个值为nil的空对象发送消息，系统都不会出错或宕掉。这种设计本身也比较符合软件的隐喻。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;下图是在Objective-C中方法的定义
+<img src="http://scottmaxiao.github.io/img/messagePassing/messagePassing.jpg" alt="framework" title=""></p>
+
+<h3 id="">一般方法调用</h3>
+
+<pre><code>
+调用代码如下：
+[self insertObject:obj atIndex:index];
+</code></pre>
+
+<h3 id="">动态方法调用</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Objective-C在编译的时候，会根据方法的名字（包括参数序列），生成一个用来区分这个方法的唯一的一个ID，这个ID就是SEL类型的。
+SEL类型有两种声明方式：</p>
+
+<ol>
+<li>@selector(方法名字)</li>
+<li>NSSelectorFromString(方法名字的字符串)</li>
+</ol>
+
+<p>我们经常是在给UIButton对象实例声明点击操作的调用方法。如下例</p>
+
+<pre><code>
+[leftBtn addTarget:self action:@selector(persionsViewClickLeft:) forControlEvents:UIControlEventTouchUpInside];
+
+
+SEL click=NSSelectorFromString(@"persionsViewClickLeft:");
+[leftBtn addTarget:self action:click forControlEvents:UIControlEventTouchUpInside];
+
+
+
+-(void)persionsViewClickLeft:(id)sender{
+    ...
+}
+</code></pre>
+
+<p>另外，该方式多用于委托模式。</p>
+
+<pre><code>
+    if([self.delegate respondsToSelector:@selector(complete:)]){
+        [self.delegate complete:self.checkedDictionary];
+
+        [self.delegate performSelector:@selector(complete:) withObject:self.checkedDictionary];
+    }
+
+</code></pre>
+
+<pre><code>
+//判断是否有以某个名字命名的方法(aSelector)
+- (BOOL)respondsToSelector:(SEL)aSelector;
+
+//通过下面三个方法来调用aSelector和传递参数
+- (id)performSelector:(SEL)aSelector;
+- (id)performSelector:(SEL)aSelector withObject:(id)object;
+- (id)performSelector:(SEL)aSelector withObject:(id)object1 withObject:(id)object2;
+
+
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;两个类之间，不管它们是父类与子类的关系，还是之间没有这种关系，只要方法名相同，那么方法的SEL就是一样的。每一个方法都对应着一个SEL。所以在 Objective-C同一个类(及类的继承体系)中，不能存在2个同名的方法，即使参数类型不同也不行。相同的方法只能对应一个SEL。这也就导致 Objective-C在处理相同方法名且参数个数相同但类型不同的方法方面的能力很差。如在某个类中定义以下两个方法：</p>
+
+<pre><code>
+- (void)setWidth:(int)width;
+- (void)setWidth:(double)width;
+
+</code></pre>
+
+<p>当然，不同的类可以拥有相同的selector，这个没有问题。不同类的实例对象执行相同的selector时，会在各自的方法列表中去根据selector去寻找自己对应的IMP。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;IMP是啥东东呢？</p>
+
+<p>IMP实际上是一个函数指针，指向方法实现的首地址。其定义如下：</p>
+
+<pre><code>
+id (*IMP)(id, SEL, ...)
+
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;这个函数使用当前CPU架构实现的标准的C调用约定。第一个参数是指向self的指针(如果是实例方法，则是类实例的内存地址；如果是类方法，则是指向元类的指针)，第二个参数是方法选择器(selector)，接下来是方法的实际参数列表。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;前面介绍过的SEL就是为了查找方法的最终实现IMP的。由于每个方法对应唯一的SEL，因此我们可以通过SEL方便快速准确地获得它所对应的 IMP，查找过程将在下面讨论。取得IMP后，我们就获得了执行这个方法代码的入口点，此时，我们就可以像调用普通的C语言函数一样来使用这个函数指针 了。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;通过取得IMP，我们可以跳过Runtime的消息传递机制，直接执行IMP指向的函数实现，这样省去了Runtime消息传递过程中所做的一系列查找操作，会比直接向对象发送消息高效一些。</p>
+
+<p>下面这段代码描述了，不同的方法调用httpGetDataByParameters方法中可以根据funArray参数执行多个方法。</p>
+
+<pre><code>
+-(void)httpGetDataByParameters:(PersionCellFrame *)cellFrame funArray:(NSArray *) funArray{
+   for (NSDictionary *jsonObj in jsonArray) {
+      SEL customSelector = NSSelectorFromString([NSString stringWithFormat:@"%@DataAssembled:", funStr]);
+
+      IMP imp = [self methodForSelector:customSelector];
+
+      void (*func)(id, SEL, PersionCellFrame *) = (void *)imp;
+
+      func(self, customSelector, cellFrame);
+   }
+
+
+</code></pre>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-消息传递.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

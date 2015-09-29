@@ -118,7 +118,7 @@ id (*IMP)(id, SEL, ...)
 
       IMP imp = [self methodForSelector:customSelector];
 
-      void (*func)(id, SEL, PersionCellFrame *) = (void *)imp;
+      void (*func)(id, SEL, PersionCellFrame *) = (void (*)(id, SEL, PersionCellFrame*))imp;
 
       func(self, customSelector, cellFrame);
    }
@@ -226,7 +226,7 @@ id (*IMP)(id, SEL, ...)
 
       IMP imp = [self methodForSelector:customSelector];
 
-      void (*func)(id, SEL, PersionCellFrame *) = (void *)imp;
+      void (*func)(id, SEL, PersionCellFrame *) = (void (*)(id, SEL, PersionCellFrame*))imp;
 
       func(self, customSelector, cellFrame);
    }

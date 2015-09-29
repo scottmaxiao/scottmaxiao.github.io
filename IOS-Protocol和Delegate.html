@@ -75,75 +75,72 @@ Protocol本身是可以继承的
 @end
 </code></pre>
 
-如果要判断类是否实现了莫个协议，使用下面的代码即可
+如果要判断类是否实现了某个协议，使用下面的代码即可
 <pre><code>
 [obj conformsToProtocol:@protocol(ProcessDataDelegate)] 
 </code></pre>
 
 
 ###Delegate（委托）
-场景说明：在列表展现的时候，自定义每行展现内容。
+场景说明：A界面跳转到B界面，在B界面操作后，往A界面传值。
+
+A界面的实现类为ImNewViewController，B界面的实现类为PersionsViewController。在PersionsViewController中声明协议，在ImNewViewController中实现协议的方法，然后指定委托对象为自己。PersionsViewController中调用协议的委托对象实现的方法，实现传值。
 
 ####声明委托
-在GapCustomBaseTableViewCell.h文件中声明了GapCustomTableViewCellDelegate协议，在GapCustomBaseTableViewCell中定义了一个委托对象gapCustomTableViewCelldelegate。
-<pre><code>
-@protocol GapCustomTableViewCellDelegate <NSObject>
+在PersionsViewController.h文件中声明了PersionsViewControllerDelegate协议，并且定义了一个PersionsViewControllerDelegate的委托对象。
 
-@optional
--(void)labelCellLayoutSubviews:(UILabel*)valueLabel cellFrame:(GapCustomTableViewCellFrame*) cellFrame;
+    @protocol PersionsViewControllerDelegate <NSObject>
 
-@end
+    //选择收件人后回调的方法
+    -(void)complete:(NSMutableDictionary*)checkedDictionary;
 
-@interface GapCustomBaseTableViewCell : UITableViewCell
+    @end
 
-@property (nonatomic,weak) id<GapCustomTableViewCellDelegate> gapCustomTableViewCelldelegate;
+    @interface PersionsViewController :BaseViewController<UITableViewDelegate,UITableViewDataSource,UISearchBarDelegate>{
 
-@end
-</code></pre>
+    }
+
+    @property(nonatomic,weak) id<PersionsViewControllerDelegate> delegate;
+    @end
+
 
 ###实现委托
-在TaskViewController.h文件中声明实现GapCustomTableViewCellDelegate委托协议。
-<pre><code>
-@interface TaskViewController : BaseTableViewController&lt;GapCustomTableViewCellDelegate&gt;{
+在ImNewViewController.h文件中声明实现PersionsViewControllerDelegate委托协议。
 
-}
+    @interface ImNewViewController : BaseViewController<PersionsViewControllerDelegate>{
 
-@end
-</code></pre>
-
-在TaskViewController.m文件中指定委托对象
-<pre><code>
-GapCustomBaseTableViewCell  *cell=[GapCustomBaseTableViewCell alloc] init];
-cell.gapCustomTableViewCelldelegate=self;
-</code></pre>
+    }
 
 
-在TaskViewController.m文件中实现GapCustomTableViewCellDelegate委托协议中定义的方法。
-<pre><code>
-#pragma mark GapCustomTableViewCellDelegate Source
+在ImNewViewController.m文件中指定委托对象
 
--(void)labelCellLayoutSubviews:(UILabel*)valueLabel cellFrame:(GapCustomTableViewCellFrame*) cellFrame{
+    PersionsViewController *nextController=[[PersionsViewController alloc] init];
+    nextController.delegate=self;
+    [self.navigationController pushViewController:nextController animated:YES];
+
+
+
+在ImNewViewController.m文件中实现PersionsViewControllerDelegate委托协议中定义的方法。
+
+    #pragma mark PersionsViewControllerDelegate Source
+    -(void)complete:(NSMutableDictionary*)dictionary{
+        ...
 	
-...
-	
-}
-</code></pre>
+    }
+
 
 
 ###委托调用
-在GapCustomBaseTableViewCell.m文件中调用委托对象的方法。
-<pre><code>
--(void)layoutSubviews{
-	[super layoutSubviews];
-	
-	if ([self.gapCustomTableViewCelldelegate respondsToSelector:@selector(labelCellLayoutSubviews:cellFrame:)]) {
-		[self.gapCustomTableViewCelldelegate labelCellLayoutSubviews:self.valueLabel cellFrame:self.cellFrame];
-	}
-}
-</code></pre>
+在PersionsViewController.m文件中调用委托对象的方法。
 
+	if([self.delegate respondsToSelector:@selector(complete:)]){
+		[self.delegate complete:self.checkedDictionary];
+	}
+
+<pre><code>
 - (BOOL)respondsToSelector:(SEL)aSelector:这个方法是判断委托对象中是否实现了aSelector方法。
 
+</code></pre>
 
 
 <!-- markdown end -->
@@ -209,7 +206,7 @@ cell.gapCustomTableViewCelldelegate=self;
 @end
 </code></pre>
 
-<p>如果要判断类是否实现了莫个协议，使用下面的代码即可</p>
+<p>如果要判断类是否实现了某个协议，使用下面的代码即可</p>
 
 <pre><code>
 [obj conformsToProtocol:@protocol(ProcessDataDelegate)] 
@@ -217,75 +214,67 @@ cell.gapCustomTableViewCelldelegate=self;
 
 <h3 id="delegate">Delegate（委托）</h3>
 
-<p>场景说明：在列表展现的时候，自定义每行展现内容。</p>
+<p>场景说明：A界面跳转到B界面，在B界面操作后，往A界面传值。</p>
+
+<p>A界面的实现类为ImNewViewController，B界面的实现类为PersionsViewController。在PersionsViewController中声明协议，在ImNewViewController中实现协议的方法，然后指定委托对象为自己。PersionsViewController中调用协议的委托对象实现的方法，实现传值。</p>
 
 <h4 id="">声明委托</h4>
 
-<p>在GapCustomBaseTableViewCell.h文件中声明了GapCustomTableViewCellDelegate协议，在GapCustomBaseTableViewCell中定义了一个委托对象gapCustomTableViewCelldelegate。</p>
+<p>在PersionsViewController.h文件中声明了PersionsViewControllerDelegate协议，并且定义了一个PersionsViewControllerDelegate的委托对象。</p>
 
-<pre><code>
-@protocol GapCustomTableViewCellDelegate <nsobject>
+<pre><code>@protocol PersionsViewControllerDelegate &lt;NSObject&gt;
 
-@optional
--(void)labelCellLayoutSubviews:(UILabel*)valueLabel cellFrame:(GapCustomTableViewCellFrame*) cellFrame;
-
-@end
-
-@interface GapCustomBaseTableViewCell : UITableViewCell
-
-@property (nonatomic,weak) id<gapcustomtableviewcelldelegate> gapCustomTableViewCelldelegate;
+//选择收件人后回调的方法
+-(void)complete:(NSMutableDictionary*)checkedDictionary;
 
 @end
-</gapcustomtableviewcelldelegate></nsobject></code></pre>
 
-<h3 id="">实现委托</h3>
-
-<p>在TaskViewController.h文件中声明实现GapCustomTableViewCellDelegate委托协议。</p>
-
-<pre><code>
-@interface TaskViewController : BaseTableViewController&lt;GapCustomTableViewCellDelegate&gt;{
+@interface PersionsViewController :BaseViewController&lt;UITableViewDelegate,UITableViewDataSource,UISearchBarDelegate&gt;{
 
 }
 
+@property(nonatomic,weak) id&lt;PersionsViewControllerDelegate&gt; delegate;
 @end
 </code></pre>
 
-<p>在TaskViewController.m文件中指定委托对象</p>
+<h3 id="">实现委托</h3>
 
-<pre><code>
-GapCustomBaseTableViewCell  *cell=[GapCustomBaseTableViewCell alloc] init];
-cell.gapCustomTableViewCelldelegate=self;
+<p>在ImNewViewController.h文件中声明实现PersionsViewControllerDelegate委托协议。</p>
+
+<pre><code>@interface ImNewViewController : BaseViewController&lt;PersionsViewControllerDelegate&gt;{
+
+}
 </code></pre>
 
-<p>在TaskViewController.m文件中实现GapCustomTableViewCellDelegate委托协议中定义的方法。</p>
+<p>在ImNewViewController.m文件中指定委托对象</p>
 
-<pre><code>
-#pragma mark GapCustomTableViewCellDelegate Source
+<pre><code>PersionsViewController *nextController=[[PersionsViewController alloc] init];
+nextController.delegate=self;
+[self.navigationController pushViewController:nextController animated:YES];
+</code></pre>
 
--(void)labelCellLayoutSubviews:(UILabel*)valueLabel cellFrame:(GapCustomTableViewCellFrame*) cellFrame{
+<p>在ImNewViewController.m文件中实现PersionsViewControllerDelegate委托协议中定义的方法。</p>
 
-...
+<pre><code>#pragma mark PersionsViewControllerDelegate Source
+-(void)complete:(NSMutableDictionary*)dictionary{
+    ...
 
 }
 </code></pre>
 
 <h3 id="">委托调用</h3>
 
-<p>在GapCustomBaseTableViewCell.m文件中调用委托对象的方法。</p>
+<p>在PersionsViewController.m文件中调用委托对象的方法。</p>
 
-<pre><code>
--(void)layoutSubviews{
-    [super layoutSubviews];
-
-    if ([self.gapCustomTableViewCelldelegate respondsToSelector:@selector(labelCellLayoutSubviews:cellFrame:)]) {
-        [self.gapCustomTableViewCelldelegate labelCellLayoutSubviews:self.valueLabel cellFrame:self.cellFrame];
-    }
+<pre><code>if([self.delegate respondsToSelector:@selector(complete:)]){
+    [self.delegate complete:self.checkedDictionary];
 }
 </code></pre>
 
-<ul>
-<li>(BOOL)respondsToSelector:(SEL)aSelector:这个方法是判断委托对象中是否实现了aSelector方法。</li>
-</ul>
+<pre><code>
+- (BOOL)respondsToSelector:(SEL)aSelector:这个方法是判断委托对象中是否实现了aSelector方法。
+
+</code></pre>
 <!-- content end -->
 </div>
 <br>

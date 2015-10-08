@@ -1,0 +1,226 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-本地化Localizations
+
+####APP程序名称本地化
+
+首先在“Supporting Files”文件夹下，点击右键选择New File 选择Resource ----》Strings File
+![Localizations](http://scottmaxiao.github.io/img/Localizations/Localizations1.png)
+
+文件名称为InfoPlist.strings，然后点开右侧栏，选择本地化
+
+![Localizations](http://scottmaxiao.github.io/img/Localizations/Localizations2.png)
+
+![Localizations](http://scottmaxiao.github.io/img/Localizations/Localizations3.png)
+
+然后要选中Project，而不是Targets，按步骤先点击Info菜单， 下拉到最后，看到Localizations。
+
+![Localizations](http://scottmaxiao.github.io/img/Localizations/Localizations4.png)
+
+点击+号。
+
+![Localizations](http://scottmaxiao.github.io/img/Localizations/Localizations5.png)
+
+点击”Finish”按钮后，
+
+
+![Localizations](http://scottmaxiao.github.io/img/Localizations/Localizations6.png)
+
+
+<pre><code>
+
+在InfoPlish.strings(Base)文件中加入：
+CFBundleDisplayName ="应用程序";
+
+在InfoPlish.strings(english)文件中加入：
+CFBundleDisplayName ="Program";  
+
+同理在InfoPlish.strings(chinese)文件中加入：
+CFBundleDisplayName ="应用程序";  
+
+</code></pre>
+
+----
+
+####文字本地化
+
+在在“Supporting Files”文件夹下，点击右键选择New File 选择Resource ----》Strings File，文件名为Localizable.strings。按照上一节的步骤本地化。然后在各个文件中定义要显示的文字内容。
+
+<pre><code>
+error_message="错误信息";
+close="关闭";
+sure="确定";
+</code></pre>
+
+在代码中使用NSLocalizedString(<#key#>, <#comment#>)来读取本地化字符串，代码如下：
+<pre><code>
+NSLocalizedString(@"error_message", @"错误信息")
+</code></pre>
+
+----
+
+####图片本地化
+
+待续
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="ioslocalizations">IOS-本地化Localizations</h2>
+
+<h4 id="app">APP程序名称本地化</h4>
+
+<p>首先在“Supporting Files”文件夹下，点击右键选择New File 选择Resource ----》Strings File
+<img src="http://scottmaxiao.github.io/img/Localizations/Localizations1.png" alt="Localizations" title=""></p>
+
+<p>文件名称为InfoPlist.strings，然后点开右侧栏，选择本地化</p>
+
+<p><img src="http://scottmaxiao.github.io/img/Localizations/Localizations2.png" alt="Localizations" title=""></p>
+
+<p><img src="http://scottmaxiao.github.io/img/Localizations/Localizations3.png" alt="Localizations" title=""></p>
+
+<p>然后要选中Project，而不是Targets，按步骤先点击Info菜单， 下拉到最后，看到Localizations。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/Localizations/Localizations4.png" alt="Localizations" title=""></p>
+
+<p>点击+号。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/Localizations/Localizations5.png" alt="Localizations" title=""></p>
+
+<p>点击”Finish”按钮后，</p>
+
+<p><img src="http://scottmaxiao.github.io/img/Localizations/Localizations6.png" alt="Localizations" title=""></p>
+
+<pre><code>
+
+在InfoPlish.strings(Base)文件中加入：
+CFBundleDisplayName ="应用程序";
+
+在InfoPlish.strings(english)文件中加入：
+CFBundleDisplayName ="Program";  
+
+同理在InfoPlish.strings(chinese)文件中加入：
+CFBundleDisplayName ="应用程序";  
+
+</code></pre>
+
+<hr>
+
+<h4 id="">文字本地化</h4>
+
+<p>在在“Supporting Files”文件夹下，点击右键选择New File 选择Resource ----》Strings File，文件名为Localizable.strings。按照上一节的步骤本地化。然后在各个文件中定义要显示的文字内容。</p>
+
+<pre><code>
+error_message="错误信息";
+close="关闭";
+sure="确定";
+</code></pre>
+
+<p>在代码中使用NSLocalizedString(&lt;#key#&gt;, &lt;#comment#&gt;)来读取本地化字符串，代码如下：</p>
+
+<pre><code>
+NSLocalizedString(@"error_message", @"错误信息")
+</code></pre>
+
+<hr>
+
+<h4 id="">图片本地化</h4>
+
+<p>待续</p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-本地化Localizations.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

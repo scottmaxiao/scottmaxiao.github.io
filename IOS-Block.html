@@ -1,0 +1,642 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-Block
+
+###介绍
+&nbsp;&nbsp;&nbsp;&nbsp;Block就是一个函数体（匿名函数），它是ObjC对于闭包的实现，在块状中我们可以持有或引用局部变量，同时利用Block你可以将一个操作作为一个参数进行传递。
+
+![block](http://scottmaxiao.github.io/img/blocks/blocks.jpg)
+
+上面的图片，来自苹果开发者库，做了很好的Block句法解释。
+
+等号左侧代码：
+
+- int表示Block的返回值类型，如果没有返回值，使用void;
+- (^myBlock)这是一个字面量block的定义，指派给了“myBlock”;
+- (int)表示Block的参数，多个参数见使用逗号(,)间隔，没有参数使用void；
+- 它只有一个整型参数；
+参数名字叫“num”;
+
+等号右侧代码：
+
+- ^表示是block的实现。
+- (int num)表示传递一个int型的参数，名为num。
+- {...}大括弧中的代码是Block的实现代码。
+
+&nbsp;&nbsp;&nbsp;&nbsp;在下面的例子中我们将使用Block实现上面的点击监听操作
+
+
+KCButton.h
+<pre><code>
+#import <Foundation/Foundation.h>
+@class  KCButton;
+
+typedef void(^KCButtonClick)(KCButton *);
+
+@interface KCButton : NSObject
+
+
+//@property (nonatomic,copy) KCButtonClick onClick;
+
+//上面的属性定义等价于下面的代码
+@property (nonatomic,copy) void(^ onClick)(KCButton *);
+
+
+-(void)click;
+
+@end
+
+</code></pre>
+
+KCButton.m
+<pre><code>
+#import "KCButton.h"
+
+
+@implementation KCButton
+
+-(void)click{
+    NSLog(@"Invoke KCButton's click method.");
+    if (_onClick) {
+        _onClick(self);
+    }
+}
+
+@end
+
+</code></pre>
+
+main.m
+<pre><code>
+#import <Foundation/Foundation.h>
+#import "KCButton.h"
+
+
+int main(int argc, const char * argv[]) {
+
+    KCButton *button=[[KCButton alloc]init];
+    button.onClick=^(KCButton *btn){
+        NSLog(@"Invoke onClick method.The button is:%@.",btn);
+    };
+    [button click];
+    /*结果：
+     Invoke KCButton's click method.
+     Invoke onClick method.The button is:<KCButton: 0x1006011f0>.
+     */
+    
+    
+    return 0;
+}
+
+</code></pre>
+
+上面代码中使用Block同样实现了按钮的点击事件，关于Block总结如下：
+
+- Block类型定义：返回值类型(^ 变量名)(参数列表)（注意Block也是一种类型）；
+- Block的typedef定义：返回值类型(^类型名称)(参数列表)；
+- Block的实现：^(参数列表){操作主体}；
+- Block中可以读取块外面定义的变量但是不能修改，如果要修改那么这个变量必须声明_block修饰；
+
+----
+
+###我在哪些场景会使用到Block呢？
+
+首先就是对数组或者字典做遍历操作的时候
+<pre><code>
+//数组遍历
+[theArray enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
+    NSLog(@"The object at index %d is %@",idx,obj);
+}];
+
+//字典遍历
+[randomDict enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOLBOOL *stop) {  
+    ...
+    }];
+
+</code></pre>
+
+其次就是从服务端返回数据后，要对数据进行分析赋值。一般我们都会封装一个对象，该对象提供不同的方法和服务端交互数据，返回数据成功后，根据Block的实现来组装数据。
+<pre><code>
+/**
+ *  发起GET请求，返回json数组
+ *
+ *  @param urlStr       请求地址
+ *  @param parameters   参数
+ *  @param successBlock 请求成功回调函数
+ *  @param failureBlock 请求失败回调函数
+ */
++(void)getJsonArray:(NSString *)urlStr parameters:(id)parameters success:(void (^)(NSArray *jsonArray))successBlock failure:(void (^)(NSString* errorMessage))failureBlock;
+
+</code></pre>
+
+
+[参考资料:]
+
+<http://www.jianshu.com/p/686a9f5bda8d>
+
+<http://www.jianshu.com/p/aa9ffb7004c8>
+
+<http://www.cnblogs.com/kenshincui/p/3869639.html#block>
+
+----
+
+###self 的循环引用
+当使用代码块和异步分发的时候，要注意避免引用循环。总是使用 weak 来引用对象，避免引用循环。
+<pre><code>
+//推荐
+__weak __typeof(self) weakSelf = self;
+[self executeBlock:^(NSData *data, NSError *error) {
+    [weakSelf doSomethingWithData:data];
+}];
+
+//不推荐
+[self executeBlock:^(NSData *data, NSError *error) {
+    [self doSomethingWithData:data];
+}];
+
+</code></pre>
+
+Block中多个语句调用样例。
+
+<pre><code>
+//推荐
+__weak __typeof(self)weakSelf = self;
+[self executeBlock:^(NSData *data, NSError *error) {
+    __strong __typeof(weakSelf) strongSelf = weakSelf;
+    if (strongSelf) {
+        [strongSelf doSomethingWithData:data];
+        [strongSelf doSomethingWithData:data];
+    }
+}];
+
+//不推荐
+__weak __typeof(self)weakSelf = self;
+[self executeBlock:^(NSData *data, NSError *error) {
+    [weakSelf doSomethingWithData:data];
+    [weakSelf doSomethingWithData:data];
+}];
+
+</code></pre>
+
+为何要推荐使用 self 的 \__weak 和 \__strong 限定词呢。我们可以参考 self 在 block 里面的三种不同情况。
+
+**情况1  直接在 block 里面使用关键词 self**
+
+像下面这种写法是完全没有问题的。
+<pre><code>
+dispatch_block_t completionBlock = ^{
+    NSLog(@"%@", self);
+}
+
+MyViewController *myController = [[MyViewController alloc] init...];
+[self presentViewController:myController
+                   animated:YES
+                 completion:completionHandler];
+
+</code></pre>
+但是如果completionBlock声明为属性
+<pre><code>
+@property (nonatomic,strong) void(^ completionBlock)(void);
+
+</code></pre>
+
+并且像下面代码这样调用的话，这就是有名的 retain cycle, 并且我们通常应该避免它。
+<pre><code>
+self.completionHandler = ^{
+    NSLog(@"%@", self);
+}
+
+MyViewController *myController = [[MyViewController alloc] init...];
+[self presentViewController:myController
+                   animated:YES
+                 completion:self.completionHandler];
+
+</code></pre>
+
+如果出现上面 retain cycle的情况， __weak 就有用武之地了。
+
+**情况2 在 block 外定义一个 __weak 的 引用到 self，并且在 block 里面使用这个弱引用**
+<pre><code>
+@property (nonatomic,strong) void(^ completionBlock)(void);
+
+__weak typeof(self) weakSelf = self;
+self.completionHandler = ^{
+    NSLog(@"%@", weakSelf);
+}
+
+MyViewController *myController = [[MyViewController alloc] init...];
+[self presentViewController:myController
+                   animated:YES
+                 completion:self.completionHandler];
+
+</code></pre>
+上面代码使用 __weak修饰词，避免了retain cycle的情况。
+
+如果 block 被传递或者 copy 了，在执行的时候，weakSelf 可能已经变成 nil。如下面的代码
+<pre><code>
+__weak typeof(self) weakSelf = self;
+dispatch_block_t block =  ^{
+    [weakSelf doSomething]; // weakSelf != nil
+    // preemption, weakSelf turned nil
+    [weakSelf doSomethingElse]; // weakSelf == nil
+};
+
+</code></pre>
+
+
+
+**情况 3. 在 block 外定义一个 __weak 的 引用到 self，并在在 block 内部通过这个弱引用定义一个 __strong 的引用**
+
+<pre><code>
+__weak typeof(self) weakSelf = self;
+dispatch_block_t block =  ^{
+    __strong typeof(self) strongSelf = weakSelf;
+    [strongSelf doSomething]; // strongSelf != nil
+    // preemption, strongSelf still not nil（抢占的时候，strongSelf 还是非 nil 的)
+    [strongSelf doSomethingElse]; // strongSelf != nil
+};
+
+</code></pre>
+上面的代码和并发执行有关。当涉及异步的服务的时候，block 可以在之后被执行，并且不会发生关于 self 是否存在的问题。
+
+
+[参考资料：]<https://github.com/oa414/objc-zen-book-cn#self-%E7%9A%84%E5%BE%AA%E7%8E%AF%E5%BC%95%E7%94%A8>
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosblock">IOS-Block</h2>
+
+<h3 id="">介绍</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Block就是一个函数体（匿名函数），它是ObjC对于闭包的实现，在块状中我们可以持有或引用局部变量，同时利用Block你可以将一个操作作为一个参数进行传递。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/blocks/blocks.jpg" alt="block" title=""></p>
+
+<p>上面的图片，来自苹果开发者库，做了很好的Block句法解释。</p>
+
+<p>等号左侧代码：</p>
+
+<ul>
+<li>int表示Block的返回值类型，如果没有返回值，使用void;</li>
+<li>(^myBlock)这是一个字面量block的定义，指派给了“myBlock”;</li>
+<li>(int)表示Block的参数，多个参数见使用逗号(,)间隔，没有参数使用void；</li>
+<li>它只有一个整型参数；
+参数名字叫“num”;</li>
+</ul>
+
+<p>等号右侧代码：</p>
+
+<ul>
+<li>^表示是block的实现。</li>
+<li>(int num)表示传递一个int型的参数，名为num。</li>
+<li>{...}大括弧中的代码是Block的实现代码。</li>
+</ul>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在下面的例子中我们将使用Block实现上面的点击监听操作</p>
+
+<p>KCButton.h</p>
+
+<pre><code>
+#import <foundation foundation.h="">
+@class  KCButton;
+
+typedef void(^KCButtonClick)(KCButton *);
+
+@interface KCButton : NSObject
+
+
+//@property (nonatomic,copy) KCButtonClick onClick;
+
+//上面的属性定义等价于下面的代码
+@property (nonatomic,copy) void(^ onClick)(KCButton *);
+
+
+-(void)click;
+
+@end
+
+</foundation></code></pre>
+
+<p>KCButton.m</p>
+
+<pre><code>
+#import "KCButton.h"
+
+
+@implementation KCButton
+
+-(void)click{
+    NSLog(@"Invoke KCButton's click method.");
+    if (_onClick) {
+        _onClick(self);
+    }
+}
+
+@end
+
+</code></pre>
+
+<p>main.m</p>
+
+<pre><code>
+#import <foundation foundation.h="">
+#import "KCButton.h"
+
+
+int main(int argc, const char * argv[]) {
+
+    KCButton *button=[[KCButton alloc]init];
+    button.onClick=^(KCButton *btn){
+        NSLog(@"Invoke onClick method.The button is:%@.",btn);
+    };
+    [button click];
+    /*结果：
+     Invoke KCButton's click method.
+     Invoke onClick method.The button is:<kcbutton: 0x1006011f0="">.
+     */
+
+
+    return 0;
+}
+
+</kcbutton:></foundation></code></pre>
+
+<p>上面代码中使用Block同样实现了按钮的点击事件，关于Block总结如下：</p>
+
+<ul>
+<li>Block类型定义：返回值类型(^ 变量名)(参数列表)（注意Block也是一种类型）；</li>
+<li>Block的typedef定义：返回值类型(^类型名称)(参数列表)；</li>
+<li>Block的实现：^(参数列表){操作主体}；</li>
+<li>Block中可以读取块外面定义的变量但是不能修改，如果要修改那么这个变量必须声明_block修饰；</li>
+</ul>
+
+<hr>
+
+<h3 id="block">我在哪些场景会使用到Block呢？</h3>
+
+<p>首先就是对数组或者字典做遍历操作的时候</p>
+
+<pre><code>
+//数组遍历
+[theArray enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
+    NSLog(@"The object at index %d is %@",idx,obj);
+}];
+
+//字典遍历
+[randomDict enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOLBOOL *stop) {  
+    ...
+    }];
+
+</code></pre>
+
+<p>其次就是从服务端返回数据后，要对数据进行分析赋值。一般我们都会封装一个对象，该对象提供不同的方法和服务端交互数据，返回数据成功后，根据Block的实现来组装数据。</p>
+
+<pre><code>
+/**
+ *  发起GET请求，返回json数组
+ *
+ *  @param urlStr       请求地址
+ *  @param parameters   参数
+ *  @param successBlock 请求成功回调函数
+ *  @param failureBlock 请求失败回调函数
+ */
++(void)getJsonArray:(NSString *)urlStr parameters:(id)parameters success:(void (^)(NSArray *jsonArray))successBlock failure:(void (^)(NSString* errorMessage))failureBlock;
+
+</code></pre>
+
+<p>[参考资料:]</p>
+
+<p><a href="http://www.jianshu.com/p/686a9f5bda8d">http://www.jianshu.com/p/686a9f5bda8d</a></p>
+
+<p><a href="http://www.jianshu.com/p/aa9ffb7004c8">http://www.jianshu.com/p/aa9ffb7004c8</a></p>
+
+<p><a href="http://www.cnblogs.com/kenshincui/p/3869639.html#block">http://www.cnblogs.com/kenshincui/p/3869639.html#block</a></p>
+
+<hr>
+
+<h3 id="self">self 的循环引用</h3>
+
+<p>当使用代码块和异步分发的时候，要注意避免引用循环。总是使用 weak 来引用对象，避免引用循环。</p>
+
+<pre><code>
+//推荐
+__weak __typeof(self) weakSelf = self;
+[self executeBlock:^(NSData *data, NSError *error) {
+    [weakSelf doSomethingWithData:data];
+}];
+
+//不推荐
+[self executeBlock:^(NSData *data, NSError *error) {
+    [self doSomethingWithData:data];
+}];
+
+</code></pre>
+
+<p>Block中多个语句调用样例。</p>
+
+<pre><code>
+//推荐
+__weak __typeof(self)weakSelf = self;
+[self executeBlock:^(NSData *data, NSError *error) {
+    __strong __typeof(weakSelf) strongSelf = weakSelf;
+    if (strongSelf) {
+        [strongSelf doSomethingWithData:data];
+        [strongSelf doSomethingWithData:data];
+    }
+}];
+
+//不推荐
+__weak __typeof(self)weakSelf = self;
+[self executeBlock:^(NSData *data, NSError *error) {
+    [weakSelf doSomethingWithData:data];
+    [weakSelf doSomethingWithData:data];
+}];
+
+</code></pre>
+
+<p>为何要推荐使用 self 的 _<em>weak 和 _</em>strong 限定词呢。我们可以参考 self 在 block 里面的三种不同情况。</p>
+
+<p><strong>情况1  直接在 block 里面使用关键词 self</strong></p>
+
+<p>像下面这种写法是完全没有问题的。</p>
+
+<pre><code>
+dispatch_block_t completionBlock = ^{
+    NSLog(@"%@", self);
+}
+
+MyViewController *myController = [[MyViewController alloc] init...];
+[self presentViewController:myController
+                   animated:YES
+                 completion:completionHandler];
+
+</code></pre>
+
+<p>但是如果completionBlock声明为属性</p>
+
+<pre><code>
+@property (nonatomic,strong) void(^ completionBlock)(void);
+
+</code></pre>
+
+<p>并且像下面代码这样调用的话，这就是有名的 retain cycle, 并且我们通常应该避免它。</p>
+
+<pre><code>
+self.completionHandler = ^{
+    NSLog(@"%@", self);
+}
+
+MyViewController *myController = [[MyViewController alloc] init...];
+[self presentViewController:myController
+                   animated:YES
+                 completion:self.completionHandler];
+
+</code></pre>
+
+<p>如果出现上面 retain cycle的情况， __weak 就有用武之地了。</p>
+
+<p><strong>情况2 在 block 外定义一个 __weak 的 引用到 self，并且在 block 里面使用这个弱引用</strong></p>
+
+<pre><code>
+@property (nonatomic,strong) void(^ completionBlock)(void);
+
+__weak typeof(self) weakSelf = self;
+self.completionHandler = ^{
+    NSLog(@"%@", weakSelf);
+}
+
+MyViewController *myController = [[MyViewController alloc] init...];
+[self presentViewController:myController
+                   animated:YES
+                 completion:self.completionHandler];
+
+</code></pre>
+
+<p>上面代码使用 __weak修饰词，避免了retain cycle的情况。</p>
+
+<p>如果 block 被传递或者 copy 了，在执行的时候，weakSelf 可能已经变成 nil。如下面的代码</p>
+
+<pre><code>
+__weak typeof(self) weakSelf = self;
+dispatch_block_t block =  ^{
+    [weakSelf doSomething]; // weakSelf != nil
+    // preemption, weakSelf turned nil
+    [weakSelf doSomethingElse]; // weakSelf == nil
+};
+
+</code></pre>
+
+<p><strong>情况 3. 在 block 外定义一个 <em>_weak 的 引用到 self，并在在 block 内部通过这个弱引用定义一个 _</em>strong 的引用</strong></p>
+
+<pre><code>
+__weak typeof(self) weakSelf = self;
+dispatch_block_t block =  ^{
+    __strong typeof(self) strongSelf = weakSelf;
+    [strongSelf doSomething]; // strongSelf != nil
+    // preemption, strongSelf still not nil（抢占的时候，strongSelf 还是非 nil 的)
+    [strongSelf doSomethingElse]; // strongSelf != nil
+};
+
+</code></pre>
+
+<p>上面的代码和并发执行有关。当涉及异步的服务的时候，block 可以在之后被执行，并且不会发生关于 self 是否存在的问题。</p>
+
+<p>[参考资料：]<a href="https://github.com/oa414/objc-zen-book-cn#self-%E7%9A%84%E5%BE%AA%E7%8E%AF%E5%BC%95%E7%94%A8">https://github.com/oa414/objc-zen-book-cn#self-%E7%9A%84%E5%BE%AA%E7%8E%AF%E5%BC%95%E7%94%A8</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-Block.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

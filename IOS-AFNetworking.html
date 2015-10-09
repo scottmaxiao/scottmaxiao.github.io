@@ -159,6 +159,45 @@ NSInteger responseStatusCode= [httpResponse statusCode];
 
 通过error.localizedDescription，可以获取本地错误信息，如没有网络等。
 
+**关于判断网络情况**
+<pre><code>
+-(void)discoverNetworkStatus{
+	NSURL *url=[NSURL URLWithString:@"http://www.apple.com"];
+	AFHTTPRequestOperationManager *operationManager=[[AFHTTPRequestOperationManager alloc]initWithBaseURL:url];
+	
+	//根据不同的网络状态改变去做相应处理
+	[operationManager.reachabilityManager setReachabilityStatusChangeBlock:^(AFNetworkReachabilityStatus status) {
+		switch (status) {
+			case AFNetworkReachabilityStatusReachableViaWWAN:
+				NSLog(@"2G/3G/4G Connection.");
+				
+				self.networkStatus=AFNetworkReachabilityStatusReachableViaWWAN;
+				break;
+			case AFNetworkReachabilityStatusReachableViaWiFi:
+				NSLog(@"WiFi Connection.");
+				
+				self.networkStatus=AFNetworkReachabilityStatusReachableViaWiFi;
+				break;
+			case AFNetworkReachabilityStatusNotReachable:
+				NSLog(@"Network not found.");
+				
+				self.networkStatus=AFNetworkReachabilityStatusNotReachable;
+				break;
+				
+			default:
+				NSLog(@"Unknown.");
+				
+				self.networkStatus=AFNetworkReachabilityStatusUnknown;
+				break;
+		}
+	}];
+	
+	//开始监控
+	[operationManager.reachabilityManager startMonitoring];
+}
+
+</code></pre>
+
 
 <!-- markdown end -->
 </div>
@@ -310,6 +349,46 @@ NSInteger responseStatusCode= [httpResponse statusCode];
 <p>通过operation.responseString，可以获取在response中设置的错误信息。</p>
 
 <p>通过error.localizedDescription，可以获取本地错误信息，如没有网络等。</p>
+
+<p><strong>关于判断网络情况</strong></p>
+
+<pre><code>
+-(void)discoverNetworkStatus{
+    NSURL *url=[NSURL URLWithString:@"http://www.apple.com"];
+    AFHTTPRequestOperationManager *operationManager=[[AFHTTPRequestOperationManager alloc]initWithBaseURL:url];
+
+    //根据不同的网络状态改变去做相应处理
+    [operationManager.reachabilityManager setReachabilityStatusChangeBlock:^(AFNetworkReachabilityStatus status) {
+        switch (status) {
+            case AFNetworkReachabilityStatusReachableViaWWAN:
+                NSLog(@"2G/3G/4G Connection.");
+
+                self.networkStatus=AFNetworkReachabilityStatusReachableViaWWAN;
+                break;
+            case AFNetworkReachabilityStatusReachableViaWiFi:
+                NSLog(@"WiFi Connection.");
+
+                self.networkStatus=AFNetworkReachabilityStatusReachableViaWiFi;
+                break;
+            case AFNetworkReachabilityStatusNotReachable:
+                NSLog(@"Network not found.");
+
+                self.networkStatus=AFNetworkReachabilityStatusNotReachable;
+                break;
+
+            default:
+                NSLog(@"Unknown.");
+
+                self.networkStatus=AFNetworkReachabilityStatusUnknown;
+                break;
+        }
+    }];
+
+    //开始监控
+    [operationManager.reachabilityManager startMonitoring];
+}
+
+</code></pre>
 <!-- content end -->
 </div>
 <br>

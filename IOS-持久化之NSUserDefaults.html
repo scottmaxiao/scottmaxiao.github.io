@@ -1,0 +1,326 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-持久化之NSUserDefaults
+&nbsp;&nbsp;&nbsp;&nbsp;NSUserDefaults适合存储轻量级的本地数据，一些简单的数据（NSString类型的）例如密码，网址等，NSUserDefaults肯定是首选。
+
+&nbsp;&nbsp;&nbsp;&nbsp;NSUserDefaults支持的数据格式有：NSNumber（Integer、float、double），NSString，NSData，NSArray，NSDictionary，BOOL类型。
+
+**读取方式**
+<pre><code>
+NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+NSLog(@"%@", [defaults objectForKey:@"persionId"]);
+
+//读取整型int类型的数据
+NSInteger myInteger = [defaults integerForKey:@"myInteger"];
+
+//读取浮点型float类型的数据  
+float myFloat = [defaults floatForKey:@"myFloat"];  
+      
+//读取double类型的数据  
+double myDouble = [defaults doubleForKey:@"myDouble"];  
+ 
+//读取NSString类型的数据  
+NSString *myString = [defaults stringForKey:@"myString"];       
+      
+//读取数组NSArray类型的数据  
+NSArray *myArray = [defaults arrayForKey:@"myArray"]; 
+	
+//读取字典类型NSDictionary类型的数据  
+NSDictionary *myDictionary = [defaults dictionaryForKey:@"myDictionary"];	
+</code></pre>
+
+
+**存储方式** 
+<pre><code>
+NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+[defaults setObject:@"xiaoming" forKey:@"persionId"];
+[defaults synchronize];//用synchronize方法把数据持久化到standardUserDefaults数据库
+</code></pre>
+
+
+**删除方式**
+<pre><code>
+NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+[defaults removeObjectForKey:@"persionId"];
+[defaults synchronize];//用synchronize方法把数据持久化到standardUserDefaults数据库
+
+</code></pre>
+
+**使用 NSUserDefaults 存储自定义对象**
+
+将自定义类型转换为NSData类型后，才能在NSUserDefaults进行存储和读取。
+
+Student.h
+<pre><code>
+@interface Student : NSObject<NSCoding>
+
+@property(nonatomic,strong)NSString* name;
+@end
+
+</code></pre>	
+
+
+Student.m
+<pre><code>
+#import "Student.h"
+
+@implementation Student
+
+- (void)encodeWithCoder:(NSCoder *)aCoder{
+	
+	[aCoder encodeObject:self.name forKey:@"name"];
+	
+}
+- (instancetype)initWithCoder:(NSCoder *)aDecoder{
+	self=[super init];
+	
+	if (self) {
+		self.name=[aDecoder decodeObjectForKey:@"name"];
+		
+	}
+	
+	return self;
+}
+
+@end
+
+</code></pre>
+
+将自定义类型数据存入 NSUserDefaults 中
+<pre><code>
+Student *student = [[Student alloc] ini];
+student.name = @"xiaoming";
+
+NSData *data = [NSKeyedArchiver archivedDataWithRootObject:student];  
+ 
+NSUserDefaults *user = [NSUserDefaults standardUserDefaults];
+
+[user setObject:data forKey:@"oneStudent"];
+</code></pre>
+	
+	
+从NSUserDefaults中取出数据
+<pre><code>
+NSUserDefaults *user = [NSUserDefaults standardUserDefaults];
+  
+NSdData *data = [user objectForKey:@"oneStudent"];
+     
+Student *student = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+
+</code></pre>
+
+[参考：]<http://my.oschina.net/u/1245365/blog/294449>	
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosnsuserdefaults">IOS-持久化之NSUserDefaults</h2>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;NSUserDefaults适合存储轻量级的本地数据，一些简单的数据（NSString类型的）例如密码，网址等，NSUserDefaults肯定是首选。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;NSUserDefaults支持的数据格式有：NSNumber（Integer、float、double），NSString，NSData，NSArray，NSDictionary，BOOL类型。</p>
+
+<p><strong>读取方式</strong></p>
+
+<pre><code>
+NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+NSLog(@"%@", [defaults objectForKey:@"persionId"]);
+
+//读取整型int类型的数据
+NSInteger myInteger = [defaults integerForKey:@"myInteger"];
+
+//读取浮点型float类型的数据  
+float myFloat = [defaults floatForKey:@"myFloat"];  
+
+//读取double类型的数据  
+double myDouble = [defaults doubleForKey:@"myDouble"];  
+
+//读取NSString类型的数据  
+NSString *myString = [defaults stringForKey:@"myString"];       
+
+//读取数组NSArray类型的数据  
+NSArray *myArray = [defaults arrayForKey:@"myArray"]; 
+
+//读取字典类型NSDictionary类型的数据  
+NSDictionary *myDictionary = [defaults dictionaryForKey:@"myDictionary"];    
+</code></pre>
+
+<p><strong>存储方式</strong> </p>
+
+<pre><code>
+NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+[defaults setObject:@"xiaoming" forKey:@"persionId"];
+[defaults synchronize];//用synchronize方法把数据持久化到standardUserDefaults数据库
+</code></pre>
+
+<p><strong>删除方式</strong></p>
+
+<pre><code>
+NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+[defaults removeObjectForKey:@"persionId"];
+[defaults synchronize];//用synchronize方法把数据持久化到standardUserDefaults数据库
+
+</code></pre>
+
+<p><strong>使用 NSUserDefaults 存储自定义对象</strong></p>
+
+<p>将自定义类型转换为NSData类型后，才能在NSUserDefaults进行存储和读取。</p>
+
+<p>Student.h</p>
+
+<pre><code>
+@interface Student : NSObject<nscoding>
+
+@property(nonatomic,strong)NSString* name;
+@end
+
+</nscoding></code></pre>    
+
+<p>Student.m</p>
+
+<pre><code>
+#import "Student.h"
+
+@implementation Student
+
+- (void)encodeWithCoder:(NSCoder *)aCoder{
+
+    [aCoder encodeObject:self.name forKey:@"name"];
+
+}
+- (instancetype)initWithCoder:(NSCoder *)aDecoder{
+    self=[super init];
+
+    if (self) {
+        self.name=[aDecoder decodeObjectForKey:@"name"];
+
+    }
+
+    return self;
+}
+
+@end
+
+</code></pre>
+
+<p>将自定义类型数据存入 NSUserDefaults 中</p>
+
+<pre><code>
+Student *student = [[Student alloc] ini];
+student.name = @"xiaoming";
+
+NSData *data = [NSKeyedArchiver archivedDataWithRootObject:student];  
+
+NSUserDefaults *user = [NSUserDefaults standardUserDefaults];
+
+[user setObject:data forKey:@"oneStudent"];
+</code></pre>
+
+<p>从NSUserDefaults中取出数据</p>
+
+<pre><code>
+NSUserDefaults *user = [NSUserDefaults standardUserDefaults];
+
+NSdData *data = [user objectForKey:@"oneStudent"];
+
+Student *student = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+
+</code></pre>
+
+<p>[参考：]<a href="http://my.oschina.net/u/1245365/blog/294449">http://my.oschina.net/u/1245365/blog/294449</a>    </p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-持久化之NSUserDefaults.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

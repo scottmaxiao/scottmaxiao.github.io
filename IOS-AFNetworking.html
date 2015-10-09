@@ -1,0 +1,369 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-AFNetworking
+
+&nbsp;&nbsp;&nbsp;&nbsp;AFNetworking是一个轻量级的iOS网络通信类库。AFNetworking 是当前 iOS 和 Mac OS X 开发中最广泛使用的开源项目之一。它帮助了成千上万叫好又叫座的应用，也为其它出色的开源库提供了基础。这个项目是社区里最活跃、最有影响力的项目之一，拥有 8700 个 star、2200 个 fork 和 130 名贡献者。
+
+####安装
+使用CocoaPods安装。
+<pre><code>
+在Podfile中增加下列代码
+platform :ios, '7.0'
+pod 'AFNetworking', '~> 2.0'
+</code></pre>
+[官方地址:]<https://github.com/AFNetworking/AFNetworking>
+
+
+####使用
+首先导入AFNetworking.h
+<pre><code>
+#import "AFNetworking.h"
+</code></pre>
+
+其次实例化一个请求管理器AFHTTPRequestOperationManager。
+<pre><code>
+AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+</code></pre>
+
+设置请求的数据格式:默认是HTTP
+<pre><code>
+//设置为JSON格式
+manager.requestSerializer = [AFJSONRequestSerializer serializer];
+
+//设置为HTTP
+manager.requestSerializer = [AFHTTPRequestSerializer serializer];
+</code></pre>
+
+设置响应的数据格式:默认是JSON
+<pre><code>
+//设置为JSON格式
+manager.responseSerializer = [AFJSONResponseSerializer serializer];
+
+//设置为HTTP
+manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+manager.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@"text/html"];
+</code></pre>
+
+请求超时设置
+<pre><code>
+manager.requestSerializer.timeoutInterval = 10;
+</code></pre>
+
+设置请求客户端的语言,服务端国际化会根据请求客户端的语言选择对应的提示语言
+<pre><code>
+NSArray *languages = [NSLocale preferredLanguages];
+NSString *currentLanguage = [languages objectAtIndex:0];
+	
+[manager.requestSerializer setValue:currentLanguage forHTTPHeaderField:@"Accept-Language"];
+</code></pre>
+
+AFHTTPRequestOperationManager封装了通过HTTP协议与Web应用程序进行通讯的常用方法。
+<pre><code>
+//GET方式
+	[manager GET:url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+		...
+	} failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+		
+		...
+	}];
+	
+//PUT方式
+[manager PUT:url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+		...
+	} failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+		...
+	}];
+	
+//POST方式
+[manager POST :url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+	   ...
+	} failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+		...
+	}];
+	
+//DELETE方式
+[manager DELETE:url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+		...
+	} failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+		...
+	}];
+</code></pre>
+
+----
+
+**关于返回值**
+
+如果设置返回格式为JSON，则可以把responseObject直接当做数组(NSArray)或者字典(NSDictionary)来使用。
+<pre><code>
+NSString *str = [responseObject objectForKey:@"KEY 1"];
+NSArray *arr = [responseObject objectForKey:@"KEY 2"];
+NSDictionary *dic = [responseObject objectForKey:@"KEY 3"];
+</code></pre>
+
+或者使用NSJSONSerialization来转换。
+<pre><code>
+NSArray *jsonArray= [NSJSONSerialization JSONObjectWithData:operation.responseData options:kNilOptions error:nil];
+
+NSDictionary *json= [NSJSONSerialization JSONObjectWithData:operation.responseData options:kNilOptions error:nil];
+</code></pre>
+
+如果设置返回值格式为HTTP，并且设置acceptableContentTypes为"text/html",如果要展现网页内容使用下列代码
+operation.responseString，如果是从response中获取属性，使用下列代码
+<pre><code>
+NSDictionary *json= [NSJSONSerialization JSONObjectWithData:operation.responseData options:kNilOptions error:nil];
+</code></pre>
+
+----
+
+**关于请求失败**
+
+请求失败，可以通过AFHTTPRequestOperation获取HTTP的状态号码。
+<pre><code>
+NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)operation.response;
+NSInteger responseStatusCode= [httpResponse statusCode];
+</code></pre>
+
+通过operation.responseString，可以获取在response中设置的错误信息。
+
+通过error.localizedDescription，可以获取本地错误信息，如没有网络等。
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosafnetworking">IOS-AFNetworking</h2>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;AFNetworking是一个轻量级的iOS网络通信类库。AFNetworking 是当前 iOS 和 Mac OS X 开发中最广泛使用的开源项目之一。它帮助了成千上万叫好又叫座的应用，也为其它出色的开源库提供了基础。这个项目是社区里最活跃、最有影响力的项目之一，拥有 8700 个 star、2200 个 fork 和 130 名贡献者。</p>
+
+<h4 id="">安装</h4>
+
+<p>使用CocoaPods安装。</p>
+
+<pre><code>
+在Podfile中增加下列代码
+platform :ios, '7.0'
+pod 'AFNetworking', '~&gt; 2.0'
+</code></pre>
+
+<p>[官方地址:]<a href="https://github.com/AFNetworking/AFNetworking">https://github.com/AFNetworking/AFNetworking</a></p>
+
+<h4 id="">使用</h4>
+
+<p>首先导入AFNetworking.h</p>
+
+<pre><code>
+#import "AFNetworking.h"
+</code></pre>
+
+<p>其次实例化一个请求管理器AFHTTPRequestOperationManager。</p>
+
+<pre><code>
+AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+</code></pre>
+
+<p>设置请求的数据格式:默认是HTTP</p>
+
+<pre><code>
+//设置为JSON格式
+manager.requestSerializer = [AFJSONRequestSerializer serializer];
+
+//设置为HTTP
+manager.requestSerializer = [AFHTTPRequestSerializer serializer];
+</code></pre>
+
+<p>设置响应的数据格式:默认是JSON</p>
+
+<pre><code>
+//设置为JSON格式
+manager.responseSerializer = [AFJSONResponseSerializer serializer];
+
+//设置为HTTP
+manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+manager.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@"text/html"];
+</code></pre>
+
+<p>请求超时设置</p>
+
+<pre><code>
+manager.requestSerializer.timeoutInterval = 10;
+</code></pre>
+
+<p>设置请求客户端的语言,服务端国际化会根据请求客户端的语言选择对应的提示语言</p>
+
+<pre><code>
+NSArray *languages = [NSLocale preferredLanguages];
+NSString *currentLanguage = [languages objectAtIndex:0];
+
+[manager.requestSerializer setValue:currentLanguage forHTTPHeaderField:@"Accept-Language"];
+</code></pre>
+
+<p>AFHTTPRequestOperationManager封装了通过HTTP协议与Web应用程序进行通讯的常用方法。</p>
+
+<pre><code>
+//GET方式
+    [manager GET:url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        ...
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+
+        ...
+    }];
+
+//PUT方式
+[manager PUT:url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        ...
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        ...
+    }];
+
+//POST方式
+[manager POST :url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+       ...
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        ...
+    }];
+
+//DELETE方式
+[manager DELETE:url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        ...
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        ...
+    }];
+</code></pre>
+
+<hr>
+
+<p><strong>关于返回值</strong></p>
+
+<p>如果设置返回格式为JSON，则可以把responseObject直接当做数组(NSArray)或者字典(NSDictionary)来使用。</p>
+
+<pre><code>
+NSString *str = [responseObject objectForKey:@"KEY 1"];
+NSArray *arr = [responseObject objectForKey:@"KEY 2"];
+NSDictionary *dic = [responseObject objectForKey:@"KEY 3"];
+</code></pre>
+
+<p>或者使用NSJSONSerialization来转换。</p>
+
+<pre><code>
+NSArray *jsonArray= [NSJSONSerialization JSONObjectWithData:operation.responseData options:kNilOptions error:nil];
+
+NSDictionary *json= [NSJSONSerialization JSONObjectWithData:operation.responseData options:kNilOptions error:nil];
+</code></pre>
+
+<p>如果设置返回值格式为HTTP，并且设置acceptableContentTypes为"text/html",如果要展现网页内容使用下列代码
+operation.responseString，如果是从response中获取属性，使用下列代码</p>
+
+<pre><code>
+NSDictionary *json= [NSJSONSerialization JSONObjectWithData:operation.responseData options:kNilOptions error:nil];
+</code></pre>
+
+<hr>
+
+<p><strong>关于请求失败</strong></p>
+
+<p>请求失败，可以通过AFHTTPRequestOperation获取HTTP的状态号码。</p>
+
+<pre><code>
+NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)operation.response;
+NSInteger responseStatusCode= [httpResponse statusCode];
+</code></pre>
+
+<p>通过operation.responseString，可以获取在response中设置的错误信息。</p>
+
+<p>通过error.localizedDescription，可以获取本地错误信息，如没有网络等。</p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-AFNetworking.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

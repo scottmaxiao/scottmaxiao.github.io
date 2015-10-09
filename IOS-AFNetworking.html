@@ -82,6 +82,13 @@ NSString *currentLanguage = [languages objectAtIndex:0];
 [manager.requestSerializer setValue:currentLanguage forHTTPHeaderField:@"Accept-Language"];
 </code></pre>
 
+
+允许访问自定义https
+<pre><code>
+[manager.securityPolicy setAllowInvalidCertificates:YES];
+</code></pre>
+	
+	
 AFHTTPRequestOperationManager封装了通过HTTP协议与Web应用程序进行通讯的常用方法。
 <pre><code>
 //GET方式
@@ -152,6 +159,7 @@ NSInteger responseStatusCode= [httpResponse statusCode];
 
 通过error.localizedDescription，可以获取本地错误信息，如没有网络等。
 
+
 <!-- markdown end -->
 </div>
 <div class="entry" id="main">
@@ -220,6 +228,12 @@ NSArray *languages = [NSLocale preferredLanguages];
 NSString *currentLanguage = [languages objectAtIndex:0];
 
 [manager.requestSerializer setValue:currentLanguage forHTTPHeaderField:@"Accept-Language"];
+</code></pre>
+
+<p>允许访问自定义https</p>
+
+<pre><code>
+[manager.securityPolicy setAllowInvalidCertificates:YES];
 </code></pre>
 
 <p>AFHTTPRequestOperationManager封装了通过HTTP协议与Web应用程序进行通讯的常用方法。</p>

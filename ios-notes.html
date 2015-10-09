@@ -35,17 +35,23 @@ floor():向上取整函数。如果参数是小数，则求最大的整数但不
 fabs():绝对值函数。
 </code></pre>
 
+----
+
 ####添加framework
 
 点击自己的project,然后选择target，点击Build Phases,选择Link Binary With Libraries，贴图如下：
 ![framework](http://scottmaxiao.github.io/ios-Notes/notes01.png)
 点击+或-就可以方便的添加xcode自带的库了。
 
+----
+
 ####图片管理
 
 IOS提供了images.xcassets来管理图片。使用[UIImage imageNamed:]来引用图片;    比如说 最开始有一张叫aaaa.png的图片 加入images.xcassets中，[UIImage imageNamed:@"aaaa"]    然后在images.xcassets中把这张图替换为 文件名叫bbbb.png的图片，代码是不用改的。
 
 [参考资料：]<http://www.cnblogs.com/liufan9/p/3136064.html>
+
+----
 
 ####iphone6适配
 在images.xcassets中的 LaunchImage(启动图片)选择支持ios8
@@ -55,6 +61,7 @@ Retina HD 5.5的启动图片尺寸为1242 × 2208 pixels
 
 Retina HD 4.7的启动图片尺寸为750 × 1334 pixels
 
+----
 
 ####启动图片
 首先在images.xcassets中点击右键，选择“New Launch Image”。命名为“LaunchImage”（必须）。
@@ -81,6 +88,9 @@ Retina HD 4.7的启动图片尺寸为750 × 1334 pixels
 	}];
 </code></pre>
 
+----
+
+
 ####设置UIImage的渲染模式
  着色（Tint Color）是iOS7界面中的一个重大改变，你可以设置一个UIImage在渲染时是否使用当前视图的Tint Color。UIImage新增了一个只读属性：renderingMode，对应的还有一个新增方法：imageWithRenderingMode:，它使用UIImageRenderingMode枚举值来设置图片的renderingMode属性。该枚举中包含下列值：
 
@@ -98,6 +108,8 @@ renderingMode属性的默认值是UIImageRenderingModeAutomatic，即UIImage是�
 UIImage *img = [UIImage imageNamed:@ "myimage" ]; 
 img = [img imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]; 
 </code></pre>
+
+----
 
 ####颜色的HEX码转为RGB
 我们在显示颜色的时候都会使用到HEX码，如白色的HEX码为#FFFFFF。而UIColor使用的是RGB码。下面的代码提供了HEX码转为RGB的功能。可以参考UIColor+ColorWithHexValue.h。
@@ -125,6 +137,9 @@ img = [img imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }
 </code></pre>
 
+----
+
+
 ####设置提示音
 要在项目中使用系统声音服务，首先要导入AudioToolbox.h
 <pre><code>
@@ -139,6 +154,8 @@ AudioServicesPlaySystemSound(1007);
 
 
 [系统提示音列表: ]<http://iphonedevwiki.net/index.php/AudioServices>
+
+----
 
 ####判断是否允许访问相册
 需添加AssetsLibrary.framework
@@ -163,6 +180,9 @@ if (author!=ALAuthorizationStatusAuthorized) {
  }
  */
 </code></pre>
+
+----
+
 
 ####图片保存至用户的相册中
 IOS的UIKit Framework提供了UIImageWriteToSavedPhotosAlbum方法对图像进行保存，该方法会将image保存至用户的相册中
@@ -203,6 +223,8 @@ UIImageWriteToSavedPhotosAlbum(self.imageview.image, self, @selector(image:didFi
 
 [参考地址:]<http://my.oschina.net/hmj/blog/99970>
 
+----
+
 
 ####从Navigation Bar底部开始计算y值
 iOS7以后view默认是全屏模式，而所有的bar(navigation bar, tool bar, search bars 与scope bars都是半透明)，status bar则是全透明。
@@ -217,6 +239,8 @@ iOS7以前是从Navigation Bar底部开始计算y值的，现在却是从Status 
 }
 </code></pre>
 
+----
+
 
 ####判断ios版本
 
@@ -225,6 +249,7 @@ iOS7以前是从Navigation Bar底部开始计算y值的，现在却是从Status 
 
 </code></pre>
 
+----
 
 ####取得设备屏幕宽和高
 <pre><code>
@@ -233,17 +258,22 @@ iOS7以前是从Navigation Bar底部开始计算y值的，现在却是从Status 
 [UIScreen mainScreen].bounds.size.height
 </code></pre>
 
+----
 
 ####获取状态栏的高度
 <pre><code>
 [[UIApplication sharedApplication] statusBarFrame].size.height
 </code></pre>
 
+----
+
 ####获取导航栏的高度
 <pre><code>
 self.navigationController.navigationBar.frame.size.height
 
 </code></pre>
+
+----
 
 ####单例模式创建对象
 <pre><code>
@@ -259,6 +289,9 @@ self.navigationController.navigationBar.frame.size.height
     return sharedManager;  
 }  
 </code></pre>
+
+----
+
 
 ####返回类型instancetype和id的区别
 一个相关的返回类型可以明确地规定用 instancetype 关键字作为返回类型，并且它可以在一些工厂方法或者构造器方法的场景下很有用。它可以提示编译器正确地检查类型，并且更加重要的是，这同时适用于它的子类。
@@ -276,6 +309,7 @@ personWithName方法返回的是ZOCPerson对象实例。
 </code></pre>
 
 ----
+
 
 ####Xcode中code sign identity选项值不出下拉选择框的解决方法
 
@@ -303,7 +337,9 @@ Xcode为当前工程提供了诸多配置选项，其中的Build Settings提供�
 
 [参考链接:]<http://www.jianshu.com/p/3e1b4e2d06c6>
 
+
 ----
+
 
 ####Xcode7编译的APP无法联网问题已解决
 
@@ -315,6 +351,55 @@ Xcode为当前工程提供了诸多配置选项，其中的Build Settings提供�
 &nbsp;&nbsp;&nbsp;&nbsp;临时解决办法在Info.plist中添加  NSAppTransportSecurity 类型  Dictionary Dictionary 下添加  NSAllowsArbitraryLoads 类型 Boolean ,值设为  YES
 
 [参考链接:]<http://bbs.feng.com/read-htm-tid-9619460.html>
+
+----
+
+####返回UTF-8编码的字符
+<pre><code>
++(NSString*) getUTF8String:(NSString*)str{
+	return [NSString stringWithCString:[str UTF8String] encoding:NSUTF8StringEncoding];
+}
+
+</code></pre>
+
+----
+
+####除去前后空格
+<pre><code>
++(NSString*) trim:(NSString*)str{
+	return [str stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+}
+
+</code></pre>
+
+----
+
+####获取当前系统的语言
+<pre><code>
++(NSString*)getCurrentLanguage{
+	NSArray *languages = [NSLocale preferredLanguages];
+	NSString *currentLanguage = [languages objectAtIndex:0];
+	return currentLanguage;
+}
+
+</code></pre>
+
+----
+
+####获取系统当前时间
+<pre><code>
++(NSString*)getLocalTime{
+	NSDate *  senddate=[NSDate date];
+	
+	NSDateFormatter  *dateformatter=[[NSDateFormatter alloc] init];
+	
+	[dateformatter setDateFormat:@"YYYY-MM-dd HH:mm:ss"];
+	
+	NSString *  locationString=[dateformatter stringFromDate:senddate];
+	return locationString;
+}
+
+</code></pre>
 
 <!-- markdown end -->
 </div>
@@ -331,17 +416,23 @@ floor():向上取整函数。如果参数是小数，则求最大的整数但不
 fabs():绝对值函数。
 </code></pre>
 
+<hr>
+
 <h4 id="framework">添加framework</h4>
 
 <p>点击自己的project,然后选择target，点击Build Phases,选择Link Binary With Libraries，贴图如下：
 <img src="http://scottmaxiao.github.io/ios-Notes/notes01.png" alt="framework" title="">
 点击+或-就可以方便的添加xcode自带的库了。</p>
 
+<hr>
+
 <h4 id="">图片管理</h4>
 
 <p>IOS提供了images.xcassets来管理图片。使用[UIImage imageNamed:]来引用图片;    比如说 最开始有一张叫aaaa.png的图片 加入images.xcassets中，[UIImage imageNamed:@"aaaa"]    然后在images.xcassets中把这张图替换为 文件名叫bbbb.png的图片，代码是不用改的。</p>
 
 <p>[参考资料：]<a href="http://www.cnblogs.com/liufan9/p/3136064.html">http://www.cnblogs.com/liufan9/p/3136064.html</a></p>
+
+<hr>
 
 <h4 id="iphone6">iphone6适配</h4>
 
@@ -351,6 +442,8 @@ fabs():绝对值函数。
 <p>Retina HD 5.5的启动图片尺寸为1242 × 2208 pixels</p>
 
 <p>Retina HD 4.7的启动图片尺寸为750 × 1334 pixels</p>
+
+<hr>
 
 <h4 id="">启动图片</h4>
 
@@ -379,6 +472,8 @@ fabs():绝对值函数。
     }];
 </code></pre>
 
+<hr>
+
 <h4 id="uiimage">设置UIImage的渲染模式</h4>
 
 <p>着色（Tint Color）是iOS7界面中的一个重大改变，你可以设置一个UIImage在渲染时是否使用当前视图的Tint Color。UIImage新增了一个只读属性：renderingMode，对应的还有一个新增方法：imageWithRenderingMode:，它使用UIImageRenderingMode枚举值来设置图片的renderingMode属性。该枚举中包含下列值：</p>
@@ -398,6 +493,8 @@ fabs():绝对值函数。
 UIImage *img = [UIImage imageNamed:@ "myimage" ]; 
 img = [img imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]; 
 </code></pre>
+
+<hr>
 
 <h4 id="hexrgb">颜色的HEX码转为RGB</h4>
 
@@ -426,6 +523,8 @@ img = [img imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }
 </code></pre>
 
+<hr>
+
 <h4 id="">设置提示音</h4>
 
 <p>要在项目中使用系统声音服务，首先要导入AudioToolbox.h</p>
@@ -441,6 +540,8 @@ AudioServicesPlaySystemSound(1007);
 <p>对于提醒音来说，与系统声音之间的差别在于，如果手机处于静音状态，提醒音将自动触发震动。</p>
 
 <p>[系统提示音列表: ]<a href="http://iphonedevwiki.net/index.php/AudioServices">http://iphonedevwiki.net/index.php/AudioServices</a></p>
+
+<hr>
 
 <h4 id="">判断是否允许访问相册</h4>
 
@@ -467,6 +568,8 @@ if (author!=ALAuthorizationStatusAuthorized) {
  }
  */
 </code></pre>
+
+<hr>
 
 <h4 id="">图片保存至用户的相册中</h4>
 
@@ -510,6 +613,8 @@ UIImageWriteToSavedPhotosAlbum(self.imageview.image, self, @selector(image:didFi
 
 <p>[参考地址:]<a href="http://my.oschina.net/hmj/blog/99970">http://my.oschina.net/hmj/blog/99970</a></p>
 
+<hr>
+
 <h4 id="navigationbary">从Navigation Bar底部开始计算y值</h4>
 
 <p>iOS7以后view默认是全屏模式，而所有的bar(navigation bar, tool bar, search bars 与scope bars都是半透明)，status bar则是全透明。</p>
@@ -525,12 +630,16 @@ UIImageWriteToSavedPhotosAlbum(self.imageview.image, self, @selector(image:didFi
 }
 </code></pre>
 
+<hr>
+
 <h4 id="ios">判断ios版本</h4>
 
 <pre><code>
 (floor(NSFoundationVersionNumber) &gt; NSFoundationVersionNumber_iOS_6_1)
 
 </code></pre>
+
+<hr>
 
 <h4 id="">取得设备屏幕宽和高</h4>
 
@@ -540,11 +649,15 @@ UIImageWriteToSavedPhotosAlbum(self.imageview.image, self, @selector(image:didFi
 [UIScreen mainScreen].bounds.size.height
 </code></pre>
 
+<hr>
+
 <h4 id="">获取状态栏的高度</h4>
 
 <pre><code>
 [[UIApplication sharedApplication] statusBarFrame].size.height
 </code></pre>
+
+<hr>
 
 <h4 id="">获取导航栏的高度</h4>
 
@@ -552,6 +665,8 @@ UIImageWriteToSavedPhotosAlbum(self.imageview.image, self, @selector(image:didFi
 self.navigationController.navigationBar.frame.size.height
 
 </code></pre>
+
+<hr>
 
 <h4 id="">单例模式创建对象</h4>
 
@@ -568,6 +683,8 @@ self.navigationController.navigationBar.frame.size.height
     return sharedManager;  
 }  
 </code></pre>
+
+<hr>
 
 <h4 id="instancetypeid">返回类型instancetype和id的区别</h4>
 
@@ -625,6 +742,59 @@ personWithName方法返回的是ZOCPerson对象实例。
 <p>&nbsp;&nbsp;&nbsp;&nbsp;临时解决办法在Info.plist中添加  NSAppTransportSecurity 类型  Dictionary Dictionary 下添加  NSAllowsArbitraryLoads 类型 Boolean ,值设为  YES</p>
 
 <p>[参考链接:]<a href="http://bbs.feng.com/read-htm-tid-9619460.html">http://bbs.feng.com/read-htm-tid-9619460.html</a></p>
+
+<hr>
+
+<h4 id="utf8">返回UTF-8编码的字符</h4>
+
+<pre><code>
++(NSString*) getUTF8String:(NSString*)str{
+    return [NSString stringWithCString:[str UTF8String] encoding:NSUTF8StringEncoding];
+}
+
+</code></pre>
+
+<hr>
+
+<h4 id="">除去前后空格</h4>
+
+<pre><code>
++(NSString*) trim:(NSString*)str{
+    return [str stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+}
+
+</code></pre>
+
+<hr>
+
+<h4 id="">获取当前系统的语言</h4>
+
+<pre><code>
++(NSString*)getCurrentLanguage{
+    NSArray *languages = [NSLocale preferredLanguages];
+    NSString *currentLanguage = [languages objectAtIndex:0];
+    return currentLanguage;
+}
+
+</code></pre>
+
+<hr>
+
+<h4 id="">获取系统当前时间</h4>
+
+<pre><code>
++(NSString*)getLocalTime{
+    NSDate *  senddate=[NSDate date];
+
+    NSDateFormatter  *dateformatter=[[NSDateFormatter alloc] init];
+
+    [dateformatter setDateFormat:@"YYYY-MM-dd HH:mm:ss"];
+
+    NSString *  locationString=[dateformatter stringFromDate:senddate];
+    return locationString;
+}
+
+</code></pre>
 <!-- content end -->
 </div>
 <br>

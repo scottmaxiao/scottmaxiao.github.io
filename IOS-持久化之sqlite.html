@@ -1,0 +1,909 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-持久化之sqlite
+
+&nbsp;&nbsp;&nbsp;&nbsp;SQLite是目前主流的嵌入式关系型数据库，其最主要的特点就是轻量级、跨平台，当前很多嵌入式操作系统都将其作为数据库首选。虽然SQLite是一款轻型数据库，但是其功能也绝不亚于很多大型关系数据库。和其他数据库相比，SQLite中的SQL语法并没有太大的差别。
+
+先看一下SQLite数据库的几个特点：
+
+- 基于C语言开发的轻型数据库
+
+- 在iOS中需要使用C语言语法进行数据库操作、访问（无法使用ObjC直接访问，因为libsqlite3框架基于C语言编写）
+
+- SQLite中采用的是动态数据类型，即使创建时定义了一种类型，在实际操作时也可以存储其他类型，但是推荐建库时使用合适的类型（特别是应用需要考虑跨平台的情况时）
+
+- 建立连接后通常不需要关闭连接（尽管可以手动关闭）
+
+
+在iOS中操作SQLite数据库可以分为以下几步（注意先在项目中导入libsqlite3框架）：
+
+- 打开数据库，利用sqlite3_open()打开数据库会指定一个数据库文件保存路径，如果文件存在则直接打开，否则创建并打开。打开数据库会得到一个sqlite3类型的对象，后面需要借助这个对象进行其他操作。
+
+- 执行SQL语句，执行SQL语句又包括有返回值的语句和无返回值语句。
+
+- 对于无返回值的语句（如增加、删除、修改等）直接通过sqlite3_exec()函数执行；
+
+- 对于有返回值的语句则首先通过sqlite3_prepare_v2()进行sql语句评估（语法检测），然后通过sqlite3_step()依次取出查询结果的每一行数据，对于每行数据都可以通过对应的sqlite3_column_类型()方法获得对应列的数据，如此反复循环直到遍历完成。当然，最后需要释放句柄。
+
+&nbsp;&nbsp;&nbsp;&nbsp;在整个操作过程中无需管理数据库连接，对于嵌入式SQLite操作是持久连接（尽管可以通过sqlite3_close()关闭），不需要开发人员自己释放连接。
+
+[参考]<http://www.cnblogs.com/kenshincui/p/4077833.html#SQLite>
+
+----
+下面介绍一下经常会使用的函数
+
+
+**sqlite3_open**
+
+调用该函数来打开一个数据库文件。
+
+<pre><code>
+ int sqlite3_open(
+  const char *filename,   /* Database filename (UTF-8) */
+  sqlite3 **ppDb          /* OUT: SQLite db handle */
+ );
+
+</code></pre>
+
+- 其中第一个参数就是数据库所存放的路径，如果路径下没有数据库文件则系统会在此路径下创建一个数据库。
+- 至于第二个参数则是数据库的句柄引用，但此函数调用成功后此句柄将会保存打开数据库的句柄,此句柄在往后的数据库操作中需要用到。
+
+----
+
+**sqlite3_close**
+
+调用该函数关闭数据库文件。
+
+<pre><code>
+int sqlite3_close(sqlite3 *);
+
+</code></pre>
+
+关闭时传入数据库句柄即可对数据库进行关闭。
+
+----
+
+**sqlite3_exec**
+
+这种方法一般使用在不返回数据集的情况，使用他来创建表结构、更新、插入或者删除操作。
+
+<pre><code>
+int sqlite3_exec(
+  sqlite3*,                                  /* An open database */
+  const char *sql,                           /* SQL to be evaluated */
+  int (*callback)(void*,int,char**,char**),  /* Callback function */
+  void *,                                    /* 1st argument to callback */
+  char **errmsg                              /* Error msg written here */
+);
+
+</code></pre>
+
+
+- 第一个参数就是我们打开数据库的句柄了
+- 第二个参数就是SQL语句
+- 第三个参数为回调方法的函数指针，一旦指定此参数后，当执行语句为查询语句时则在枚举记录集时回对调此方法。
+- 第四个参数则为回调的第一个参数引用。
+- 第五个参数就是如果方法执行后存在异常，那么这个参数保存的就是错误的描述信息。
+
+----
+
+**sqlite3_prepare_v2和sqlite3_step**
+
+该函数是一个将SQL语句编译为sqlite内部一个结构体(sqlite3_stmt).该结构体中包含了将要执行的的SQL语句的信息。sqlite3_step则是让转化后的SQL进行下一步的操作。因此通过这两个函数可以很方便的获取到数据库中的数据。
+
+<pre><code>
+int sqlite3_prepare_v2(
+  sqlite3 *db,            /* Database handle */
+  const char *zSql,       /* SQL statement, UTF-8 encoded */
+  int nByte,              /* Maximum length of zSql in bytes. */
+  sqlite3_stmt **ppStmt,  /* OUT: Statement handle */
+  const char **pzTail     /* OUT: Pointer to unused portion of zSql */
+);
+
+</code></pre>
+
+- 第一个参数就是打开数据库时的数据库句柄对象。
+- 第二个就是SQL语句。
+- 第三个参数是用于指定SQL语句最大的长度，如果此参数为负数，则根据第二个参数中的第一个终结符为准作为一条完整的语句。如果为非负数，则以第二个参数的第一个终结符（\000或\u0000）或者指定的数字为准作为一条完整语句。
+- 第四个参数则是调用函数后返回的一个结构体，此结构体包含了相关语句的信息。
+- 第五个参数是用于指向前一条语句结束位置，一旦指定此参数，则参数指向位置的左边语句将不进行编译解析。
+
+<pre><code>
+int sqlite3_step(sqlite3_stmt*)
+
+</code></pre>
+传入参数即为准备语句中的结构体对象。
+
+----
+
+**sqlite3_finalize**
+释放资源
+<pre><code>
+int sqlite3_finalize(sqlite3_stmt*)
+
+</code></pre>
+
+
+[参考]<http://taox.l.blog.163.com/blog/static/48365573201262312756819/>
+
+----
+
+**添加使用sqlite的库libsqlite3.dylib**
+![sqlite](http://scottmaxiao.github.io/img/sqlite/sqlite1.png)
+
+**libsqlite3.dylib与libsqlite3.0.dylib区别**
+
+&nbsp;&nbsp;&nbsp;&nbsp;实际上libsqlite3.0.dylib本身是个链接，它指向libsqlite3.dylib。也就是说在项目里如果你添加libsqlite3.dylib和添加libsqlite3.0.dylib其实是添加了同一个文件，没有区别，那为什么要添加libsqlite3.dylib呢？
+
+&nbsp;&nbsp;&nbsp;&nbsp;其实这个指针总是指向最新的sqlite3动态库，比如说sqlite3库更新了，如果我们引用的是libsqlite3.0.dylib你就不需要做任何修改了。
+
+![sqlite](http://scottmaxiao.github.io/img/sqlite/sqlite2.png)
+
+[参考]<http://blog.csdn.net/wangqiuyun/article/details/7345743>
+
+**引入SQLite的头文件**
+
+如下
+<pre><code>
+#import &lt;sqlite3.h&gt;
+
+</code></pre>
+   
+----   
+
+在实际开发中，会把对sqlite的操作都封装到一个类中。
+
+GapDbManager.h
+<pre><code>
+#import &lt;Foundation/Foundation.h&gt;
+#import &lt;sqlite3.h&gt;
+@interface GapDbManager : NSObject
+
+#pragma mark 数据库引用，使用它进行数据库操作
+@property (nonatomic) sqlite3 *database;
+
+
+/**
+ *  创建表
+ *
+ *  @param tableName
+ *  @param createSql
+ */
+-(void)createTable:(NSString*)tableName createSql:(NSString*)createSql;
+/**
+ *  执行无返回值的sql,适用于增加，修改，删除操作。
+ *  事务单独提交
+ *
+ *  @param sql sql语句
+ */
+-(void)executeNonQuery:(NSString *)sql;
+
+
+/**
+ *  批量执行无返回值的sql,适用于增加，修改，删除操作。
+ *
+ *  事务统一提交
+ *  @param sqlArray sql语句 集合
+ */
+-(void)batchExecuteNonQuery:(NSMutableArray *)sqlArray;
+/**
+ *  执行有返回值的sql,适用于查询操作。
+ *
+ *  @param sql sql语句
+ *
+ *  @return 查询结果
+ */
+-(NSArray *)executeQuery:(NSString *)sql;
+
+/**
+ *  执行有返回值的sql，适用于查询操作。
+ *
+ *  @param sql
+ *  @param populateBlock  populateBlock可以实现对查询出的结果做解析。
+ *
+ *  @return
+ */
+-(NSArray *)executeQuery:(NSString *)sql populate:(void (^)(NSMutableDictionary *jsonDict))populateBlock;
+@end
+
+</code></pre>
+
+GapDbManager.m
+<pre><code>
+#import "GapDbManager.h"
+
+@implementation GapDbManager
+
+...
+
+/**
+ *  打开数据库
+ *
+ *  @param dbname 数据库名称
+ */
+-(void)openDb:(NSString *)dbname{
+	    //取得数据库保存路径，通常保存沙盒Documents目录
+	    NSString *directory=[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+
+	    NSString *filePath=[directory stringByAppendingPathComponent:dbname];
+	    //如果有数据库则直接打开，否则创建并打开（注意filePath是ObjC中的字符串，需要转化为C语言字符串类型）
+	    if (SQLITE_OK ==sqlite3_open(filePath.UTF8String, &_database)) {
+	        NSLog(@"数据库打开成功!");
+	    }else{
+	        NSLog(@"数据库打开失败!");
+	    }
+}
+
+
+/**
+ *  创建表
+ *
+ *  @param tableName
+ *  @param createSql
+ */
+-(void)createTable:(NSString*)tableName createSql:(NSString*)createSql{
+	NSString *sql=[NSString stringWithFormat:@" SELECT count(*)as count FROM sqlite_master WHERE type='table' AND name='%@'", tableName];
+	
+	NSArray* result=[[GapDbManager getInstance]executeQuery:sql];
+	
+	//判断该表是否已经创建
+	if ([[result[0] objectForKey:@"count"]isEqualToString:@"0"]) {
+
+		[[GapDbManager getInstance] executeQuery:createSql];
+		
+		NSLog(@"%@ 表创建成功", tableName);
+	}
+}
+
+/**
+ *  执行无返回值的sql
+ *
+ *  @param sql sql语句
+ */
+-(void)executeNonQuery:(NSString *)sql{
+	char *error;
+	//单步执行sql语句，用于插入、修改、删除
+	if (SQLITE_OK!=sqlite3_exec(_database, sql.UTF8String, NULL, NULL,&error)) {
+		NSLog(@"执行SQL语句过程中发生错误！错误信息：%s",error);
+	}
+	//执行sqlite3_free函数来释放errorMsg。
+	sqlite3_free(error);
+	
+}
+
+-(void)batchExecuteNonQuery:(NSMutableArray *)sqlArray{
+	//使用事务，提交插入sql语句
+	@try{
+		char *errorMsg;
+		if (sqlite3_exec(_database, "BEGIN", NULL, NULL, &errorMsg)==SQLITE_OK)
+		{
+			NSLog(@"启动事务成功");
+			sqlite3_free(errorMsg);
+			sqlite3_stmt *statement;
+			for (int i = 0; i&lt;sqlArray.count; i++)
+			{
+				if (sqlite3_prepare_v2(_database,[[sqlArray objectAtIndex:i] UTF8String], -1, &statement,NULL)==SQLITE_OK)
+				{
+					if (sqlite3_step(statement)!=SQLITE_DONE) sqlite3_finalize(statement);
+				}
+			}
+			if (sqlite3_exec(_database, "COMMIT", NULL, NULL, &errorMsg)==SQLITE_OK)   NSLog(@"提交事务成功");
+			sqlite3_free(errorMsg);
+		}
+		else sqlite3_free(errorMsg);
+	}
+	@catch(NSException *e)
+	{
+		char *errorMsg;
+		if (sqlite3_exec(_database, "ROLLBACK", NULL, NULL, &errorMsg)==SQLITE_OK)  NSLog(@"回滚事务成功");
+		sqlite3_free(errorMsg);
+	}
+	@finally{}
+}
+
+/**
+ *  执行有返回值的sql
+ *
+ *  @param sql sql语句
+ *
+ *  @return 查询结果
+ */
+-(NSArray *)executeQuery:(NSString *)sql{
+	return [self executeQuery:sql populate:nil];
+}
+
+/**
+ *  执行有返回值的sql
+ *
+ *  @param sql
+ *  @param populateBlock
+ *
+ *  @return
+ */
+-(NSArray *)executeQuery:(NSString *)sql populate:(void (^)(NSMutableDictionary *jsonDict))populateBlock{
+	NSMutableArray *rows=[NSMutableArray array];//数据行
+	
+	//评估语法正确性
+	sqlite3_stmt *stmt;
+	//检查语法正确性
+	if (SQLITE_OK==sqlite3_prepare_v2(_database, sql.UTF8String, -1, &stmt, NULL)) {
+		//单步执行sql语句
+		while (SQLITE_ROW==sqlite3_step(stmt)) {
+			int columnCount= sqlite3_column_count(stmt);
+			NSMutableDictionary *dic=[NSMutableDictionary dictionary];
+			for (int i=0; i&lt;columnCount; i++) {
+				const char *name= sqlite3_column_name(stmt, i);//取得列名
+				const unsigned char *value= sqlite3_column_text(stmt, i);//取得某列的值
+				dic[[NSString stringWithUTF8String:name]]=[NSString stringWithUTF8String:(const char *)value];
+			}
+			if (populateBlock) {
+				populateBlock(dic);
+			}
+			[rows addObject:dic];
+		}
+	}
+	
+	//释放句柄
+	sqlite3_finalize(stmt);
+	
+	return rows;
+}
+
+@end
+
+
+</code></pre>
+
+----
+
+**关于executeQuery: populate:方法的调用**
+<pre><code>
+[[GapDbManager getInstance] executeQuery:sql populate:^(NSMutableDictionary *jsonDict){
+		if([[jsonDict allKeys] containsObject:@"formDatas"]){
+		 ...
+		 }
+	}];
+
+</code></pre>
+
+----
+
+**关于服务端获取到json字符串的存储**
+从服务端获取到json字符串需要做一下转换以后，存储到sqlite中，获取后在转换为字典。
+
+存储之前转换的代码
+<pre><code>
+
+NSData *jsonData =[NSJSONSerialization dataWithJSONObject:[jsonDict objectForKey:@"formDatas"] options:kNilOptions error:nil];
+		
+NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+</code></pre>
+
+从sqlite中获取json字符串转换为字典的代码
+<pre><code>
+NSData *aData = [jsonDict[@"formDatas"] dataUsingEncoding: NSUTF8StringEncoding];
+			
+jsonDict[@"formDatas"]=[NSJSONSerialization JSONObjectWithData:aData options:kNilOptions error:nil];
+
+</code></pre>
+
+----
+
+**关于翻页的设置**
+
+在sqlite中执行的sql，使用 LIMIT 和 OFFSET 来进行分页设置。
+<pre><code>
+sql = "select * from TableName where "+条件+" order by "+排序+" limit "+要显示多少条记录+" offset "+从哪条记录开始;
+
+
+select * from Contacts limit 15 offset 20     表示: 从Contacts表的第20条记录开始，获取15条记录
+</code></pre>
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iossqlite">IOS-持久化之sqlite</h2>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;SQLite是目前主流的嵌入式关系型数据库，其最主要的特点就是轻量级、跨平台，当前很多嵌入式操作系统都将其作为数据库首选。虽然SQLite是一款轻型数据库，但是其功能也绝不亚于很多大型关系数据库。和其他数据库相比，SQLite中的SQL语法并没有太大的差别。</p>
+
+<p>先看一下SQLite数据库的几个特点：</p>
+
+<ul>
+<li><p>基于C语言开发的轻型数据库</p></li>
+<li><p>在iOS中需要使用C语言语法进行数据库操作、访问（无法使用ObjC直接访问，因为libsqlite3框架基于C语言编写）</p></li>
+<li><p>SQLite中采用的是动态数据类型，即使创建时定义了一种类型，在实际操作时也可以存储其他类型，但是推荐建库时使用合适的类型（特别是应用需要考虑跨平台的情况时）</p></li>
+<li><p>建立连接后通常不需要关闭连接（尽管可以手动关闭）</p></li>
+</ul>
+
+<p>在iOS中操作SQLite数据库可以分为以下几步（注意先在项目中导入libsqlite3框架）：</p>
+
+<ul>
+<li><p>打开数据库，利用sqlite3_open()打开数据库会指定一个数据库文件保存路径，如果文件存在则直接打开，否则创建并打开。打开数据库会得到一个sqlite3类型的对象，后面需要借助这个对象进行其他操作。</p></li>
+<li><p>执行SQL语句，执行SQL语句又包括有返回值的语句和无返回值语句。</p></li>
+<li><p>对于无返回值的语句（如增加、删除、修改等）直接通过sqlite3_exec()函数执行；</p></li>
+<li><p>对于有返回值的语句则首先通过sqlite3<em>prepare</em>v2()进行sql语句评估（语法检测），然后通过sqlite3<em>step()依次取出查询结果的每一行数据，对于每行数据都可以通过对应的sqlite3</em>column_类型()方法获得对应列的数据，如此反复循环直到遍历完成。当然，最后需要释放句柄。</p></li>
+</ul>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在整个操作过程中无需管理数据库连接，对于嵌入式SQLite操作是持久连接（尽管可以通过sqlite3_close()关闭），不需要开发人员自己释放连接。</p>
+
+<p>[参考]<a href="http://www.cnblogs.com/kenshincui/p/4077833.html#SQLite">http://www.cnblogs.com/kenshincui/p/4077833.html#SQLite</a></p>
+
+<hr>
+
+<p>下面介绍一下经常会使用的函数</p>
+
+<p><strong>sqlite3_open</strong></p>
+
+<p>调用该函数来打开一个数据库文件。</p>
+
+<pre><code>
+ int sqlite3_open(
+  const char *filename,   /* Database filename (UTF-8) */
+  sqlite3 **ppDb          /* OUT: SQLite db handle */
+ );
+
+</code></pre>
+
+<ul>
+<li>其中第一个参数就是数据库所存放的路径，如果路径下没有数据库文件则系统会在此路径下创建一个数据库。</li>
+<li>至于第二个参数则是数据库的句柄引用，但此函数调用成功后此句柄将会保存打开数据库的句柄,此句柄在往后的数据库操作中需要用到。</li>
+</ul>
+
+<hr>
+
+<p><strong>sqlite3_close</strong></p>
+
+<p>调用该函数关闭数据库文件。</p>
+
+<pre><code>
+int sqlite3_close(sqlite3 *);
+
+</code></pre>
+
+<p>关闭时传入数据库句柄即可对数据库进行关闭。</p>
+
+<hr>
+
+<p><strong>sqlite3_exec</strong></p>
+
+<p>这种方法一般使用在不返回数据集的情况，使用他来创建表结构、更新、插入或者删除操作。</p>
+
+<pre><code>
+int sqlite3_exec(
+  sqlite3*,                                  /* An open database */
+  const char *sql,                           /* SQL to be evaluated */
+  int (*callback)(void*,int,char**,char**),  /* Callback function */
+  void *,                                    /* 1st argument to callback */
+  char **errmsg                              /* Error msg written here */
+);
+
+</code></pre>
+
+<ul>
+<li>第一个参数就是我们打开数据库的句柄了</li>
+<li>第二个参数就是SQL语句</li>
+<li>第三个参数为回调方法的函数指针，一旦指定此参数后，当执行语句为查询语句时则在枚举记录集时回对调此方法。</li>
+<li>第四个参数则为回调的第一个参数引用。</li>
+<li>第五个参数就是如果方法执行后存在异常，那么这个参数保存的就是错误的描述信息。</li>
+</ul>
+
+<hr>
+
+<p><strong>sqlite3<em>prepare</em>v2和sqlite3_step</strong></p>
+
+<p>该函数是一个将SQL语句编译为sqlite内部一个结构体(sqlite3<em>stmt).该结构体中包含了将要执行的的SQL语句的信息。sqlite3</em>step则是让转化后的SQL进行下一步的操作。因此通过这两个函数可以很方便的获取到数据库中的数据。</p>
+
+<pre><code>
+int sqlite3_prepare_v2(
+  sqlite3 *db,            /* Database handle */
+  const char *zSql,       /* SQL statement, UTF-8 encoded */
+  int nByte,              /* Maximum length of zSql in bytes. */
+  sqlite3_stmt **ppStmt,  /* OUT: Statement handle */
+  const char **pzTail     /* OUT: Pointer to unused portion of zSql */
+);
+
+</code></pre>
+
+<ul>
+<li>第一个参数就是打开数据库时的数据库句柄对象。</li>
+<li>第二个就是SQL语句。</li>
+<li>第三个参数是用于指定SQL语句最大的长度，如果此参数为负数，则根据第二个参数中的第一个终结符为准作为一条完整的语句。如果为非负数，则以第二个参数的第一个终结符（\000或\u0000）或者指定的数字为准作为一条完整语句。</li>
+<li>第四个参数则是调用函数后返回的一个结构体，此结构体包含了相关语句的信息。</li>
+<li>第五个参数是用于指向前一条语句结束位置，一旦指定此参数，则参数指向位置的左边语句将不进行编译解析。</li>
+</ul>
+
+<pre><code>
+int sqlite3_step(sqlite3_stmt*)
+
+</code></pre>
+
+<p>传入参数即为准备语句中的结构体对象。</p>
+
+<hr>
+
+<p><strong>sqlite3_finalize</strong>
+释放资源</p>
+
+<pre><code>
+int sqlite3_finalize(sqlite3_stmt*)
+
+</code></pre>
+
+<p>[参考]<a href="http://taox.l.blog.163.com/blog/static/48365573201262312756819/">http://taox.l.blog.163.com/blog/static/48365573201262312756819/</a></p>
+
+<hr>
+
+<p><strong>添加使用sqlite的库libsqlite3.dylib</strong>
+<img src="http://scottmaxiao.github.io/img/sqlite/sqlite1.png" alt="sqlite" title=""></p>
+
+<p><strong>libsqlite3.dylib与libsqlite3.0.dylib区别</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;实际上libsqlite3.0.dylib本身是个链接，它指向libsqlite3.dylib。也就是说在项目里如果你添加libsqlite3.dylib和添加libsqlite3.0.dylib其实是添加了同一个文件，没有区别，那为什么要添加libsqlite3.dylib呢？</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;其实这个指针总是指向最新的sqlite3动态库，比如说sqlite3库更新了，如果我们引用的是libsqlite3.0.dylib你就不需要做任何修改了。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/sqlite/sqlite2.png" alt="sqlite" title=""></p>
+
+<p>[参考]<a href="http://blog.csdn.net/wangqiuyun/article/details/7345743">http://blog.csdn.net/wangqiuyun/article/details/7345743</a></p>
+
+<p><strong>引入SQLite的头文件</strong></p>
+
+<p>如下</p>
+
+<pre><code>
+#import &lt;sqlite3.h&gt;
+
+</code></pre>
+
+<hr>
+
+<p>在实际开发中，会把对sqlite的操作都封装到一个类中。</p>
+
+<p>GapDbManager.h</p>
+
+<pre><code>
+#import &lt;Foundation/Foundation.h&gt;
+#import &lt;sqlite3.h&gt;
+@interface GapDbManager : NSObject
+
+#pragma mark 数据库引用，使用它进行数据库操作
+@property (nonatomic) sqlite3 *database;
+
+
+/**
+ *  创建表
+ *
+ *  @param tableName
+ *  @param createSql
+ */
+-(void)createTable:(NSString*)tableName createSql:(NSString*)createSql;
+/**
+ *  执行无返回值的sql,适用于增加，修改，删除操作。
+ *  事务单独提交
+ *
+ *  @param sql sql语句
+ */
+-(void)executeNonQuery:(NSString *)sql;
+
+
+/**
+ *  批量执行无返回值的sql,适用于增加，修改，删除操作。
+ *
+ *  事务统一提交
+ *  @param sqlArray sql语句 集合
+ */
+-(void)batchExecuteNonQuery:(NSMutableArray *)sqlArray;
+/**
+ *  执行有返回值的sql,适用于查询操作。
+ *
+ *  @param sql sql语句
+ *
+ *  @return 查询结果
+ */
+-(NSArray *)executeQuery:(NSString *)sql;
+
+/**
+ *  执行有返回值的sql，适用于查询操作。
+ *
+ *  @param sql
+ *  @param populateBlock  populateBlock可以实现对查询出的结果做解析。
+ *
+ *  @return
+ */
+-(NSArray *)executeQuery:(NSString *)sql populate:(void (^)(NSMutableDictionary *jsonDict))populateBlock;
+@end
+
+</code></pre>
+
+<p>GapDbManager.m</p>
+
+<pre><code>
+#import "GapDbManager.h"
+
+@implementation GapDbManager
+
+...
+
+/**
+ *  打开数据库
+ *
+ *  @param dbname 数据库名称
+ */
+-(void)openDb:(NSString *)dbname{
+        //取得数据库保存路径，通常保存沙盒Documents目录
+        NSString *directory=[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+
+        NSString *filePath=[directory stringByAppendingPathComponent:dbname];
+        //如果有数据库则直接打开，否则创建并打开（注意filePath是ObjC中的字符串，需要转化为C语言字符串类型）
+        if (SQLITE_OK ==sqlite3_open(filePath.UTF8String, &amp;_database)) {
+            NSLog(@"数据库打开成功!");
+        }else{
+            NSLog(@"数据库打开失败!");
+        }
+}
+
+
+/**
+ *  创建表
+ *
+ *  @param tableName
+ *  @param createSql
+ */
+-(void)createTable:(NSString*)tableName createSql:(NSString*)createSql{
+    NSString *sql=[NSString stringWithFormat:@" SELECT count(*)as count FROM sqlite_master WHERE type='table' AND name='%@'", tableName];
+
+    NSArray* result=[[GapDbManager getInstance]executeQuery:sql];
+
+    //判断该表是否已经创建
+    if ([[result[0] objectForKey:@"count"]isEqualToString:@"0"]) {
+
+        [[GapDbManager getInstance] executeQuery:createSql];
+
+        NSLog(@"%@ 表创建成功", tableName);
+    }
+}
+
+/**
+ *  执行无返回值的sql
+ *
+ *  @param sql sql语句
+ */
+-(void)executeNonQuery:(NSString *)sql{
+    char *error;
+    //单步执行sql语句，用于插入、修改、删除
+    if (SQLITE_OK!=sqlite3_exec(_database, sql.UTF8String, NULL, NULL,&amp;error)) {
+        NSLog(@"执行SQL语句过程中发生错误！错误信息：%s",error);
+    }
+    //执行sqlite3_free函数来释放errorMsg。
+    sqlite3_free(error);
+
+}
+
+-(void)batchExecuteNonQuery:(NSMutableArray *)sqlArray{
+    //使用事务，提交插入sql语句
+    @try{
+        char *errorMsg;
+        if (sqlite3_exec(_database, "BEGIN", NULL, NULL, &amp;errorMsg)==SQLITE_OK)
+        {
+            NSLog(@"启动事务成功");
+            sqlite3_free(errorMsg);
+            sqlite3_stmt *statement;
+            for (int i = 0; i&lt;sqlArray.count; i++)
+            {
+                if (sqlite3_prepare_v2(_database,[[sqlArray objectAtIndex:i] UTF8String], -1, &amp;statement,NULL)==SQLITE_OK)
+                {
+                    if (sqlite3_step(statement)!=SQLITE_DONE) sqlite3_finalize(statement);
+                }
+            }
+            if (sqlite3_exec(_database, "COMMIT", NULL, NULL, &amp;errorMsg)==SQLITE_OK)   NSLog(@"提交事务成功");
+            sqlite3_free(errorMsg);
+        }
+        else sqlite3_free(errorMsg);
+    }
+    @catch(NSException *e)
+    {
+        char *errorMsg;
+        if (sqlite3_exec(_database, "ROLLBACK", NULL, NULL, &amp;errorMsg)==SQLITE_OK)  NSLog(@"回滚事务成功");
+        sqlite3_free(errorMsg);
+    }
+    @finally{}
+}
+
+/**
+ *  执行有返回值的sql
+ *
+ *  @param sql sql语句
+ *
+ *  @return 查询结果
+ */
+-(NSArray *)executeQuery:(NSString *)sql{
+    return [self executeQuery:sql populate:nil];
+}
+
+/**
+ *  执行有返回值的sql
+ *
+ *  @param sql
+ *  @param populateBlock
+ *
+ *  @return
+ */
+-(NSArray *)executeQuery:(NSString *)sql populate:(void (^)(NSMutableDictionary *jsonDict))populateBlock{
+    NSMutableArray *rows=[NSMutableArray array];//数据行
+
+    //评估语法正确性
+    sqlite3_stmt *stmt;
+    //检查语法正确性
+    if (SQLITE_OK==sqlite3_prepare_v2(_database, sql.UTF8String, -1, &amp;stmt, NULL)) {
+        //单步执行sql语句
+        while (SQLITE_ROW==sqlite3_step(stmt)) {
+            int columnCount= sqlite3_column_count(stmt);
+            NSMutableDictionary *dic=[NSMutableDictionary dictionary];
+            for (int i=0; i&lt;columnCount; i++) {
+                const char *name= sqlite3_column_name(stmt, i);//取得列名
+                const unsigned char *value= sqlite3_column_text(stmt, i);//取得某列的值
+                dic[[NSString stringWithUTF8String:name]]=[NSString stringWithUTF8String:(const char *)value];
+            }
+            if (populateBlock) {
+                populateBlock(dic);
+            }
+            [rows addObject:dic];
+        }
+    }
+
+    //释放句柄
+    sqlite3_finalize(stmt);
+
+    return rows;
+}
+
+@end
+
+
+</code></pre>
+
+<hr>
+
+<p><strong>关于executeQuery: populate:方法的调用</strong></p>
+
+<pre><code>
+[[GapDbManager getInstance] executeQuery:sql populate:^(NSMutableDictionary *jsonDict){
+        if([[jsonDict allKeys] containsObject:@"formDatas"]){
+         ...
+         }
+    }];
+
+</code></pre>
+
+<hr>
+
+<p><strong>关于服务端获取到json字符串的存储</strong>
+从服务端获取到json字符串需要做一下转换以后，存储到sqlite中，获取后在转换为字典。</p>
+
+<p>存储之前转换的代码</p>
+
+<pre><code>
+
+NSData *jsonData =[NSJSONSerialization dataWithJSONObject:[jsonDict objectForKey:@"formDatas"] options:kNilOptions error:nil];
+
+NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+</code></pre>
+
+<p>从sqlite中获取json字符串转换为字典的代码</p>
+
+<pre><code>
+NSData *aData = [jsonDict[@"formDatas"] dataUsingEncoding: NSUTF8StringEncoding];
+
+jsonDict[@"formDatas"]=[NSJSONSerialization JSONObjectWithData:aData options:kNilOptions error:nil];
+
+</code></pre>
+
+<hr>
+
+<p><strong>关于翻页的设置</strong></p>
+
+<p>在sqlite中执行的sql，使用 LIMIT 和 OFFSET 来进行分页设置。</p>
+
+<pre><code>
+sql = "select * from TableName where "+条件+" order by "+排序+" limit "+要显示多少条记录+" offset "+从哪条记录开始;
+
+
+select * from Contacts limit 15 offset 20     表示: 从Contacts表的第20条记录开始，获取15条记录
+</code></pre>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-持久化之sqlite.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

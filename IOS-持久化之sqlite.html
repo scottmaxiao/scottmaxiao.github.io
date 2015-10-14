@@ -42,15 +42,15 @@
 
 在iOS中操作SQLite数据库可以分为以下几步（注意先在项目中导入libsqlite3框架）：
 
-- 打开数据库，利用sqlite3_open()打开数据库会指定一个数据库文件保存路径，如果文件存在则直接打开，否则创建并打开。打开数据库会得到一个sqlite3类型的对象，后面需要借助这个对象进行其他操作。
+- 打开数据库，利用sqlite3\_open()打开数据库会指定一个数据库文件保存路径，如果文件存在则直接打开，否则创建并打开。打开数据库会得到一个sqlite3类型的对象，后面需要借助这个对象进行其他操作。
 
 - 执行SQL语句，执行SQL语句又包括有返回值的语句和无返回值语句。
 
-- 对于无返回值的语句（如增加、删除、修改等）直接通过sqlite3_exec()函数执行；
+- 对于无返回值的语句（如增加、删除、修改等）直接通过sqlite3\_exec()函数执行；
 
-- 对于有返回值的语句则首先通过sqlite3_prepare_v2()进行sql语句评估（语法检测），然后通过sqlite3_step()依次取出查询结果的每一行数据，对于每行数据都可以通过对应的sqlite3_column_类型()方法获得对应列的数据，如此反复循环直到遍历完成。当然，最后需要释放句柄。
+- 对于有返回值的语句则首先通过sqlite3\_prepare\_v2()进行sql语句评估（语法检测），然后通过sqlite3\_step()依次取出查询结果的每一行数据，对于每行数据都可以通过对应的sqlite3\_column\_类型()方法获得对应列的数据，如此反复循环直到遍历完成。当然，最后需要释放句柄。
 
-&nbsp;&nbsp;&nbsp;&nbsp;在整个操作过程中无需管理数据库连接，对于嵌入式SQLite操作是持久连接（尽管可以通过sqlite3_close()关闭），不需要开发人员自己释放连接。
+&nbsp;&nbsp;&nbsp;&nbsp;在整个操作过程中无需管理数据库连接，对于嵌入式SQLite操作是持久连接（尽管可以通过sqlite3\_close()关闭），不需要开发人员自己释放连接。
 
 [参考]<http://www.cnblogs.com/kenshincui/p/4077833.html#SQLite>
 
@@ -58,7 +58,7 @@
 下面介绍一下经常会使用的函数
 
 
-**sqlite3_open**
+**sqlite3\_open**
 
 调用该函数来打开一个数据库文件。
 
@@ -75,7 +75,7 @@
 
 ----
 
-**sqlite3_close**
+**sqlite3\_close**
 
 调用该函数关闭数据库文件。
 
@@ -88,7 +88,7 @@ int sqlite3_close(sqlite3 *);
 
 ----
 
-**sqlite3_exec**
+**sqlite3\_exec**
 
 这种方法一般使用在不返回数据集的情况，使用他来创建表结构、更新、插入或者删除操作。
 
@@ -112,9 +112,9 @@ int sqlite3_exec(
 
 ----
 
-**sqlite3_prepare_v2和sqlite3_step**
+**sqlite3\_prepare\_v2和sqlite3_step**
 
-该函数是一个将SQL语句编译为sqlite内部一个结构体(sqlite3_stmt).该结构体中包含了将要执行的的SQL语句的信息。sqlite3_step则是让转化后的SQL进行下一步的操作。因此通过这两个函数可以很方便的获取到数据库中的数据。
+该函数是一个将SQL语句编译为sqlite内部一个结构体(sqlite3\_stmt).该结构体中包含了将要执行的的SQL语句的信息。sqlite3\_step则是让转化后的SQL进行下一步的操作。因此通过这两个函数可以很方便的获取到数据库中的数据。
 
 <pre><code>
 int sqlite3_prepare_v2(
@@ -141,7 +141,7 @@ int sqlite3_step(sqlite3_stmt*)
 
 ----
 
-**sqlite3_finalize**
+**sqlite3\_finalize**
 释放资源
 <pre><code>
 int sqlite3_finalize(sqlite3_stmt*)
@@ -447,7 +447,7 @@ select * from Contacts limit 15 offset 20     表示: 从Contacts表的第20条�
 <li><p>打开数据库，利用sqlite3_open()打开数据库会指定一个数据库文件保存路径，如果文件存在则直接打开，否则创建并打开。打开数据库会得到一个sqlite3类型的对象，后面需要借助这个对象进行其他操作。</p></li>
 <li><p>执行SQL语句，执行SQL语句又包括有返回值的语句和无返回值语句。</p></li>
 <li><p>对于无返回值的语句（如增加、删除、修改等）直接通过sqlite3_exec()函数执行；</p></li>
-<li><p>对于有返回值的语句则首先通过sqlite3<em>prepare</em>v2()进行sql语句评估（语法检测），然后通过sqlite3<em>step()依次取出查询结果的每一行数据，对于每行数据都可以通过对应的sqlite3</em>column_类型()方法获得对应列的数据，如此反复循环直到遍历完成。当然，最后需要释放句柄。</p></li>
+<li><p>对于有返回值的语句则首先通过sqlite3_prepare_v2()进行sql语句评估（语法检测），然后通过sqlite3_step()依次取出查询结果的每一行数据，对于每行数据都可以通过对应的sqlite3_column_类型()方法获得对应列的数据，如此反复循环直到遍历完成。当然，最后需要释放句柄。</p></li>
 </ul>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;在整个操作过程中无需管理数据库连接，对于嵌入式SQLite操作是持久连接（尽管可以通过sqlite3_close()关闭），不需要开发人员自己释放连接。</p>
@@ -515,9 +515,9 @@ int sqlite3_exec(
 
 <hr>
 
-<p><strong>sqlite3<em>prepare</em>v2和sqlite3_step</strong></p>
+<p><strong>sqlite3_prepare_v2和sqlite3_step</strong></p>
 
-<p>该函数是一个将SQL语句编译为sqlite内部一个结构体(sqlite3<em>stmt).该结构体中包含了将要执行的的SQL语句的信息。sqlite3</em>step则是让转化后的SQL进行下一步的操作。因此通过这两个函数可以很方便的获取到数据库中的数据。</p>
+<p>该函数是一个将SQL语句编译为sqlite内部一个结构体(sqlite3_stmt).该结构体中包含了将要执行的的SQL语句的信息。sqlite3_step则是让转化后的SQL进行下一步的操作。因此通过这两个函数可以很方便的获取到数据库中的数据。</p>
 
 <pre><code>
 int sqlite3_prepare_v2(

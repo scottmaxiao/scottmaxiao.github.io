@@ -1,0 +1,755 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-持久化之CoreData
+&nbsp;&nbsp;&nbsp;&nbsp;Core Data 是 iOS 3.0 以后引入的数据持久化解决方案,其原理是对SQLite的封装,是开发者不需要接触SQL语句,就可以对数据库进行的操作.
+
+###CoreData 的核心概念
+
+&nbsp;&nbsp;&nbsp;&nbsp;介绍一下CoreData 中的一些核心概念
+
+先上两幅关键的概念图
+
+![CoreData1](http://scottmaxiao.github.io/img/coredata/ios_CoreData1.jpeg)
+
+![CoreData1](http://scottmaxiao.github.io/img/coredata/ios_CoreData2.jpeg)
+
+**(1)NSManagedObjectModel 托管对象模型（MOM）**
+
+![CoreData1](http://scottmaxiao.github.io/img/coredata/ios_NSManagedObjectModel.png)
+
+![CoreData1](http://scottmaxiao.github.io/img/coredata/ios_managed_object_model_2x.png)
+
+&nbsp;&nbsp;&nbsp;&nbsp;这个MOM由实体描述对象，即NSEntityDescription实例的集合组成，实体描述对象介绍见下面第7条。
+
+&nbsp;&nbsp;&nbsp;&nbsp;作用：添加实体的属性，建立属性之间的关系
+
+**(2)NSManagedObjectContext 托管对象上下文（MOC）**
+
+![CoreData1](http://scottmaxiao.github.io/img/coredata/ios_CoreData5.png)
+
+&nbsp;&nbsp;&nbsp;&nbsp;在概念图2中，托管对象上下文（MOC）通过持久化存储协调器（PSC）从持久化存储（NSPersistentStore）中获取对象时，这些对象会形成一个临时副本在MOC中形成一个对象集合，该对象集合包含了对象以及对象彼此之间的一些关系。我们可以对这些副本进行修改，然后进行保存，然后MOC会通过 PSC 对 NSPersistentStore 进行操作，持久化存储就会发生变化。
+
+&nbsp;&nbsp;&nbsp;&nbsp;CoreData中的NSManagedObjectModel 托管对象的数据模型（MOM），通过 MOC 进行注册。MOC有插入、删除以及更新数据模型等操作，并提供了撤销和重做的支持。
+
+&nbsp;&nbsp;&nbsp;&nbsp;作用：插入数据，更新数据，删除数据
+
+
+**(3)NSPersistentStoreCoordinator 持久化存储协调器（PSC）**
+
+![CoreData1](http://scottmaxiao.github.io/img/coredata/ios_CoreData6.png)
+
+![CoreData1](http://scottmaxiao.github.io/img/coredata/ios_advanced_persistence_stack_2x.png)
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;在应用程序和外部数据存储的对象之间提供访问通道的框架对象集合统称为持久化堆栈（persistence stack）。在堆栈顶部的是托管对象上下文（MOC），在堆栈底部的是持久化对象存储（persistent object stores）。在托管对象上下文和持久化对象存储之间便是持久化存储协调器（PSC）。应用程序通过类NSPersistentStoreCoordinator的实例访问持久化对象存储。
+
+&nbsp;&nbsp;&nbsp;&nbsp;持久化存储协调器为一或多个托管对象上下文提供一个访问接口，使其下层的多个持久化存储可以表现为单一一个聚合存储。一个托管对象上下文可以基于持久化存储协调器下的所有数据存储来创建一个对象图。持久化存储协调器只能与一个托管对象模型（MOM）相关联。
+
+**(4)NSManagedObject 托管对象（MO）**
+
+![CoreData1](http://scottmaxiao.github.io/img/coredata/ios_CoreData4.png)
+
+&nbsp;&nbsp;&nbsp;&nbsp;托管对象必须继承自NSManagedObject或者NSManagedObject的子类。NSManagedObject能够表述任何实体。它使用一个私有的内部存储，以维护其属性，并实现托管对象所需的所有基本行为。托管对象有一个指向实体描述的引用。NSEntityDescription 实体描述表述了实体的元数据，包括实体的名称，实体的属性和实体之间的关系。
+
+**(5)Controller 控制器**
+
+&nbsp;&nbsp;&nbsp;&nbsp;概念图1中绿色的 Array Controller，Object Controller，Tree Controller 这些控制器，一般都是通过 control+drag 将 Managed Object Context 绑定到它们，这样我们就可以在 nib 中可视化地操作数据
+
+**(6)NSFetchRequest 获取数据请求**
+
+&nbsp;&nbsp;&nbsp;&nbsp;使用托管对象上下文来检索数据时，会创建一个获取请求（fetch request）。类似Sql查询语句的功能。
+
+
+**(7)NSEntityDescription 实体描述**
+
+![CoreData1](http://scottmaxiao.github.io/img/coredata/ios_Entity.png)
+
+&nbsp;&nbsp;&nbsp;&nbsp;实体描述对象提供了一个实体的元数据，包括实体名（Name），类名（ClassName），属性（Properties）以及实体属性与其他实体的一些关系（Relationships）等。
+
+**(8).xcdatamodeld**
+
+![CoreData1](http://scottmaxiao.github.io/img/coredata/ios_CoreData3.png)
+
+![CoreData1](http://scottmaxiao.github.io/img/coredata/ios_xcdatamodeld.png)
+
+.xcdatamodeld文件，用数据模型编辑器编辑，编译后为.momd或.mom文件。
+
+我们可以选中我们的应用程序（路径类似为/Users/Childhood/Library/Application Support/iPhone Simulator/7.1/Applications/005D926F-5763-4305-97FE-AE55FE7281A4），右键显示包内容，我们看到是这样的。
+
+![CoreData1](http://scottmaxiao.github.io/img/coredata/ios_xcdatamodeld2.png)
+
+
+
+
+[参考资料：]<http://childhood.logdown.com/posts/209933/easy-magicalrecord-02>
+
+**运作机制**
+
+[下面参考罗朝辉（飘飘白云）[Cocoa]深入浅出 Cocoa 之 Core Data（1）- 框架详解]<http://blog.csdn.net/kesalin/article/details/6739319>
+
+- 应用程序先创建或读取模型文件（后缀为xcdatamodeld）生成 NSManagedObjectModel 对象。
+
+- 生成 NSManagedObjectContext 和 NSPersistentStoreCoordinator 对象，MOC会设置自身的持久化存储协调器(PSC)，通过PSC来对数据文件进行读写。
+
+- NSPersistentStoreCoordinator 负责从数据文件(xml，sqlite，二进制文件等)中读取数据生成 Managed Object，或保存 Managed Object 写入数据文件。
+
+- NSManagedObjectContext 参与对数据进行各种操作的整个过程，它可以持有多个 Managed Object。我们通过它来监测 Managed Object。监测数据对象有两个作用：支持 undo/redo 以及数据绑定。
+
+- Array Controller，Object Controller，Tree Controller 这些控制器一般与 NSManagedObjectContext 关联，因此我们可以通过它们在 nib 中可视化地操作数据对象
+
+----
+
+###实际样例
+
+<pre><code>
+...
+@property(nonatomic,strong)AppDelegate* appDelegate;
+
+self.appDelegate=(AppDelegate *)[[UIApplication sharedApplication] delegate];
+
+...
+//添加
+-(void)addUser{
+	UserInfo * userInfo  = [NSEntityDescription insertNewObjectForEntityForName:@"UserInfo"
+														 inManagedObjectContext:self.appDelegate.managedObjectContext];
+	userInfo.name = [NSString stringWithFormat:@"%@%d",@"dage",self.num ];
+	userInfo.password = @"password3";
+	NSError *error = nil;
+	if (![self.appDelegate.managedObjectContext save:&error]) {
+		NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+		abort();
+	}
+	NSLog(@"add success");
+	
+}
+
+//更新：直接修改对象，保存managedObjectContext就好
+-(void)updateUser:(UserInfo*)user{
+	user.name = @"baobao";   //修改后，直接保存managedObjectContext就可以了
+	NSError *error = nil;
+	if (![self.appDelegate.managedObjectContext save:&error]) {
+		NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+		abort();
+	}
+	
+	NSLog(@"update success");
+}
+
+//删除：NSManagedObject对象必须先取出来，用managedObjectContext删除，保存就好
+-(void)deleteUser:(UserInfo*)user{
+	[self.appDelegate.managedObjectContext deleteObject:user];
+	NSError *error = nil;
+	if (![self.appDelegate.managedObjectContext save:&error]) {
+		NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+		abort();
+	}
+	
+	NSLog(@"delete success");
+}
+
+
+//清除
+-(void)clear{
+	NSManagedObjectContext *context = self.appDelegate.managedObjectContext;
+	NSEntityDescription *entity = [NSEntityDescription entityForName:@"UserInfo" inManagedObjectContext:context];
+	
+	NSFetchRequest *request = [[NSFetchRequest alloc] init];
+	[request setIncludesPropertyValues:NO];
+	[request setEntity:entity];
+	NSError *error = nil;
+	NSArray *datas = [context executeFetchRequest:request error:&error];
+	if (!error && datas && [datas count])
+	{
+		for (NSManagedObject *obj in datas)
+		{
+			[context deleteObject:obj];
+		}
+		if (![context save:&error])
+		{
+			NSLog(@"error:%@",error);
+		}
+	}
+}
+
+//查询
+-(void)gainDatas:(NSString*)Condition Strategy:(NSString*)strategy {
+	NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+	[fetchRequest setEntity:[NSEntityDescription entityForName:@"UserInfo" inManagedObjectContext:self.appDelegate.managedObjectContext]];
+	
+	//NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name like[cd]'baobao'"];//查询条件
+//	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"password='password3'"];//查询条件
+
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:Condition];//查询条件
+	
+	NSMutableArray *sortDescriptors = [NSMutableArray array];    //排序用
+	[sortDescriptors addObject:[[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES] ];  //排序用
+	
+	[fetchRequest setPredicate:predicate];  //查询条件
+	[fetchRequest setFetchBatchSize:5];     //分页
+	
+//	[fetchRequest setFetchOffset:5];//读取数据库的游标偏移量，从游标开始读取数据
+//	[fetchRequest setFetchLimit:10];//每次要取多少条数据，10就是每次从数据库读取10条数据
+	
+	[fetchRequest setSortDescriptors:sortDescriptors];  //排序
+	[fetchRequest setReturnsObjectsAsFaults:NO];
+	[fetchRequest setPropertiesToFetch:[NSArray arrayWithObjects:@"name", @"password", nil]];  //查询的字段，一般不需要
+	NSError *error = nil;
+	NSArray *fetchedItems = [self.appDelegate.managedObjectContext executeFetchRequest:fetchRequest error:&error];
+	if (fetchedItems == nil) {
+		NSLog(@"fetch request resulted in an error %@, %@", error, [error userInfo]);
+	}else {
+		NSLog(@"fetchedItems=%lu",(unsigned long)fetchedItems.count);
+		for (UserInfo *user in fetchedItems) {
+			NSLog(@"user.authour=%@",user.name);
+		}
+	}
+}
+
+</code></pre>
+
+----
+
+###在建好的项目中加入CoreData
+
+####引入CoreData.framework
+![CoreData1](http://scottmaxiao.github.io/img/coredata/ios_coredata_import.png)
+
+####修改AppDelegate.h
+<pre><code>
+
+#import &lt;UIKit/UIKit.h&gt;
+
+//引入CoreData
+#import &lt;CoreData/CoreData.h&gt;
+
+@interface AppDelegate : UIResponder &lt;UIApplicationDelegate&gt;
+
+...
+
+//增加下列属性
+@property (readonly, strong, nonatomic) NSManagedObjectContext *managedObjectContext;
+@property (readonly, strong, nonatomic) NSManagedObjectModel *managedObjectModel;
+@property (readonly, strong, nonatomic) NSPersistentStoreCoordinator *persistentStoreCoordinator;
+
+//增加下列方法
+- (void)saveContext;
+- (NSURL *)applicationDocumentsDirectory;
+
+
+@end
+</code></pre>
+
+####修改AppDelegate.m
+<pre><code>
+
+....
+#pragma mark - Core Data stack
+
+@synthesize managedObjectContext = _managedObjectContext;
+@synthesize managedObjectModel = _managedObjectModel;
+@synthesize persistentStoreCoordinator = _persistentStoreCoordinator;
+
+- (NSURL *)applicationDocumentsDirectory {
+    // The directory the application uses to store the Core Data store file. This code uses a directory named "rayootech.CoreDataDemo" in the application's documents directory.
+    return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+}
+
+- (NSManagedObjectModel *)managedObjectModel {
+    // The managed object model for the application. It is a fatal error for the application not to be able to find and load its model.
+    if (_managedObjectModel != nil) {
+        return _managedObjectModel;
+    }
+    //这里一定要注意，这里的CoreDataDemo就是你刚才建立的数据模型的名字，一定要一致。否则会报错。
+    NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"CoreDataDemo" withExtension:@"momd"];
+    _managedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
+    return _managedObjectModel;
+}
+
+- (NSPersistentStoreCoordinator *)persistentStoreCoordinator {
+    // The persistent store coordinator for the application. This implementation creates and return a coordinator, having added the store for the application to it.
+    if (_persistentStoreCoordinator != nil) {
+        return _persistentStoreCoordinator;
+    }
+    
+    // Create the coordinator and store
+    
+    _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
+    
+    //这里的CoreDataDemo.sqlite，也应该与数据模型的名字保持一致。
+    NSURL *storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"CoreDataDemo.sqlite"];
+    NSError *error = nil;
+    NSString *failureReason = @"There was an error creating or loading the application's saved data.";
+    if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error]) {
+        // Report any error we got.
+        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+        dict[NSLocalizedDescriptionKey] = @"Failed to initialize the application's saved data";
+        dict[NSLocalizedFailureReasonErrorKey] = failureReason;
+        dict[NSUnderlyingErrorKey] = error;
+        error = [NSError errorWithDomain:@"YOUR_ERROR_DOMAIN" code:9999 userInfo:dict];
+        // Replace this with code to handle the error appropriately.
+        // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
+    
+    return _persistentStoreCoordinator;
+}
+
+
+- (NSManagedObjectContext *)managedObjectContext {
+    // Returns the managed object context for the application (which is already bound to the persistent store coordinator for the application.)
+    if (_managedObjectContext != nil) {
+        return _managedObjectContext;
+    }
+    
+    NSPersistentStoreCoordinator *coordinator = [self persistentStoreCoordinator];
+    if (!coordinator) {
+        return nil;
+    }
+    _managedObjectContext = [[NSManagedObjectContext alloc] init];
+    [_managedObjectContext setPersistentStoreCoordinator:coordinator];
+    return _managedObjectContext;
+}
+
+#pragma mark - Core Data Saving support
+
+- (void)saveContext {
+    NSManagedObjectContext *managedObjectContext = self.managedObjectContext;
+    if (managedObjectContext != nil) {
+        NSError *error = nil;
+        if ([managedObjectContext hasChanges] && ![managedObjectContext save:&error]) {
+            // Replace this implementation with code to handle the error appropriately.
+            // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+            NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+            abort();
+        }
+    }
+}
+</code></pre>
+
+[参考资料：]<http://blog.csdn.net/rbyyyblog/article/details/8208416>
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="ioscoredata">IOS-持久化之CoreData</h2>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Core Data 是 iOS 3.0 以后引入的数据持久化解决方案,其原理是对SQLite的封装,是开发者不需要接触SQL语句,就可以对数据库进行的操作.</p>
+
+<h3 id="coredata">CoreData 的核心概念</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;介绍一下CoreData 中的一些核心概念</p>
+
+<p>先上两幅关键的概念图</p>
+
+<p><img src="http://scottmaxiao.github.io/img/coredata/ios_CoreData1.jpeg" alt="CoreData1" title=""></p>
+
+<p><img src="http://scottmaxiao.github.io/img/coredata/ios_CoreData2.jpeg" alt="CoreData1" title=""></p>
+
+<p><strong>(1)NSManagedObjectModel 托管对象模型（MOM）</strong></p>
+
+<p><img src="http://scottmaxiao.github.io/img/coredata/ios_NSManagedObjectModel.png" alt="CoreData1" title=""></p>
+
+<p><img src="http://scottmaxiao.github.io/img/coredata/ios_managed_object_model_2x.png" alt="CoreData1" title=""></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;这个MOM由实体描述对象，即NSEntityDescription实例的集合组成，实体描述对象介绍见下面第7条。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;作用：添加实体的属性，建立属性之间的关系</p>
+
+<p><strong>(2)NSManagedObjectContext 托管对象上下文（MOC）</strong></p>
+
+<p><img src="http://scottmaxiao.github.io/img/coredata/ios_CoreData5.png" alt="CoreData1" title=""></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在概念图2中，托管对象上下文（MOC）通过持久化存储协调器（PSC）从持久化存储（NSPersistentStore）中获取对象时，这些对象会形成一个临时副本在MOC中形成一个对象集合，该对象集合包含了对象以及对象彼此之间的一些关系。我们可以对这些副本进行修改，然后进行保存，然后MOC会通过 PSC 对 NSPersistentStore 进行操作，持久化存储就会发生变化。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;CoreData中的NSManagedObjectModel 托管对象的数据模型（MOM），通过 MOC 进行注册。MOC有插入、删除以及更新数据模型等操作，并提供了撤销和重做的支持。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;作用：插入数据，更新数据，删除数据</p>
+
+<p><strong>(3)NSPersistentStoreCoordinator 持久化存储协调器（PSC）</strong></p>
+
+<p><img src="http://scottmaxiao.github.io/img/coredata/ios_CoreData6.png" alt="CoreData1" title=""></p>
+
+<p><img src="http://scottmaxiao.github.io/img/coredata/ios_advanced_persistence_stack_2x.png" alt="CoreData1" title=""></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在应用程序和外部数据存储的对象之间提供访问通道的框架对象集合统称为持久化堆栈（persistence stack）。在堆栈顶部的是托管对象上下文（MOC），在堆栈底部的是持久化对象存储（persistent object stores）。在托管对象上下文和持久化对象存储之间便是持久化存储协调器（PSC）。应用程序通过类NSPersistentStoreCoordinator的实例访问持久化对象存储。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;持久化存储协调器为一或多个托管对象上下文提供一个访问接口，使其下层的多个持久化存储可以表现为单一一个聚合存储。一个托管对象上下文可以基于持久化存储协调器下的所有数据存储来创建一个对象图。持久化存储协调器只能与一个托管对象模型（MOM）相关联。</p>
+
+<p><strong>(4)NSManagedObject 托管对象（MO）</strong></p>
+
+<p><img src="http://scottmaxiao.github.io/img/coredata/ios_CoreData4.png" alt="CoreData1" title=""></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;托管对象必须继承自NSManagedObject或者NSManagedObject的子类。NSManagedObject能够表述任何实体。它使用一个私有的内部存储，以维护其属性，并实现托管对象所需的所有基本行为。托管对象有一个指向实体描述的引用。NSEntityDescription 实体描述表述了实体的元数据，包括实体的名称，实体的属性和实体之间的关系。</p>
+
+<p><strong>(5)Controller 控制器</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;概念图1中绿色的 Array Controller，Object Controller，Tree Controller 这些控制器，一般都是通过 control+drag 将 Managed Object Context 绑定到它们，这样我们就可以在 nib 中可视化地操作数据</p>
+
+<p><strong>(6)NSFetchRequest 获取数据请求</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;使用托管对象上下文来检索数据时，会创建一个获取请求（fetch request）。类似Sql查询语句的功能。</p>
+
+<p><strong>(7)NSEntityDescription 实体描述</strong></p>
+
+<p><img src="http://scottmaxiao.github.io/img/coredata/ios_Entity.png" alt="CoreData1" title=""></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;实体描述对象提供了一个实体的元数据，包括实体名（Name），类名（ClassName），属性（Properties）以及实体属性与其他实体的一些关系（Relationships）等。</p>
+
+<p><strong>(8).xcdatamodeld</strong></p>
+
+<p><img src="http://scottmaxiao.github.io/img/coredata/ios_CoreData3.png" alt="CoreData1" title=""></p>
+
+<p><img src="http://scottmaxiao.github.io/img/coredata/ios_xcdatamodeld.png" alt="CoreData1" title=""></p>
+
+<p>.xcdatamodeld文件，用数据模型编辑器编辑，编译后为.momd或.mom文件。</p>
+
+<p>我们可以选中我们的应用程序（路径类似为/Users/Childhood/Library/Application Support/iPhone Simulator/7.1/Applications/005D926F-5763-4305-97FE-AE55FE7281A4），右键显示包内容，我们看到是这样的。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/coredata/ios_xcdatamodeld2.png" alt="CoreData1" title=""></p>
+
+<p>[参考资料：]<a href="http://childhood.logdown.com/posts/209933/easy-magicalrecord-02">http://childhood.logdown.com/posts/209933/easy-magicalrecord-02</a></p>
+
+<p><strong>运作机制</strong></p>
+
+<p>[下面参考罗朝辉（飘飘白云）[Cocoa]深入浅出 Cocoa 之 Core Data（1）- 框架详解]<a href="http://blog.csdn.net/kesalin/article/details/6739319">http://blog.csdn.net/kesalin/article/details/6739319</a></p>
+
+<ul>
+<li><p>应用程序先创建或读取模型文件（后缀为xcdatamodeld）生成 NSManagedObjectModel 对象。</p></li>
+<li><p>生成 NSManagedObjectContext 和 NSPersistentStoreCoordinator 对象，MOC会设置自身的持久化存储协调器(PSC)，通过PSC来对数据文件进行读写。</p></li>
+<li><p>NSPersistentStoreCoordinator 负责从数据文件(xml，sqlite，二进制文件等)中读取数据生成 Managed Object，或保存 Managed Object 写入数据文件。</p></li>
+<li><p>NSManagedObjectContext 参与对数据进行各种操作的整个过程，它可以持有多个 Managed Object。我们通过它来监测 Managed Object。监测数据对象有两个作用：支持 undo/redo 以及数据绑定。</p></li>
+<li><p>Array Controller，Object Controller，Tree Controller 这些控制器一般与 NSManagedObjectContext 关联，因此我们可以通过它们在 nib 中可视化地操作数据对象</p></li>
+</ul>
+
+<hr>
+
+<h3 id="">实际样例</h3>
+
+<pre><code>
+...
+@property(nonatomic,strong)AppDelegate* appDelegate;
+
+self.appDelegate=(AppDelegate *)[[UIApplication sharedApplication] delegate];
+
+...
+//添加
+-(void)addUser{
+    UserInfo * userInfo  = [NSEntityDescription insertNewObjectForEntityForName:@"UserInfo"
+                                                         inManagedObjectContext:self.appDelegate.managedObjectContext];
+    userInfo.name = [NSString stringWithFormat:@"%@%d",@"dage",self.num ];
+    userInfo.password = @"password3";
+    NSError *error = nil;
+    if (![self.appDelegate.managedObjectContext save:&amp;error]) {
+        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
+    NSLog(@"add success");
+
+}
+
+//更新：直接修改对象，保存managedObjectContext就好
+-(void)updateUser:(UserInfo*)user{
+    user.name = @"baobao";   //修改后，直接保存managedObjectContext就可以了
+    NSError *error = nil;
+    if (![self.appDelegate.managedObjectContext save:&amp;error]) {
+        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
+
+    NSLog(@"update success");
+}
+
+//删除：NSManagedObject对象必须先取出来，用managedObjectContext删除，保存就好
+-(void)deleteUser:(UserInfo*)user{
+    [self.appDelegate.managedObjectContext deleteObject:user];
+    NSError *error = nil;
+    if (![self.appDelegate.managedObjectContext save:&amp;error]) {
+        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
+
+    NSLog(@"delete success");
+}
+
+
+//清除
+-(void)clear{
+    NSManagedObjectContext *context = self.appDelegate.managedObjectContext;
+    NSEntityDescription *entity = [NSEntityDescription entityForName:@"UserInfo" inManagedObjectContext:context];
+
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    [request setIncludesPropertyValues:NO];
+    [request setEntity:entity];
+    NSError *error = nil;
+    NSArray *datas = [context executeFetchRequest:request error:&amp;error];
+    if (!error &amp;&amp; datas &amp;&amp; [datas count])
+    {
+        for (NSManagedObject *obj in datas)
+        {
+            [context deleteObject:obj];
+        }
+        if (![context save:&amp;error])
+        {
+            NSLog(@"error:%@",error);
+        }
+    }
+}
+
+//查询
+-(void)gainDatas:(NSString*)Condition Strategy:(NSString*)strategy {
+    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+    [fetchRequest setEntity:[NSEntityDescription entityForName:@"UserInfo" inManagedObjectContext:self.appDelegate.managedObjectContext]];
+
+    //NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name like[cd]'baobao'"];//查询条件
+//    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"password='password3'"];//查询条件
+
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:Condition];//查询条件
+
+    NSMutableArray *sortDescriptors = [NSMutableArray array];    //排序用
+    [sortDescriptors addObject:[[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES] ];  //排序用
+
+    [fetchRequest setPredicate:predicate];  //查询条件
+    [fetchRequest setFetchBatchSize:5];     //分页
+
+//    [fetchRequest setFetchOffset:5];//读取数据库的游标偏移量，从游标开始读取数据
+//    [fetchRequest setFetchLimit:10];//每次要取多少条数据，10就是每次从数据库读取10条数据
+
+    [fetchRequest setSortDescriptors:sortDescriptors];  //排序
+    [fetchRequest setReturnsObjectsAsFaults:NO];
+    [fetchRequest setPropertiesToFetch:[NSArray arrayWithObjects:@"name", @"password", nil]];  //查询的字段，一般不需要
+    NSError *error = nil;
+    NSArray *fetchedItems = [self.appDelegate.managedObjectContext executeFetchRequest:fetchRequest error:&amp;error];
+    if (fetchedItems == nil) {
+        NSLog(@"fetch request resulted in an error %@, %@", error, [error userInfo]);
+    }else {
+        NSLog(@"fetchedItems=%lu",(unsigned long)fetchedItems.count);
+        for (UserInfo *user in fetchedItems) {
+            NSLog(@"user.authour=%@",user.name);
+        }
+    }
+}
+
+</code></pre>
+
+<hr>
+
+<h3 id="coredata">在建好的项目中加入CoreData</h3>
+
+<h4 id="coredataframework">引入CoreData.framework</h4>
+
+<p><img src="http://scottmaxiao.github.io/img/coredata/ios_coredata_import.png" alt="CoreData1" title=""></p>
+
+<h4 id="appdelegateh">修改AppDelegate.h</h4>
+
+<pre><code>
+
+#import &lt;UIKit/UIKit.h&gt;
+
+//引入CoreData
+#import &lt;CoreData/CoreData.h&gt;
+
+@interface AppDelegate : UIResponder &lt;UIApplicationDelegate&gt;
+
+...
+
+//增加下列属性
+@property (readonly, strong, nonatomic) NSManagedObjectContext *managedObjectContext;
+@property (readonly, strong, nonatomic) NSManagedObjectModel *managedObjectModel;
+@property (readonly, strong, nonatomic) NSPersistentStoreCoordinator *persistentStoreCoordinator;
+
+//增加下列方法
+- (void)saveContext;
+- (NSURL *)applicationDocumentsDirectory;
+
+
+@end
+</code></pre>
+
+<h4 id="appdelegatem">修改AppDelegate.m</h4>
+
+<pre><code>
+
+....
+#pragma mark - Core Data stack
+
+@synthesize managedObjectContext = _managedObjectContext;
+@synthesize managedObjectModel = _managedObjectModel;
+@synthesize persistentStoreCoordinator = _persistentStoreCoordinator;
+
+- (NSURL *)applicationDocumentsDirectory {
+    // The directory the application uses to store the Core Data store file. This code uses a directory named "rayootech.CoreDataDemo" in the application's documents directory.
+    return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+}
+
+- (NSManagedObjectModel *)managedObjectModel {
+    // The managed object model for the application. It is a fatal error for the application not to be able to find and load its model.
+    if (_managedObjectModel != nil) {
+        return _managedObjectModel;
+    }
+    //这里一定要注意，这里的CoreDataDemo就是你刚才建立的数据模型的名字，一定要一致。否则会报错。
+    NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"CoreDataDemo" withExtension:@"momd"];
+    _managedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
+    return _managedObjectModel;
+}
+
+- (NSPersistentStoreCoordinator *)persistentStoreCoordinator {
+    // The persistent store coordinator for the application. This implementation creates and return a coordinator, having added the store for the application to it.
+    if (_persistentStoreCoordinator != nil) {
+        return _persistentStoreCoordinator;
+    }
+
+    // Create the coordinator and store
+
+    _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
+
+    //这里的CoreDataDemo.sqlite，也应该与数据模型的名字保持一致。
+    NSURL *storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"CoreDataDemo.sqlite"];
+    NSError *error = nil;
+    NSString *failureReason = @"There was an error creating or loading the application's saved data.";
+    if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&amp;error]) {
+        // Report any error we got.
+        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+        dict[NSLocalizedDescriptionKey] = @"Failed to initialize the application's saved data";
+        dict[NSLocalizedFailureReasonErrorKey] = failureReason;
+        dict[NSUnderlyingErrorKey] = error;
+        error = [NSError errorWithDomain:@"YOUR_ERROR_DOMAIN" code:9999 userInfo:dict];
+        // Replace this with code to handle the error appropriately.
+        // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
+
+    return _persistentStoreCoordinator;
+}
+
+
+- (NSManagedObjectContext *)managedObjectContext {
+    // Returns the managed object context for the application (which is already bound to the persistent store coordinator for the application.)
+    if (_managedObjectContext != nil) {
+        return _managedObjectContext;
+    }
+
+    NSPersistentStoreCoordinator *coordinator = [self persistentStoreCoordinator];
+    if (!coordinator) {
+        return nil;
+    }
+    _managedObjectContext = [[NSManagedObjectContext alloc] init];
+    [_managedObjectContext setPersistentStoreCoordinator:coordinator];
+    return _managedObjectContext;
+}
+
+#pragma mark - Core Data Saving support
+
+- (void)saveContext {
+    NSManagedObjectContext *managedObjectContext = self.managedObjectContext;
+    if (managedObjectContext != nil) {
+        NSError *error = nil;
+        if ([managedObjectContext hasChanges] &amp;&amp; ![managedObjectContext save:&amp;error]) {
+            // Replace this implementation with code to handle the error appropriately.
+            // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+            NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+            abort();
+        }
+    }
+}
+</code></pre>
+
+<p>[参考资料：]<a href="http://blog.csdn.net/rbyyyblog/article/details/8208416">http://blog.csdn.net/rbyyyblog/article/details/8208416</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-持久化之CoreData.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

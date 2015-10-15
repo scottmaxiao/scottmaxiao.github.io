@@ -1,0 +1,254 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-自定义tableViewCell
+
+&nbsp;&nbsp;&nbsp;&nbsp;IOS提供的UITableViewCell类中包括一个UIImageView和两个UILabel，显示的时候可以设置四种布局方式。但是很多时候并不能满足我们的需求。我们常常会自定义tableViewCell内显示的内容。
+
+
+
+#####**声明自定义tableViewCell**
+
+infoTableViewCell.h文件
+<pre><code>
+@interface infoTableViewCell : UITableViewCell
+
+@property(nonatomic,strong)UILabel *namesLabel;
+@property(nonatomic,strong)UITextField *valueTextField;
+@end
+
+</code></pre>
+
+
+infoTableViewCell.m文件
+
+<pre><code>
+@implementation infoTableViewCell
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{
+	self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+	if (self) {
+	    _namesLabel=[[UILabel alloc] initWithFrame:CGRectZero];
+		//设置label是否可以显示多行，0则显示多行
+		_namesLabel.numberOfLines = 0;
+		//设置单词折行方式
+		_namesLabel.lineBreakMode = NSLineBreakByCharWrapping;
+		_namesLabel.layer.borderColor=[UIColor redColor].CGColor;
+		[self.contentView addSubview:_namesLabel];
+		
+		_valueTextField=[[UITextField alloc] initWithFrame:CGRectZero];
+		[self.contentView addSubview:_valueTextField];
+	}
+	
+	return self;
+}
+
+@end
+</code></pre>
+
+#####**实现layoutSubviews方法**
+
+<pre><code>
+-(void)layoutSubviews{
+    //必须调用父类的layoutSubviews方法，否则不会正常显示
+	[super layoutSubviews];
+	
+	
+	self.namesLabel.frame=...;
+	self.namesLabel.font=...;
+	self.namesLabel.text=...;
+	
+	self.valueTextField.frame=...;
+	self.valueTextField.tag=...;
+	self.valueTextField.text=...;
+	self.valueTextField.font=...t;
+	//键盘类型
+	self.valueTextField.keyboardType=...;
+	//键盘返回按钮类型
+	self.valueTextField.returnKeyType=...;
+	//自动大写设置
+	self.valueTextField.autocapitalizationType=...;
+	//自动更正设置
+	self.valueTextField.autocorrectionType=...;
+	//安全输入设置
+	self.valueTextField.secureTextEntry=...;
+	//水平对其方式
+	self.valueTextField.textAlignment=...;
+}
+
+</code></pre>
+
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iostableviewcell">IOS-自定义tableViewCell</h2>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;IOS提供的UITableViewCell类中包括一个UIImageView和两个UILabel，显示的时候可以设置四种布局方式。但是很多时候并不能满足我们的需求。我们常常会自定义tableViewCell内显示的内容。</p>
+
+<h5 id="tableviewcell"><strong>声明自定义tableViewCell</strong></h5>
+
+<p>infoTableViewCell.h文件</p>
+
+<pre><code>
+@interface infoTableViewCell : UITableViewCell
+
+@property(nonatomic,strong)UILabel *namesLabel;
+@property(nonatomic,strong)UITextField *valueTextField;
+@end
+
+</code></pre>
+
+<p>infoTableViewCell.m文件</p>
+
+<pre><code>
+@implementation infoTableViewCell
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        _namesLabel=[[UILabel alloc] initWithFrame:CGRectZero];
+        //设置label是否可以显示多行，0则显示多行
+        _namesLabel.numberOfLines = 0;
+        //设置单词折行方式
+        _namesLabel.lineBreakMode = NSLineBreakByCharWrapping;
+        _namesLabel.layer.borderColor=[UIColor redColor].CGColor;
+        [self.contentView addSubview:_namesLabel];
+
+        _valueTextField=[[UITextField alloc] initWithFrame:CGRectZero];
+        [self.contentView addSubview:_valueTextField];
+    }
+
+    return self;
+}
+
+@end
+</code></pre>
+
+<h5 id="layoutsubviews"><strong>实现layoutSubviews方法</strong></h5>
+
+<pre><code>
+-(void)layoutSubviews{
+    //必须调用父类的layoutSubviews方法，否则不会正常显示
+    [super layoutSubviews];
+
+
+    self.namesLabel.frame=...;
+    self.namesLabel.font=...;
+    self.namesLabel.text=...;
+
+    self.valueTextField.frame=...;
+    self.valueTextField.tag=...;
+    self.valueTextField.text=...;
+    self.valueTextField.font=...t;
+    //键盘类型
+    self.valueTextField.keyboardType=...;
+    //键盘返回按钮类型
+    self.valueTextField.returnKeyType=...;
+    //自动大写设置
+    self.valueTextField.autocapitalizationType=...;
+    //自动更正设置
+    self.valueTextField.autocorrectionType=...;
+    //安全输入设置
+    self.valueTextField.secureTextEntry=...;
+    //水平对其方式
+    self.valueTextField.textAlignment=...;
+}
+
+</code></pre>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-自定义tableViewCell.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

@@ -83,30 +83,30 @@ pod 'MagicalRecord'
 </code></pre>
 
 
-###查询 
+###基本查询 
 <pre><code>
 //查找数据库中的所有Person。
 NSArray *people = [Person MR_findAll];
 
-//查找所有的Person并按照firstname正序排序。
+//查找所有的Person并按照firstname升序排序。
 NSArray *personsSorted = [Person MR_findAllSortedBy:@"firstname" ascending:YES];
 
-//查找所有的Person并按照firstname倒序排序。
+//查找所有的Person并按照firstname降序排序。
 NSArray *personsSorted = [Person MR_findAllSortedBy:@"firstname" ascending:NO];
 
-//查找所有的Person并按照firstname和lastname,正序排序。
+//查找所有的Person并按照firstname和lastname,升序排序。
 NSArray *peopleSorted = [Person MR_findAllSortedBy:@"lastname,firstname"
                                          ascending:YES];
 
-//查找所有的Person并按照firstname和lastname,倒序排序。
+//查找所有的Person并按照firstname和lastname,降序排序。
 NSArray *peopleSorted = [Person MR_findAllSortedBy:@"lastname,firstname"
                                          ascending:NO];    
                                                                           
-//查找所有的Person并按照firstname正序排序, lastname倒序排序。
+//查找所有的Person并按照firstname升序排序, lastname降序排序。
 NSArray *peopleSorted = [Person MR_findAllSortedBy:@"LastName:NO,FirstName"
                                          ascending:YES];
 
-//查找所有的Person并按照firstname正序排序, lastname倒序排序。
+//查找所有的Person并按照firstname升序排序, lastname降序排序。
 NSArray *peopleSorted = [Person MR_findAllSortedBy:@"LastName,FirstName:YES"
                                          ascending:NO];
                                          
@@ -116,6 +116,10 @@ NSArray *personsAgeEuqals25   = [Person MR_findByAttribute:@"age" withValue:[NSN
 //查找数据库中的第一条记录
 Person *person = [Person MR_findFirst];
 
+</code></pre>
+
+###高级查询
+<pre><code>
 //查找数据库中Department为dept1和dept2
 NSPredicate *peopleFilter = [NSPredicate predicateWithFormat:@"Department IN %@", @[dept1, dept2]];
 NSArray *people = [Person MR_findAllWithPredicate:peopleFilter];
@@ -132,7 +136,6 @@ NSFetchRequest *peopleRequest = [Person MR_requestAllWithPredicate:peopleFilter]
 [peopleRequest setFetchOffset:0];
 
 NSArray *people = [Person MR_executeFetchRequest:peopleRequest];
-
 </code></pre>
 
 
@@ -203,6 +206,7 @@ NSArray *people = [Person MR_executeFetchRequest:peopleRequest];
 
 </code></pre>
 
+[参考:]<http://childhood.logdown.com/posts/211016/easy-magicalrecord-03>
 <!-- markdown end -->
 </div>
 <div class="entry" id="main">
@@ -268,31 +272,31 @@ pod 'MagicalRecord'
 
 </code></pre>
 
-<h3 id="">查询</h3>
+<h3 id="">基本查询</h3>
 
 <pre><code>
 //查找数据库中的所有Person。
 NSArray *people = [Person MR_findAll];
 
-//查找所有的Person并按照firstname正序排序。
+//查找所有的Person并按照firstname升序排序。
 NSArray *personsSorted = [Person MR_findAllSortedBy:@"firstname" ascending:YES];
 
-//查找所有的Person并按照firstname倒序排序。
+//查找所有的Person并按照firstname降序排序。
 NSArray *personsSorted = [Person MR_findAllSortedBy:@"firstname" ascending:NO];
 
-//查找所有的Person并按照firstname和lastname,正序排序。
+//查找所有的Person并按照firstname和lastname,升序排序。
 NSArray *peopleSorted = [Person MR_findAllSortedBy:@"lastname,firstname"
                                          ascending:YES];
 
-//查找所有的Person并按照firstname和lastname,倒序排序。
+//查找所有的Person并按照firstname和lastname,降序排序。
 NSArray *peopleSorted = [Person MR_findAllSortedBy:@"lastname,firstname"
                                          ascending:NO];    
 
-//查找所有的Person并按照firstname正序排序, lastname倒序排序。
+//查找所有的Person并按照firstname升序排序, lastname降序排序。
 NSArray *peopleSorted = [Person MR_findAllSortedBy:@"LastName:NO,FirstName"
                                          ascending:YES];
 
-//查找所有的Person并按照firstname正序排序, lastname倒序排序。
+//查找所有的Person并按照firstname升序排序, lastname降序排序。
 NSArray *peopleSorted = [Person MR_findAllSortedBy:@"LastName,FirstName:YES"
                                          ascending:NO];
 
@@ -302,6 +306,11 @@ NSArray *personsAgeEuqals25   = [Person MR_findByAttribute:@"age" withValue:[NSN
 //查找数据库中的第一条记录
 Person *person = [Person MR_findFirst];
 
+</code></pre>
+
+<h3 id="">高级查询</h3>
+
+<pre><code>
 //查找数据库中Department为dept1和dept2
 NSPredicate *peopleFilter = [NSPredicate predicateWithFormat:@"Department IN %@", @[dept1, dept2]];
 NSArray *people = [Person MR_findAllWithPredicate:peopleFilter];
@@ -318,7 +327,6 @@ NSFetchRequest *peopleRequest = [Person MR_requestAllWithPredicate:peopleFilter]
 [peopleRequest setFetchOffset:0];
 
 NSArray *people = [Person MR_executeFetchRequest:peopleRequest];
-
 </code></pre>
 
 <h3 id="">新增</h3>
@@ -387,6 +395,8 @@ NSArray *people = [Person MR_executeFetchRequest:peopleRequest];
 }
 
 </code></pre>
+
+<p>[参考:]<a href="http://childhood.logdown.com/posts/211016/easy-magicalrecord-03">http://childhood.logdown.com/posts/211016/easy-magicalrecord-03</a></p>
 <!-- content end -->
 </div>
 <br>

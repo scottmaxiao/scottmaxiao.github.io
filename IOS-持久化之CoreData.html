@@ -124,6 +124,17 @@
 
 ----
 
+###创建模型文件
+
+下面创建一个名为Person的模型，有age、firstname、lastname三个字段。
+
+1. 创建一个名为Model的模型文件。 (File > New File… > Core Data > Data Model)
+2. 点击左下角的Add Entity，更改Entity的名字为Person。
+3. 为Entity添加三个Attribute：age(Integer16)、firstname(string)、lastname(string)。
+4. 点击Editor > Create NSManagedObject Subclass… > Create创建模型文件对应的类。
+
+----
+
 ###实际样例
 
 <pre><code>
@@ -447,6 +458,19 @@ self.appDelegate=(AppDelegate *)[[UIApplication sharedApplication] delegate];
 <li><p>NSManagedObjectContext 参与对数据进行各种操作的整个过程，它可以持有多个 Managed Object。我们通过它来监测 Managed Object。监测数据对象有两个作用：支持 undo/redo 以及数据绑定。</p></li>
 <li><p>Array Controller，Object Controller，Tree Controller 这些控制器一般与 NSManagedObjectContext 关联，因此我们可以通过它们在 nib 中可视化地操作数据对象</p></li>
 </ul>
+
+<hr>
+
+<h3 id="">创建模型文件</h3>
+
+<p>下面创建一个名为Person的模型，有age、firstname、lastname三个字段。</p>
+
+<ol>
+<li>创建一个名为Model的模型文件。 (File &gt; New File… &gt; Core Data &gt; Data Model)</li>
+<li>点击左下角的Add Entity，更改Entity的名字为Person。</li>
+<li>为Entity添加三个Attribute：age(Integer16)、firstname(string)、lastname(string)。</li>
+<li>点击Editor &gt; Create NSManagedObject Subclass… &gt; Create创建模型文件对应的类。</li>
+</ol>
 
 <hr>
 

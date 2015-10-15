@@ -1,0 +1,460 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-持久化之MagicalRecord
+&nbsp;&nbsp;&nbsp;&nbsp;在Cocoa中存在一种技术叫Core Data，用来对数据进行持久化，类似于Java世界中的Hibernate。在新建Cocoa Application/iOS Application的向导中，有一个选项是要不要使用Core Data，当启用以后你会发现在AppDelegate.m中添加了大量与Core Data相关的代码，但是你对大部分代码不知所以然。
+
+&nbsp;&nbsp;&nbsp;&nbsp;使用CoreData时会用到许多引用代码，让工作变得很复杂，MagicalRecord可以帮你解决这些问题。MagicalRecord的目标是清除CoreData引用的代码，允许在需要请求优化的时候修改NSFetchRequest。  
+
+[MagicalRecord项目地址]<https://github.com/magicalpanda/MagicalRecord>
+
+
+###安装
+
+**1.使用CocoaPods安装MagicalRecord**
+
+安装：
+<pre><code>
+在Podfile中增加下列代码
+pod 'MagicalRecord'
+</code></pre>
+
+在项目的根目录下运行pod update。
+
+**2.添加 CoreData.framework**
+
+![CoreData](http://scottmaxiao.github.io/img/magicalRecord/ios_MagicalRecord1.png)
+
+**3.文件引入**
+
+在使用的类中引入CoreData+MagicalRecord.h。
+
+
+###创建模型文件
+下面创建一个名为Person的模型，有age、firstname、lastname三个字段。
+
+1. 创建一个名为Model的模型文件。 (File > New File… > Core Data > Data Model)
+2. 点击左下角的Add Entity，更改Entity的名字为Person。
+3. 为Entity添加三个Attribute：age(Integer16)、firstname(string)、lastname(string)。
+4. 点击Editor > Create NSManagedObject Subclass… > Create创建模型文件对应的类。
+
+###使用
+
+####初始化Magical Record
+
+首先在AppDelegate.m中添加以下代码对Magical Record进行初始化：
+<pre><code>
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
+{
+    //Model.sqlite的名称要和模型文件名称一致
+    [MagicalRecord setupCoreDataStackWithStoreNamed:@"Model.sqlite"];
+    // ...
+    return YES;
+}
+- (void)applicationWillTerminate:(NSNotification *)aNotification
+{
+    [MagicalRecord cleanUp];
+}
+
+</code></pre>
+
+
+###查询 
+<pre><code>
+//查找数据库中的所有Person。
+NSArray *people = [Person MR_findAll];
+
+//查找所有的Person并按照firstname正序排序。
+NSArray *personsSorted = [Person MR_findAllSortedBy:@"firstname" ascending:YES];
+
+//查找所有的Person并按照firstname倒序排序。
+NSArray *personsSorted = [Person MR_findAllSortedBy:@"firstname" ascending:NO];
+
+//查找所有的Person并按照firstname和lastname,正序排序。
+NSArray *peopleSorted = [Person MR_findAllSortedBy:@"lastname,firstname"
+                                         ascending:YES];
+
+//查找所有的Person并按照firstname和lastname,倒序排序。
+NSArray *peopleSorted = [Person MR_findAllSortedBy:@"lastname,firstname"
+                                         ascending:NO];    
+                                                                          
+//查找所有的Person并按照firstname正序排序, lastname倒序排序。
+NSArray *peopleSorted = [Person MR_findAllSortedBy:@"LastName:NO,FirstName"
+                                         ascending:YES];
+
+//查找所有的Person并按照firstname正序排序, lastname倒序排序。
+NSArray *peopleSorted = [Person MR_findAllSortedBy:@"LastName,FirstName:YES"
+                                         ascending:NO];
+                                         
+//查找所有age属性为25的Person记录。
+NSArray *personsAgeEuqals25   = [Person MR_findByAttribute:@"age" withValue:[NSNumber numberWithInt:25]];
+
+//查找数据库中的第一条记录
+Person *person = [Person MR_findFirst];
+
+//查找数据库中Department为dept1和dept2
+NSPredicate *peopleFilter = [NSPredicate predicateWithFormat:@"Department IN %@", @[dept1, dept2]];
+NSArray *people = [Person MR_findAllWithPredicate:peopleFilter];
+
+
+//设置翻页属性
+NSPredicate *peopleFilter = [NSPredicate predicateWithFormat:@"Department IN %@", departments];
+
+NSFetchRequest *peopleRequest = [Person MR_requestAllWithPredicate:peopleFilter];
+[peopleRequest setReturnsDistinctResults:NO];
+[peopleRequest setReturnPropertiesNamed:@[@"FirstName", @"LastName"]];
+
+[peopleRequest setFetchLimit:15];
+[peopleRequest setFetchOffset:0];
+
+NSArray *people = [Person MR_executeFetchRequest:peopleRequest];
+
+</code></pre>
+
+
+###新增
+<pre><code>
+//添加单个对象
++(void)addUserInfoByJson:(NSDictionary*)json{
+
+	[MagicalRecord saveWithBlock:^(NSManagedObjectContext *localContext) {
+		PersonModel * model =  [PersonModel MR_createInContext:localContext];
+		[model MR_importValuesForKeysWithObject:json];
+		
+	} ];
+
+}
+
+//添加多个对象
++(void)batchAddWarningInfo:(NSArray*)jsonArray{
+
+	[jsonArray enumerateObjectsUsingBlock:^(NSDictionary * json, NSUInteger idx, BOOL *stop) {
+		[MagicalRecord saveWithBlock:^(NSManagedObjectContext *localContext) {
+			PersonModel * model =  [PersonModel MR_createInContext:localContext];
+			[model MR_importValuesForKeysWithObject:json];
+		} ];
+		
+	}];
+
+}
+
+</code></pre>
+
+###修改
+<pre><code>
+	PersonModel *model = ...;
+	
+	[MagicalRecord saveWithBlock:^(NSManagedObjectContext *localContext) {
+		PersonModel * localModel = [model MR_inContext:localContext];
+		localModel.firstName = @"John";
+        localModel.lastName = @"Appleseed";
+		
+	} ];
+
+</code></pre>
+
+
+###删除
+<pre><code>
++(void)deleteWarningInfo:(NSArray*)oidArray{
+	
+	NSPredicate *personFilter = [NSPredicate predicateWithFormat:@"firstname IN %@", oidArray];
+	NSArray *personModelArray = [PersonModel MR_findAllWithPredicate:personFilter];
+	
+	[personModelArray enumerateObjectsUsingBlock:^(PersonModel * personModel, NSUInteger idx, BOOL *stop){
+		[personModel MR_deleteEntity];
+	}];
+}
+
+</code></pre>
+
+
+
+###清除所有记录
+
+<pre><code>
++(void)clean{
+	[PersonModel MR_truncateAll];
+}
+
+</code></pre>
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosmagicalrecord">IOS-持久化之MagicalRecord</h2>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在Cocoa中存在一种技术叫Core Data，用来对数据进行持久化，类似于Java世界中的Hibernate。在新建Cocoa Application/iOS Application的向导中，有一个选项是要不要使用Core Data，当启用以后你会发现在AppDelegate.m中添加了大量与Core Data相关的代码，但是你对大部分代码不知所以然。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;使用CoreData时会用到许多引用代码，让工作变得很复杂，MagicalRecord可以帮你解决这些问题。MagicalRecord的目标是清除CoreData引用的代码，允许在需要请求优化的时候修改NSFetchRequest。  </p>
+
+<p>[MagicalRecord项目地址]<a href="https://github.com/magicalpanda/MagicalRecord">https://github.com/magicalpanda/MagicalRecord</a></p>
+
+<h3 id="">安装</h3>
+
+<p><strong>1.使用CocoaPods安装MagicalRecord</strong></p>
+
+<p>安装：</p>
+
+<pre><code>
+在Podfile中增加下列代码
+pod 'MagicalRecord'
+</code></pre>
+
+<p>在项目的根目录下运行pod update。</p>
+
+<p><strong>2.添加 CoreData.framework</strong></p>
+
+<p><img src="http://scottmaxiao.github.io/img/magicalRecord/ios_MagicalRecord1.png" alt="CoreData" title=""></p>
+
+<p><strong>3.文件引入</strong></p>
+
+<p>在使用的类中引入CoreData+MagicalRecord.h。</p>
+
+<h3 id="">创建模型文件</h3>
+
+<p>下面创建一个名为Person的模型，有age、firstname、lastname三个字段。</p>
+
+<ol>
+<li>创建一个名为Model的模型文件。 (File &gt; New File… &gt; Core Data &gt; Data Model)</li>
+<li>点击左下角的Add Entity，更改Entity的名字为Person。</li>
+<li>为Entity添加三个Attribute：age(Integer16)、firstname(string)、lastname(string)。</li>
+<li>点击Editor &gt; Create NSManagedObject Subclass… &gt; Create创建模型文件对应的类。</li>
+</ol>
+
+<h3 id="">使用</h3>
+
+<h4 id="magicalrecord">初始化Magical Record</h4>
+
+<p>首先在AppDelegate.m中添加以下代码对Magical Record进行初始化：</p>
+
+<pre><code>
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
+{
+    //Model.sqlite的名称要和模型文件名称一致
+    [MagicalRecord setupCoreDataStackWithStoreNamed:@"Model.sqlite"];
+    // ...
+    return YES;
+}
+- (void)applicationWillTerminate:(NSNotification *)aNotification
+{
+    [MagicalRecord cleanUp];
+}
+
+</code></pre>
+
+<h3 id="">查询</h3>
+
+<pre><code>
+//查找数据库中的所有Person。
+NSArray *people = [Person MR_findAll];
+
+//查找所有的Person并按照firstname正序排序。
+NSArray *personsSorted = [Person MR_findAllSortedBy:@"firstname" ascending:YES];
+
+//查找所有的Person并按照firstname倒序排序。
+NSArray *personsSorted = [Person MR_findAllSortedBy:@"firstname" ascending:NO];
+
+//查找所有的Person并按照firstname和lastname,正序排序。
+NSArray *peopleSorted = [Person MR_findAllSortedBy:@"lastname,firstname"
+                                         ascending:YES];
+
+//查找所有的Person并按照firstname和lastname,倒序排序。
+NSArray *peopleSorted = [Person MR_findAllSortedBy:@"lastname,firstname"
+                                         ascending:NO];    
+
+//查找所有的Person并按照firstname正序排序, lastname倒序排序。
+NSArray *peopleSorted = [Person MR_findAllSortedBy:@"LastName:NO,FirstName"
+                                         ascending:YES];
+
+//查找所有的Person并按照firstname正序排序, lastname倒序排序。
+NSArray *peopleSorted = [Person MR_findAllSortedBy:@"LastName,FirstName:YES"
+                                         ascending:NO];
+
+//查找所有age属性为25的Person记录。
+NSArray *personsAgeEuqals25   = [Person MR_findByAttribute:@"age" withValue:[NSNumber numberWithInt:25]];
+
+//查找数据库中的第一条记录
+Person *person = [Person MR_findFirst];
+
+//查找数据库中Department为dept1和dept2
+NSPredicate *peopleFilter = [NSPredicate predicateWithFormat:@"Department IN %@", @[dept1, dept2]];
+NSArray *people = [Person MR_findAllWithPredicate:peopleFilter];
+
+
+//设置翻页属性
+NSPredicate *peopleFilter = [NSPredicate predicateWithFormat:@"Department IN %@", departments];
+
+NSFetchRequest *peopleRequest = [Person MR_requestAllWithPredicate:peopleFilter];
+[peopleRequest setReturnsDistinctResults:NO];
+[peopleRequest setReturnPropertiesNamed:@[@"FirstName", @"LastName"]];
+
+[peopleRequest setFetchLimit:15];
+[peopleRequest setFetchOffset:0];
+
+NSArray *people = [Person MR_executeFetchRequest:peopleRequest];
+
+</code></pre>
+
+<h3 id="">新增</h3>
+
+<pre><code>
+//添加单个对象
++(void)addUserInfoByJson:(NSDictionary*)json{
+
+    [MagicalRecord saveWithBlock:^(NSManagedObjectContext *localContext) {
+        PersonModel * model =  [PersonModel MR_createInContext:localContext];
+        [model MR_importValuesForKeysWithObject:json];
+
+    } ];
+
+}
+
+//添加多个对象
++(void)batchAddWarningInfo:(NSArray*)jsonArray{
+
+    [jsonArray enumerateObjectsUsingBlock:^(NSDictionary * json, NSUInteger idx, BOOL *stop) {
+        [MagicalRecord saveWithBlock:^(NSManagedObjectContext *localContext) {
+            PersonModel * model =  [PersonModel MR_createInContext:localContext];
+            [model MR_importValuesForKeysWithObject:json];
+        } ];
+
+    }];
+
+}
+
+</code></pre>
+
+<h3 id="">修改</h3>
+
+<pre><code>
+    PersonModel *model = ...;
+
+    [MagicalRecord saveWithBlock:^(NSManagedObjectContext *localContext) {
+        PersonModel * localModel = [model MR_inContext:localContext];
+        localModel.firstName = @"John";
+        localModel.lastName = @"Appleseed";
+
+    } ];
+
+</code></pre>
+
+<h3 id="">删除</h3>
+
+<pre><code>
++(void)deleteWarningInfo:(NSArray*)oidArray{
+
+    NSPredicate *personFilter = [NSPredicate predicateWithFormat:@"firstname IN %@", oidArray];
+    NSArray *personModelArray = [PersonModel MR_findAllWithPredicate:personFilter];
+
+    [personModelArray enumerateObjectsUsingBlock:^(PersonModel * personModel, NSUInteger idx, BOOL *stop){
+        [personModel MR_deleteEntity];
+    }];
+}
+
+</code></pre>
+
+<h3 id="">清除所有记录</h3>
+
+<pre><code>
++(void)clean{
+    [PersonModel MR_truncateAll];
+}
+
+</code></pre>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-持久化之MagicalRecord.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

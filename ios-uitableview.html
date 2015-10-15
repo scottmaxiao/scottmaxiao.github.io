@@ -84,7 +84,7 @@ UserViewController.m
 @end 
 </code></pre>
 
-
+----
 
 ######UITableViewDataSource
 
@@ -123,6 +123,8 @@ UserViewController.m
 - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)sourceIndexPath toIndexPath:(NSIndexPath *)destinationIndexPath;
 
 </code></pre>
+
+----
 
 ######UITableViewDelegate
 主要提供一些可选的方法，用来控制tableView的选择、指定section的头和尾的显示以及协助完成cell的删除和排序等功能。
@@ -186,6 +188,9 @@ UITableViewCellEditingStyleDelete | UITableViewCellEditingStyleInsert(表示多�
 
 
 </code></pre>
+
+----
+
 ###UITableView不显示多余的表格分割线
 
 <pre><code>
@@ -194,6 +199,8 @@ view.backgroundColor = [UIColor clearColor];
 [tableView setTableFooterView:view];
 [tableView setTableHeaderView:view];
 </code></pre>
+
+----
 
 ###设置UITableView分割线间隔
 我们在使用tableview时会发现分割线的左边会短一些，通常可以使用 setSeparatorInset:UIEdgeInsetsZero 来解决。但是升级到XCode6之后，在iOS8里发现没有效果。下面给出解决办法：
@@ -228,6 +235,8 @@ view.backgroundColor = [UIColor clearColor];
 }
 </code></pre>
 
+----
+
 ###UITableViewCell复用机制
 我们通常编写UITableViewCell的时候，都会像下面代码一样声明UITableViewCell，这样编写是为了解决什么问题呢？
 <pre><code>
@@ -252,6 +261,7 @@ reuse机制就是这样。当cell需要显示的时候，从queue里面找，找
 因此就会出现上面说的“假设每页有 5个。 则 第6个复用第1个cell； 第7个复用第2个；”
 这样的结果是不管你的table有多少行，内存里实际上都只需要存储一个屏幕那么多行的cell就搞定了。
 
+----
 
 ###获取UITableViewCell相对于UITableView的坐标
 在使用 UITableViewCell  的frame属性获取origin得到的坐标是不变的.也就是说如果UITableView初始化完毕后,每个cell的坐标是固定的,x不变,y 随index递增的.
@@ -264,6 +274,8 @@ reuse机制就是这样。当cell需要显示的时候，从queue里面找，找
 CGRect rectInTableView = [tableView rectForRowAtIndexPath:indexPath];   
 CGRect rect = [tableView convertRect:rectInTableView toView:[tableView superview]];
 </code></pre>
+
+----
 
 ###UITableView通过长按手势定位获取indexPath
 <pre><code>
@@ -370,6 +382,8 @@ self.cellIndexPath=[self.tableView indexPathForRowAtPoint: point];
 @end 
 </code></pre>
 
+<hr>
+
 <h6 id="uitableviewdatasource">UITableViewDataSource</h6>
 
 <p>主要为UITableView提供显示用的数据(UITableViewCell)，指定UITableViewCell支持的编辑操作类型(insert，delete和reordering)，并根据用户的操作进行相应的数据更新操作，如果数据没有更具操作进行正确的更新，可能会导致显示异常，甚至crush。</p>
@@ -407,6 +421,8 @@ self.cellIndexPath=[self.tableView indexPathForRowAtPoint: point];
 - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)sourceIndexPath toIndexPath:(NSIndexPath *)destinationIndexPath;
 
 </code></pre>
+
+<hr>
 
 <h6 id="uitableviewdelegate">UITableViewDelegate</h6>
 
@@ -473,6 +489,8 @@ UITableViewCellEditingStyleDelete | UITableViewCellEditingStyleInsert(表示多�
 
 </uitableviewrowaction></code></pre>
 
+<hr>
+
 <h3 id="uitableview">UITableView不显示多余的表格分割线</h3>
 
 <pre><code>
@@ -481,6 +499,8 @@ view.backgroundColor = [UIColor clearColor];
 [tableView setTableFooterView:view];
 [tableView setTableHeaderView:view];
 </code></pre>
+
+<hr>
 
 <h3 id="uitableview">设置UITableView分割线间隔</h3>
 
@@ -518,6 +538,8 @@ view.backgroundColor = [UIColor clearColor];
 }
 </code></pre>
 
+<hr>
+
 <h3 id="uitableviewcell">UITableViewCell复用机制</h3>
 
 <p>我们通常编写UITableViewCell的时候，都会像下面代码一样声明UITableViewCell，这样编写是为了解决什么问题呢？</p>
@@ -545,6 +567,8 @@ if (cell == nil) {
 因此就会出现上面说的“假设每页有 5个。 则 第6个复用第1个cell； 第7个复用第2个；”
 这样的结果是不管你的table有多少行，内存里实际上都只需要存储一个屏幕那么多行的cell就搞定了。</p>
 
+<hr>
+
 <h3 id="uitableviewcelluitableview">获取UITableViewCell相对于UITableView的坐标</h3>
 
 <p>在使用 UITableViewCell  的frame属性获取origin得到的坐标是不变的.也就是说如果UITableView初始化完毕后,每个cell的坐标是固定的,x不变,y 随index递增的.</p>
@@ -557,6 +581,8 @@ if (cell == nil) {
 CGRect rectInTableView = [tableView rectForRowAtIndexPath:indexPath];   
 CGRect rect = [tableView convertRect:rectInTableView toView:[tableView superview]];
 </code></pre>
+
+<hr>
 
 <h3 id="uitableviewindexpath">UITableView通过长按手势定位获取indexPath</h3>
 

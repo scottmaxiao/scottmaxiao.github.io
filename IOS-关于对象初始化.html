@@ -1,0 +1,390 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-关于对象初始化
+
+###对象初始化有两种方式
+
+<pre><code>
+ClassA *obj1 = [[ClassA alloc] init];
+
+//or
+
+ClassA *obj2 = [ClassA new];
+
+</code></pre>
+
+alloc 和 init 分别把分配内存和初始化的工作分开。new 是把分配内存和初始化的工作一起完成了，先分配内存，然后调用类的构造函数。
+
+new和alloc/init在功能上几乎是一致的，分配内存并完成初始化。但是如果不适用默认的init方法，而是使用自定义的initXXX方法时，就需要调用alloc分配内存，然后调用initXXX方法初始化对象了。
+
+<pre><code>
+initXXX方法实现
+
+- (instancetype)initWithData:(NSMutableArray *)dArray{
+	
+	if (self = [super init]) {
+		...
+	}
+
+	return self;
+}
+
+
+ClassA *obj1 = [[ClassA alloc] initWithData: dArray];
+</code></pre>
+
+----
+
+###关于init方法中实例变量等引用
+
+&nbsp;&nbsp;&nbsp;&nbsp;永远不要在 init 方法（以及其他初始化方法）里面用 getter 和 setter 方法，你应当直接访问实例变量。这样做是为了防止有子类时，出现这样的情况：它的子类最终重载了其 setter 或者 getter 方法，因此导致该子类去调用其他的方法、访问那些处于不稳定状态，或者称为没有初始化完成的属性或者 ivar 。记住一个对象仅仅在 init 返回的时候，才会被认为是达到了初始化完成的状态。
+<pre><code>
+@property(nonatomic,strong)NSArray *topArray;
+
+
+- (instancetype)initWithData:(NSMutableArray *)dArray{
+	
+	if (self = [super init]) {
+	    //建议使用
+		_topArray=[NSMutableArray arrayWithArray:dArray];
+		//不建议使用
+		self.topArray=[NSMutableArray arrayWithArray:dArray];
+	}
+
+	return self;
+}
+
+</code></pre>
+
+----
+
+###关于属性的修饰符
+&nbsp;&nbsp;&nbsp;&nbsp;IOS开发中，@property与@synthesize是成对出现的，可以自动生成某个类成员变量的存取方法。在Xcode4.5以及以后的版本，@synthesize可以省略。
+<pre><code>
+@property(nonatomic, strong) NSString *oid;
+@property(nonatomic,strong,readonly)UITableView *tableView;
+
+@synthesize oid=_oid;
+@synthesize tableView=_tableView;
+</code></pre>
+
+
+下面介绍的修饰符都是在ARC的情况下。
+
+**atomic与nonatomic**
+
+&nbsp;&nbsp;&nbsp;&nbsp;atomic：默认是有该属性的，这个属性是为了保证程序在多线程情况，编译器会自动生成一些互斥加锁代码，避免该变量的读写不同步问题。
+
+&nbsp;&nbsp;&nbsp;&nbsp;nonatomic：如果该对象无需考虑多线程的情况，请加入这个属性，这样会让编译器少生成一些互斥加锁代码，可以提高效率。
+
+**readwrite与readonly**
+
+&nbsp;&nbsp;&nbsp;&nbsp;readwrite：这个属性是默认的情况，会自动为你生成存取器。
+
+&nbsp;&nbsp;&nbsp;&nbsp;readonly：只生成getter不会有setter方法。
+
+&nbsp;&nbsp;&nbsp;&nbsp;readwrite、readonly这两个属性的真正价值，不是提供成员变量访问接口，而是控制成员变量的访问权限。
+
+如
+<pre><code>
+在BnlogView.h文件中声明tableView为readonly,其他类只能调用getTableView方法。
+@interface BnlogView : UIView
+    @property(nonatomic,strong,readonly)UITableView *tableView;
+@end
+
+在BnlogView.m文件中声明tableView为readwrite,在BnlogView中就能调用getTableView,setTableView方法。
+@interface BnlogView()
+    @property(nonatomic,strong,readwrite)UITableView *tableView;
+@end
+</code></pre>
+
+**strong与weak**
+
+&nbsp;&nbsp;&nbsp;&nbsp;strong：强引用，也是我们通常说的引用，其存亡直接决定了所指向对象的存亡。如果不存在指向一个对象的引用，并且此对象不再显示在列表中，则此对象会被从内存中释放。
+
+&nbsp;&nbsp;&nbsp;&nbsp;weak：弱引用，不决定对象的存亡。即使一个对象被持有无数个弱引用，只要没有强引用指向它，那么还是会被清除。会在声明代理对象的时候使用
+
+<pre><code>
+@property(nonatomic,strong)NSMutableArray *dataArray;
+
+@property (nonatomic,weak) id<BnlogViewDelegate>delegate;
+
+</code></pre>
+
+
+**assign、copy**
+
+&nbsp;&nbsp;&nbsp;&nbsp;assign：默认类型，setter方法直接赋值，不进行任何retain操作，不改变引用计数。一般用来处理基本数据类型。
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;copy：与retain处理流程一样，先对旧值release，再copy出新的对象，retainCount为1.为了减少对上下文的依赖而引入的机制。我理解为内容的拷贝，向内存申请一块空间，把原来的对象内容赋给它，令其引用计数为1。对copy属性要特别注意：被定义有copy属性的对象必须要 符合NSCopying协议，必须实现- (id)copyWithZone:(NSZone *)zone方法。
+
+也可以直接使用：
+    使用assign: 对基础数据类型 （NSInteger，CGFloat）和C数据类型（int, float, double, char, 等等）
+    使用copy： 对NSString
+
+**getter setter**
+
+&nbsp;&nbsp;&nbsp;&nbsp;getter：是用来指定get方法的方法名
+
+&nbsp;&nbsp;&nbsp;&nbsp;setter：是用来指定set访求的方法名
+
+&nbsp;&nbsp;&nbsp;&nbsp;在@property的属性中，描述BOOL属性的词如果是形容词，那么setter不应该带is前缀，但它对应的 getter 访问器应该带上这个前缀，例如：
+
+<pre><code>
+@property (nonatomic, assign, getter=isEditable) boolean editable;
+@property (nonatomic, assign, setter=setEditable) boolean editable;
+
+</code></pre>
+
+----
+
+###关于初始化方法返回值为id还是instancetype
+
+[参考]<http://scottmaxiao.github.io/IOS-id%E5%92%8Cinstancetype.html>
+
+
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="ios">IOS-关于对象初始化</h2>
+
+<h3 id="">对象初始化有两种方式</h3>
+
+<pre><code>
+ClassA *obj1 = [[ClassA alloc] init];
+
+//or
+
+ClassA *obj2 = [ClassA new];
+
+</code></pre>
+
+<p>alloc 和 init 分别把分配内存和初始化的工作分开。new 是把分配内存和初始化的工作一起完成了，先分配内存，然后调用类的构造函数。</p>
+
+<p>new和alloc/init在功能上几乎是一致的，分配内存并完成初始化。但是如果不适用默认的init方法，而是使用自定义的initXXX方法时，就需要调用alloc分配内存，然后调用initXXX方法初始化对象了。</p>
+
+<pre><code>
+initXXX方法实现
+
+- (instancetype)initWithData:(NSMutableArray *)dArray{
+
+    if (self = [super init]) {
+        ...
+    }
+
+    return self;
+}
+
+
+ClassA *obj1 = [[ClassA alloc] initWithData: dArray];
+</code></pre>
+
+<hr>
+
+<h3 id="init">关于init方法中实例变量等引用</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;永远不要在 init 方法（以及其他初始化方法）里面用 getter 和 setter 方法，你应当直接访问实例变量。这样做是为了防止有子类时，出现这样的情况：它的子类最终重载了其 setter 或者 getter 方法，因此导致该子类去调用其他的方法、访问那些处于不稳定状态，或者称为没有初始化完成的属性或者 ivar 。记住一个对象仅仅在 init 返回的时候，才会被认为是达到了初始化完成的状态。</p>
+
+<pre><code>
+@property(nonatomic,strong)NSArray *topArray;
+
+
+- (instancetype)initWithData:(NSMutableArray *)dArray{
+
+    if (self = [super init]) {
+        //建议使用
+        _topArray=[NSMutableArray arrayWithArray:dArray];
+        //不建议使用
+        self.topArray=[NSMutableArray arrayWithArray:dArray];
+    }
+
+    return self;
+}
+
+</code></pre>
+
+<hr>
+
+<h3 id="">关于属性的修饰符</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;IOS开发中，@property与@synthesize是成对出现的，可以自动生成某个类成员变量的存取方法。在Xcode4.5以及以后的版本，@synthesize可以省略。</p>
+
+<pre><code>
+@property(nonatomic, strong) NSString *oid;
+@property(nonatomic,strong,readonly)UITableView *tableView;
+
+@synthesize oid=_oid;
+@synthesize tableView=_tableView;
+</code></pre>
+
+<p>下面介绍的修饰符都是在ARC的情况下。</p>
+
+<p><strong>atomic与nonatomic</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;atomic：默认是有该属性的，这个属性是为了保证程序在多线程情况，编译器会自动生成一些互斥加锁代码，避免该变量的读写不同步问题。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;nonatomic：如果该对象无需考虑多线程的情况，请加入这个属性，这样会让编译器少生成一些互斥加锁代码，可以提高效率。</p>
+
+<p><strong>readwrite与readonly</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;readwrite：这个属性是默认的情况，会自动为你生成存取器。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;readonly：只生成getter不会有setter方法。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;readwrite、readonly这两个属性的真正价值，不是提供成员变量访问接口，而是控制成员变量的访问权限。</p>
+
+<p>如</p>
+
+<pre><code>
+在BnlogView.h文件中声明tableView为readonly,其他类只能调用getTableView方法。
+@interface BnlogView : UIView
+    @property(nonatomic,strong,readonly)UITableView *tableView;
+@end
+
+在BnlogView.m文件中声明tableView为readwrite,在BnlogView中就能调用getTableView,setTableView方法。
+@interface BnlogView()
+    @property(nonatomic,strong,readwrite)UITableView *tableView;
+@end
+</code></pre>
+
+<p><strong>strong与weak</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;strong：强引用，也是我们通常说的引用，其存亡直接决定了所指向对象的存亡。如果不存在指向一个对象的引用，并且此对象不再显示在列表中，则此对象会被从内存中释放。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;weak：弱引用，不决定对象的存亡。即使一个对象被持有无数个弱引用，只要没有强引用指向它，那么还是会被清除。会在声明代理对象的时候使用</p>
+
+<pre><code>
+@property(nonatomic,strong)NSMutableArray *dataArray;
+
+@property (nonatomic,weak) id<bnlogviewdelegate>delegate;
+
+</bnlogviewdelegate></code></pre>
+
+<p><strong>assign、copy</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;assign：默认类型，setter方法直接赋值，不进行任何retain操作，不改变引用计数。一般用来处理基本数据类型。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;copy：与retain处理流程一样，先对旧值release，再copy出新的对象，retainCount为1.为了减少对上下文的依赖而引入的机制。我理解为内容的拷贝，向内存申请一块空间，把原来的对象内容赋给它，令其引用计数为1。对copy属性要特别注意：被定义有copy属性的对象必须要 符合NSCopying协议，必须实现- (id)copyWithZone:(NSZone *)zone方法。</p>
+
+<p>也可以直接使用：
+    使用assign: 对基础数据类型 （NSInteger，CGFloat）和C数据类型（int, float, double, char, 等等）
+    使用copy： 对NSString</p>
+
+<p><strong>getter setter</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;getter：是用来指定get方法的方法名</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;setter：是用来指定set访求的方法名</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在@property的属性中，描述BOOL属性的词如果是形容词，那么setter不应该带is前缀，但它对应的 getter 访问器应该带上这个前缀，例如：</p>
+
+<pre><code>
+@property (nonatomic, assign, getter=isEditable) boolean editable;
+@property (nonatomic, assign, setter=setEditable) boolean editable;
+
+</code></pre>
+
+<hr>
+
+<h3 id="idinstancetype">关于初始化方法返回值为id还是instancetype</h3>
+
+<p>[参考]<a href="http://scottmaxiao.github.io/IOS-id%E5%92%8Cinstancetype.html">http://scottmaxiao.github.io/IOS-id%E5%92%8Cinstancetype.html</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-关于对象初始化.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

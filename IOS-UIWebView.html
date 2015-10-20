@@ -1,0 +1,528 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-UIWebView
+
+&nbsp;&nbsp;&nbsp;&nbsp;UIWebVew是ios开发中较为常用的一个控件。其可以打开网页，加载html，打开文档等。当我们在开发中需要用到一些显示页面时，UIWebView是一个很好的选择。
+
+
+###创建UIWebView
+
+<pre><code>
+CGRect bouds = [[UIScreen manScreen]applicationFrame];  
+UIWebView* webView = [[UIWebView alloc]initWithFrame:bounds];  
+</code></pre>
+
+---
+
+###设置属性
+<pre><code>
+//UIWebView默认允许当网页内容处于最顶端时，用户用手指往下拖动，然后露出空白的背景。这份代码能够禁止这种效果。
+webView.scrollView.bounces=NO;
+
+//是否与用户交互（即用户能不能控制webview）
+[webView setUserInteractionEnabled:YES];
+
+//自动对页面进行缩放以适应屏幕 
+webView.scalespageToFit = YES;  
+//自动检测网页上的电话号码，单击可以拨打 
+webView.detectsPhoneNumbers = YES; 
+</code></pre>
+
+----
+
+###加载内容
+<pre><code>
+NSURL* url = [NSURL URLWithString:@"http://www.youku.com"];//创建URL  
+NSURLRequest* request = [NSURLRequest requestWithURL:url];//创建NSURLRequest   
+[webView loadRequest:request];//加载  
+</code></pre>
+
+加载本地html页面
+<pre><code>
+//返回html文件路径
+NSString *filePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"homeDetail.html"];
+//读取html文件内容
+NSString *htmlString = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];
+//替换html文件的内容
+htmlString = [htmlString stringByReplacingOccurrencesOfString :@"${docContent}" withString:[NSString stringWithFormat: @"%@", [json objectForKey:@"content"]]];
+		
+[webView loadHTMLString:htmlString baseURL:[NSURL URLWithString:filePath]];
+</code></pre>
+
+----
+
+###UIWebViewDelegate委托代理
+
+<pre><code>
+//设置委托对象
+webView.delegate=self;
+
+//选择要实现的委托方法
+////当网页视图被指示载入内容而得到通知。应当返回YES，这样会进行加载。
+-(BOOL)webView:(UIWebView*)webView shouldStartLoadWithRequest:(NSURLRequest*) reuqest navigationType:(UIWebViewNavigationType)navigationType;   
+//通过导航类型参数(navigationType)可以得到请求发起的原因，可以是以下任意值：
+UIWebViewNavigationTypeLinkClicked  
+UIWebViewNavigationTypeFormSubmitted  
+UIWebViewNavigationTypeBackForward  
+UIWebViewNavigationTypeReload  
+UIWebViewNavigationTypeFormResubmitted  
+UIWebViewNavigationTypeOther  
+
+//当网页视图已经开始加载一个请求后，得到通知。
+-(void)webViewDidStartLoad:(UIWebView*)webView ;
+//当网页视图结束加载一个请求之后，得到通知。
+-(void)webViewDidFinishLoad:(UIWebView*)webView ; 
+//当在请求加载中发生错误时，得到通知。会提供一个NSSError对象，以标识所发生错误类型。 
+-(void)webView:(UIWebView*)webView  DidFailLoadWithError:(NSError*)error;  
+</code></pre>
+
+[参考]<http://blog.csdn.net/toss156/article/details/7303425>
+
+----
+
+###与JavaScript的交互
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;stringByEvaluatingJavaScriptFromString方法可以将javascript嵌入页面中，通过这个方法我们可以在iOS中与UIWebView中的网页元素交互。
+
+&nbsp;&nbsp;&nbsp;&nbsp;我们在webViewDidFinishLoad方法中就可以通过javascript操作界面元素了。
+
+**获取当前页面的url。**
+<pre><code>
+- (void)webViewDidFinishLoad:(UIWebView *)webView {  
+  NSString *currentURL = [webView stringByEvaluatingJavaScriptFromString:@"document.location.href"];
+}
+</code></pre>
+
+**获取页面title：**
+<pre><code>
+- (void)webViewDidFinishLoad:(UIWebView *)webView {  
+   NSString *currentURL = [webView stringByEvaluatingJavaScriptFromString:@"document.location.href"];
+
+   NSString *title = [webview stringByEvaluatingJavaScriptFromString:@"document.title"]; 
+}
+</code></pre>
+
+**修改界面元素的值。**
+<pre><code>
+NSString *js_result = [webView stringByEvaluatingJavaScriptFromString:@"document.getElementsByName('q')[0].value='aaa';"];
+</code></pre>
+
+**表单提交**
+<pre><code>
+NSString *js_result2 = [webView stringByEvaluatingJavaScriptFromString:@"document.forms[0].submit(); "];
+</code></pre>
+
+**插入js代码**
+
+我们可以封装到一个js函数中，将这个函数插入到页面上执行，代码如下：
+<pre><code>
+
+- (void)webViewDidFinishLoad:(UIWebView *)webView{
+
+	//拦截网页图片  并修改图片大小
+	[webView stringByEvaluatingJavaScriptFromString:
+	 @"var script = document.createElement('script');"
+	 "script.type = 'text/javascript';"
+	 "script.text = \"function ResizeImages() { "
+	 "var myimg,oldwidth;"
+	 "var maxwidth=300;" //缩放系数
+	 "for(i=0;i <document.images.length;i++){"
+	 "myimg = document.images[i];"
+	 "if(myimg.width > maxwidth){"
+	 "oldwidth = myimg.width;"
+	 "myimg.width = maxwidth;"
+	 //"myimg.height = myimg.height * (maxwidth/oldwidth);"
+	 "}"
+	 "}"
+	 "}\";"
+	 "document.getElementsByTagName('head')[0].appendChild(script);"];
+	//
+	[webView stringByEvaluatingJavaScriptFromString:@"ResizeImages();"];
+}
+</code></pre>
+
+[参考]<http://www.cnblogs.com/zhuqil/archive/2011/08/03/2126562.html>
+
+----
+
+###响应图片长按事件
+
+
+<pre><code>
+static NSString* const kTouchJavaScriptString=
+@"document.ontouchstart=function(event){\
+x=event.targetTouches[0].clientX;\
+y=event.targetTouches[0].clientY;\
+document.location=\"myweb:touch:start:\"+x+\":\"+y;};";
+
+- (void)webViewDidFinishLoad:(UIWebView *)webView{
+[webView stringByEvaluatingJavaScriptFromString:kTouchJavaScriptString];
+}
+
+// 功能：UIWebView响应长按事件
+-(BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType {
+
+	NSString *requestString = [[request URL] absoluteString];
+	NSArray *components = [requestString componentsSeparatedByString:@":"];
+	if ([components count] > 1 && [(NSString *)[components objectAtIndex:0]
+								   isEqualToString:@"myweb"]) {
+		if([(NSString *)[components objectAtIndex:1] isEqualToString:@"touch"])
+		{
+			if ([(NSString *)[components objectAtIndex:2] isEqualToString:@"start"])
+			{
+				/*
+				 @需延时判断是否响应页面内的js...
+				 */
+				self.gesState = GESTURE_STATE_START;
+				
+				float ptX = [[components objectAtIndex:3]floatValue];
+				float ptY = [[components objectAtIndex:4]floatValue];
+				
+				NSString *js = [NSString stringWithFormat:@"document.elementFromPoint(%f, %f).tagName", ptX, ptY];
+				NSString * tagName = [self.webView stringByEvaluatingJavaScriptFromString:js];
+				self.imgUrl = nil;
+				if ([tagName isEqualToString:@"IMG"]) {
+					self.imgUrl = [NSString stringWithFormat:@"document.elementFromPoint(%f, %f).src", ptX, ptY];
+				}
+				if (self.imgUrl) {
+					self.timer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(handleLongTouch:) userInfo:nil repeats:NO];
+				}
+			}
+		}
+		return NO;
+	}
+	return YES;
+
+}
+
+
+// 功能：如果点击的是图片，并且按住的时间超过1s，执行handleLongTouch函数。
+- (void)handleLongTouch:(NSTimer *)timer {
+	if (self.imgUrl && self.gesState == GESTURE_STATE_START) {
+		
+		self.gesState = GESTURE_STATE_END;
+		HomeDetailImageViewController* imageViewController=[[HomeDetailImageViewController alloc]init];
+		imageViewController.imgUrlStr=[self.webView stringByEvaluatingJavaScriptFromString:self.imgUrl];
+		[self.navigationController pushViewController:imageViewController animated:YES];
+		
+	}
+}
+</code></pre>
+
+[参考]<http://www.tuicool.com/articles/j6fmY3j>
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosuiwebview">IOS-UIWebView</h2>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;UIWebVew是ios开发中较为常用的一个控件。其可以打开网页，加载html，打开文档等。当我们在开发中需要用到一些显示页面时，UIWebView是一个很好的选择。</p>
+
+<h3 id="uiwebview">创建UIWebView</h3>
+
+<pre><code>
+CGRect bouds = [[UIScreen manScreen]applicationFrame];  
+UIWebView* webView = [[UIWebView alloc]initWithFrame:bounds];  
+</code></pre>
+
+<hr>
+
+<h3 id="">设置属性</h3>
+
+<pre><code>
+//UIWebView默认允许当网页内容处于最顶端时，用户用手指往下拖动，然后露出空白的背景。这份代码能够禁止这种效果。
+webView.scrollView.bounces=NO;
+
+//是否与用户交互（即用户能不能控制webview）
+[webView setUserInteractionEnabled:YES];
+
+//自动对页面进行缩放以适应屏幕 
+webView.scalespageToFit = YES;  
+//自动检测网页上的电话号码，单击可以拨打 
+webView.detectsPhoneNumbers = YES; 
+</code></pre>
+
+<hr>
+
+<h3 id="">加载内容</h3>
+
+<pre><code>
+NSURL* url = [NSURL URLWithString:@"http://www.youku.com"];//创建URL  
+NSURLRequest* request = [NSURLRequest requestWithURL:url];//创建NSURLRequest   
+[webView loadRequest:request];//加载  
+</code></pre>
+
+<p>加载本地html页面</p>
+
+<pre><code>
+//返回html文件路径
+NSString *filePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"homeDetail.html"];
+//读取html文件内容
+NSString *htmlString = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];
+//替换html文件的内容
+htmlString = [htmlString stringByReplacingOccurrencesOfString :@"${docContent}" withString:[NSString stringWithFormat: @"%@", [json objectForKey:@"content"]]];
+
+[webView loadHTMLString:htmlString baseURL:[NSURL URLWithString:filePath]];
+</code></pre>
+
+<hr>
+
+<h3 id="uiwebviewdelegate">UIWebViewDelegate委托代理</h3>
+
+<pre><code>
+//设置委托对象
+webView.delegate=self;
+
+//选择要实现的委托方法
+////当网页视图被指示载入内容而得到通知。应当返回YES，这样会进行加载。
+-(BOOL)webView:(UIWebView*)webView shouldStartLoadWithRequest:(NSURLRequest*) reuqest navigationType:(UIWebViewNavigationType)navigationType;   
+//通过导航类型参数(navigationType)可以得到请求发起的原因，可以是以下任意值：
+UIWebViewNavigationTypeLinkClicked  
+UIWebViewNavigationTypeFormSubmitted  
+UIWebViewNavigationTypeBackForward  
+UIWebViewNavigationTypeReload  
+UIWebViewNavigationTypeFormResubmitted  
+UIWebViewNavigationTypeOther  
+
+//当网页视图已经开始加载一个请求后，得到通知。
+-(void)webViewDidStartLoad:(UIWebView*)webView ;
+//当网页视图结束加载一个请求之后，得到通知。
+-(void)webViewDidFinishLoad:(UIWebView*)webView ; 
+//当在请求加载中发生错误时，得到通知。会提供一个NSSError对象，以标识所发生错误类型。 
+-(void)webView:(UIWebView*)webView  DidFailLoadWithError:(NSError*)error;  
+</code></pre>
+
+<p>[参考]<a href="http://blog.csdn.net/toss156/article/details/7303425">http://blog.csdn.net/toss156/article/details/7303425</a></p>
+
+<hr>
+
+<h3 id="javascript">与JavaScript的交互</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;stringByEvaluatingJavaScriptFromString方法可以将javascript嵌入页面中，通过这个方法我们可以在iOS中与UIWebView中的网页元素交互。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;我们在webViewDidFinishLoad方法中就可以通过javascript操作界面元素了。</p>
+
+<p><strong>获取当前页面的url。</strong></p>
+
+<pre><code>
+- (void)webViewDidFinishLoad:(UIWebView *)webView {  
+  NSString *currentURL = [webView stringByEvaluatingJavaScriptFromString:@"document.location.href"];
+}
+</code></pre>
+
+<p><strong>获取页面title：</strong></p>
+
+<pre><code>
+- (void)webViewDidFinishLoad:(UIWebView *)webView {  
+   NSString *currentURL = [webView stringByEvaluatingJavaScriptFromString:@"document.location.href"];
+
+   NSString *title = [webview stringByEvaluatingJavaScriptFromString:@"document.title"]; 
+}
+</code></pre>
+
+<p><strong>修改界面元素的值。</strong></p>
+
+<pre><code>
+NSString *js_result = [webView stringByEvaluatingJavaScriptFromString:@"document.getElementsByName('q')[0].value='aaa';"];
+</code></pre>
+
+<p><strong>表单提交</strong></p>
+
+<pre><code>
+NSString *js_result2 = [webView stringByEvaluatingJavaScriptFromString:@"document.forms[0].submit(); "];
+</code></pre>
+
+<p><strong>插入js代码</strong></p>
+
+<p>我们可以封装到一个js函数中，将这个函数插入到页面上执行，代码如下：</p>
+
+<pre><code>
+
+- (void)webViewDidFinishLoad:(UIWebView *)webView{
+
+    //拦截网页图片  并修改图片大小
+    [webView stringByEvaluatingJavaScriptFromString:
+     @"var script = document.createElement('script');"
+     "script.type = 'text/javascript';"
+     "script.text = \"function ResizeImages() { "
+     "var myimg,oldwidth;"
+     "var maxwidth=300;" //缩放系数
+     "for(i=0;i <document.images.length;i++){" "myimg="document.images[i];&quot;" "if(myimg.width=""> maxwidth){"
+     "oldwidth = myimg.width;"
+     "myimg.width = maxwidth;"
+     //"myimg.height = myimg.height * (maxwidth/oldwidth);"
+     "}"
+     "}"
+     "}\";"
+     "document.getElementsByTagName('head')[0].appendChild(script);"];
+    //
+    [webView stringByEvaluatingJavaScriptFromString:@"ResizeImages();"];
+}
+</document.images.length;i++){"></code></pre>
+
+<p>[参考]<a href="http://www.cnblogs.com/zhuqil/archive/2011/08/03/2126562.html">http://www.cnblogs.com/zhuqil/archive/2011/08/03/2126562.html</a></p>
+
+<hr>
+
+<h3 id="">响应图片长按事件</h3>
+
+<pre><code>
+static NSString* const kTouchJavaScriptString=
+@"document.ontouchstart=function(event){\
+x=event.targetTouches[0].clientX;\
+y=event.targetTouches[0].clientY;\
+document.location=\"myweb:touch:start:\"+x+\":\"+y;};";
+
+- (void)webViewDidFinishLoad:(UIWebView *)webView{
+[webView stringByEvaluatingJavaScriptFromString:kTouchJavaScriptString];
+}
+
+// 功能：UIWebView响应长按事件
+-(BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType {
+
+    NSString *requestString = [[request URL] absoluteString];
+    NSArray *components = [requestString componentsSeparatedByString:@":"];
+    if ([components count] &gt; 1 &amp;&amp; [(NSString *)[components objectAtIndex:0]
+                                   isEqualToString:@"myweb"]) {
+        if([(NSString *)[components objectAtIndex:1] isEqualToString:@"touch"])
+        {
+            if ([(NSString *)[components objectAtIndex:2] isEqualToString:@"start"])
+            {
+                /*
+                 @需延时判断是否响应页面内的js...
+                 */
+                self.gesState = GESTURE_STATE_START;
+
+                float ptX = [[components objectAtIndex:3]floatValue];
+                float ptY = [[components objectAtIndex:4]floatValue];
+
+                NSString *js = [NSString stringWithFormat:@"document.elementFromPoint(%f, %f).tagName", ptX, ptY];
+                NSString * tagName = [self.webView stringByEvaluatingJavaScriptFromString:js];
+                self.imgUrl = nil;
+                if ([tagName isEqualToString:@"IMG"]) {
+                    self.imgUrl = [NSString stringWithFormat:@"document.elementFromPoint(%f, %f).src", ptX, ptY];
+                }
+                if (self.imgUrl) {
+                    self.timer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(handleLongTouch:) userInfo:nil repeats:NO];
+                }
+            }
+        }
+        return NO;
+    }
+    return YES;
+
+}
+
+
+// 功能：如果点击的是图片，并且按住的时间超过1s，执行handleLongTouch函数。
+- (void)handleLongTouch:(NSTimer *)timer {
+    if (self.imgUrl &amp;&amp; self.gesState == GESTURE_STATE_START) {
+
+        self.gesState = GESTURE_STATE_END;
+        HomeDetailImageViewController* imageViewController=[[HomeDetailImageViewController alloc]init];
+        imageViewController.imgUrlStr=[self.webView stringByEvaluatingJavaScriptFromString:self.imgUrl];
+        [self.navigationController pushViewController:imageViewController animated:YES];
+
+    }
+}
+</code></pre>
+
+<p>[参考]<a href="http://www.tuicool.com/articles/j6fmY3j">http://www.tuicool.com/articles/j6fmY3j</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-UIWebView.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

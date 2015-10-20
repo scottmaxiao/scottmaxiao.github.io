@@ -1,0 +1,475 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-UIImageView
+
+UIImageView，顾名思义，是用来放置图片的。
+
+###创建一个UIImageView
+
+<pre><code>
+UIImageView *imageView1 = [[UIImageView alloc] init];
+
+UIImageView *imageView2 = [[UIImageView alloc] initWithFrame:(CGRect)]; 
+
+UIImageView *imageView3 = [[UIImageView alloc] initWithImage:(UIImage *)]; 
+
+UIImageView *imageView4 = [[UIImageView alloc] initWithImage:(UIImage *) highlightedImage:(UIImage *)];
+
+UIImageView *imageView5 = [[UIImageView alloc] initWithCoder:(NSCoder *)];
+</code></pre>
+&nbsp;&nbsp;&nbsp;&nbsp;比较常用的是前边三个。至于第四个，当这个ImageView的highlighted属性是YES时，显示的就是参数highlightedImage，一般情况下显示的是第一个参数UIImage。
+
+----
+
+###contentMode属性
+
+这个属性是用来设置图片的显示方式，如居中、居右，是否缩放等，有以下几个常量可供设定：
+<pre><code>
+UIViewContentModeScaleToFill,  缩放内容到合适比例大小
+UIViewContentModeScaleAspectFit,      // contents scaled to fit with fixed aspect. remainder is transparent 缩放内容到合适的大小，边界多余部分透明
+UIViewContentModeScaleAspectFill,     // contents scaled to fill with fixed aspect. some portion of content may be clipped.缩放内容填充到指定大小，边界多余的部分省略
+UIViewContentModeRedraw,              // redraw on bounds change (calls -setNeedsDisplay) 重绘视图边界
+UIViewContentModeCenter,              // contents remain same size. positioned adjusted.  视图保持等比缩放
+UIViewContentModeTop, 视图顶部对齐
+UIViewContentModeBottom, 视图底部对齐
+UIViewContentModeLeft, 视图左侧对齐
+UIViewContentModeRight, 视图右侧对齐
+UIViewContentModeTopLeft, 视图左上角对齐
+UIViewContentModeTopRight, 视图右上角对齐
+UIViewContentModeBottomLeft, 视图左下角对齐
+UIViewContentModeBottomRight, 视图右下角对齐
+</code></pre>
+
+&nbsp;&nbsp;&nbsp;&nbsp;注意以上几个常量，凡是没有带Scale的，当图片尺寸超过 ImageView尺寸时，只有部分显示在ImageView中。UIViewContentModeScaleToFill属性会导致图片变形。UIViewContentModeScaleAspectFit会保证图片比例不变，而且全部显示在ImageView中，这意味着ImageView会有部分空白。UIViewContentModeScaleAspectFill也会证图片比例不变，但是是填充整个ImageView的，可能只有部分图片显示出来。
+
+
+UIViewContentModeScaleToFill效果
+
+![UIViewContentModeScaleToFill](http://scottmaxiao.github.io/img/uiimageView/UIImageView_UIViewContentModeScaleToFill.png)
+
+UIViewContentModeScaleAspectFit效果
+
+![UIViewContentModeScaleAspectFit](http://scottmaxiao.github.io/img/uiimageView/UIImageView_UIViewContentModeScaleAspectFit.png)
+
+UIViewContentModeScaleAspectFill效果
+
+![UIViewContentModeScaleAspectFill](http://scottmaxiao.github.io/img/uiimageView/UIImageView_UIViewContentModeScaleAspectFill.png)
+
+![UIViewContentModeScaleAspectFill](http://scottmaxiao.github.io/img/uiimageView/UIImageView.png)
+
+----
+
+###contentScaleFactor属性
+&nbsp;&nbsp;&nbsp;&nbsp;在iphone的retina屏幕上面，必须要设置，contentScaleFactor属性。这个属性的默认值是1。对应的retina屏幕需要是2.可以通过下面的方式来设置：
+<pre><code>
+[imageView setContentScaleFactor:[[UIScreen mainScreen] scale]];
+</code></pre>
+
+为什么要设置contentScaleFactor属性呢？
+
+    比如一个32*32的图片，在高分辨率下，如果要位置大小都不变，那么32*32的图像点显示在64*64的像素(光栅)上。在不改程序的情况下，一个图像点的颜色对应4个颜色一致的像素点。这样图片不光模糊，而且还有锯齿。
+
+    所以，要需要一个64*64的新图片代替原图片。在不改程序代码的情况下如何实现？SDK要求我们再加一个图片，比如原图片是image.png，新加的就是image@2x.png，是64*64的。
+
+    在系统scale=2.0时，加载图像时先找@2x的，找不到在找原来的，所以就是只要给所有的图像资源文件都加上一个新的高清晰的@2x文件，程序就自动在高分辨屏幕上用高清晰图片，低分辨上用低清晰图像。
+
+    看同一张图片，有如下几个情况:
+    当UIScreen.scale=2.0时,读取image@2x.png，    UIImage.scale=2.0  UIImage.size=16*16
+    当UIScreen.scale=1.0时,读取image.png，       UIImage.scale=1.0  UIImage.size=32*32
+    当UIScreen.scale=2.0时,读取image.png，       UIImage.scale=1.0  UIImage.size=32*32 (不存在@2x文件的时候)
+
+
+[参考:]<http://www.douban.com/note/77384858/>
+
+----
+
+###clipsTobounds属性
+不显示超出显示范围的图片
+<pre><code>
+clipsTobounds = YES
+</code></pre>
+
+[参考]<http://blog.csdn.net/ch_soft/article/details/6742915>
+
+----
+
+###userInteractionEnabled属性
+&nbsp;&nbsp;&nbsp;&nbsp;如果父视图为ParentView包含一个Button，如果再ParentView上添加子视图ChildView，且ChildView盖住了Button，那么Button就得到不响应了，为了让Button响应，可以设置ChildView的userInteractionEnabled ＝ NO；
+
+[参考]<http://blog.csdn.net/studyrecord/article/details/6536358>
+
+----
+
+###其他属性
+
+<pre><code>// 是否栅格化。
+    // YES：会栅格化层中的数据（如：图像）
+    // NO：不栅格化
+    // 我们知道，栅格化数据是将矢量图变为位图。所以，如果层中的内容是变动的，每次都需要栅格化，就会影像效率。一般设置为NO
+    [imgShadow.layer setShouldRasterize:NO];
+    
+    // 设置边框颜色
+    [imgShadow.layer setBorderColor: [[UIColor whiteColor] CGColor]];
+    // 设置边框宽度
+    [imgShadow.layer setBorderWidth: 1.0];
+    // 设置阴影偏移量，CGSizeMake(x轴方向, y轴方向)
+    [[imgShadow layer] setShadowOffset:CGSizeMake(1, 1)];
+    // 设置阴影颜色
+    [[imgShadow layer] setShadowColor:[UIColor redColor].CGColor];
+    // 设置阴影半径
+    [[imgShadow layer] setShadowRadius:3];
+    // 设置透明度
+    [[imgShadow layer] setShadowOpacity:1];
+
+// 当设置为YES时，超过边界的将被遮盖(隐藏)，经常与cornerRadius，属性使用。这样，圆角外的区域将被遮盖
+ 
+[imgShadow.layer setMasksToBounds:YES];
+    // 设置圆角
+    imgShadow.layer.cornerRadius = 10;
+</code></pre>
+
+----
+
+###生成新的图片
+解决方案一,使用图片按照一定尺寸生成新的图片
+<pre><code>
+-(UIImage*)imageWithName:(NSString*)name andSize:(CGSize) size{
+	UIImage *selTab = [[UIImage imageNamed:name] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];//UIImageRenderingModeAlwaysOriginal 始终绘制图片原始状态，不使用Tint Color。
+	UIGraphicsBeginImageContext(size);
+	[selTab drawInRect:CGRectMake(0, 0, size.width, size.height)];
+	UIImage *reSizeImage = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	return reSizeImage;
+}
+</code></pre>
+
+解决方案二，使用规定的颜色和尺寸生成新的图片
+<pre><code>
+- (UIImage *)imageWithColor:(UIColor *)color andSize:(CGSize)size{
+	CGRect rect = CGRectMake(0, 0, size.width, size.height); //  <- Here
+	// Create a 1 by 1 pixel context
+	UIGraphicsBeginImageContextWithOptions(rect.size, NO, 0);
+	[color setFill];
+	UIRectFill(rect);   // Fill it with your color
+	UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	
+	return image;
+}
+</code></pre>
+
+----
+
+###图片拉伸
+
+<pre><code>
+- (UIImage *)stretchableImageWithLeftCapWidth:(NSInteger)leftCapWidth topCapHeight:(NSInteger)topCapHeight;
+</code></pre>
+
+ios中提供了上面的方法来实现图片的拉伸。leftCapWidth表示是左侧需要保留的像素数。topCapHeight表示是顶部需要保留的像素数。效果相当于只能保持一边固定，拉伸另一边。
+
+调用样例如下：
+
+<pre><code>
+UIImage* image = [UIImage imageNamed:@"listbg2"];  
+image = [image stretchableImageWithLeftCapWidth:floorf(image.size.width/2) topCapHeight:60]; 
+</code></pre>
+
+[参考]<http://blog.csdn.net/w122079514/article/details/7848980>
+
+----
+
+###UIScrollView控件实现图片缩放功能
+[参考:]<http://www.cnblogs.com/wendingding/p/3754268.html>
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosuiimageview">IOS-UIImageView</h2>
+
+<p>UIImageView，顾名思义，是用来放置图片的。</p>
+
+<h3 id="uiimageview">创建一个UIImageView</h3>
+
+<pre><code>
+UIImageView *imageView1 = [[UIImageView alloc] init];
+
+UIImageView *imageView2 = [[UIImageView alloc] initWithFrame:(CGRect)]; 
+
+UIImageView *imageView3 = [[UIImageView alloc] initWithImage:(UIImage *)]; 
+
+UIImageView *imageView4 = [[UIImageView alloc] initWithImage:(UIImage *) highlightedImage:(UIImage *)];
+
+UIImageView *imageView5 = [[UIImageView alloc] initWithCoder:(NSCoder *)];
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;比较常用的是前边三个。至于第四个，当这个ImageView的highlighted属性是YES时，显示的就是参数highlightedImage，一般情况下显示的是第一个参数UIImage。</p>
+
+<hr>
+
+<h3 id="contentmode">contentMode属性</h3>
+
+<p>这个属性是用来设置图片的显示方式，如居中、居右，是否缩放等，有以下几个常量可供设定：</p>
+
+<pre><code>
+UIViewContentModeScaleToFill,  缩放内容到合适比例大小
+UIViewContentModeScaleAspectFit,      // contents scaled to fit with fixed aspect. remainder is transparent 缩放内容到合适的大小，边界多余部分透明
+UIViewContentModeScaleAspectFill,     // contents scaled to fill with fixed aspect. some portion of content may be clipped.缩放内容填充到指定大小，边界多余的部分省略
+UIViewContentModeRedraw,              // redraw on bounds change (calls -setNeedsDisplay) 重绘视图边界
+UIViewContentModeCenter,              // contents remain same size. positioned adjusted.  视图保持等比缩放
+UIViewContentModeTop, 视图顶部对齐
+UIViewContentModeBottom, 视图底部对齐
+UIViewContentModeLeft, 视图左侧对齐
+UIViewContentModeRight, 视图右侧对齐
+UIViewContentModeTopLeft, 视图左上角对齐
+UIViewContentModeTopRight, 视图右上角对齐
+UIViewContentModeBottomLeft, 视图左下角对齐
+UIViewContentModeBottomRight, 视图右下角对齐
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;注意以上几个常量，凡是没有带Scale的，当图片尺寸超过 ImageView尺寸时，只有部分显示在ImageView中。UIViewContentModeScaleToFill属性会导致图片变形。UIViewContentModeScaleAspectFit会保证图片比例不变，而且全部显示在ImageView中，这意味着ImageView会有部分空白。UIViewContentModeScaleAspectFill也会证图片比例不变，但是是填充整个ImageView的，可能只有部分图片显示出来。</p>
+
+<p>UIViewContentModeScaleToFill效果</p>
+
+<p><img src="http://scottmaxiao.github.io/img/uiimageView/UIImageView_UIViewContentModeScaleToFill.png" alt="UIViewContentModeScaleToFill" title=""></p>
+
+<p>UIViewContentModeScaleAspectFit效果</p>
+
+<p><img src="http://scottmaxiao.github.io/img/uiimageView/UIImageView_UIViewContentModeScaleAspectFit.png" alt="UIViewContentModeScaleAspectFit" title=""></p>
+
+<p>UIViewContentModeScaleAspectFill效果</p>
+
+<p><img src="http://scottmaxiao.github.io/img/uiimageView/UIImageView_UIViewContentModeScaleAspectFill.png" alt="UIViewContentModeScaleAspectFill" title=""></p>
+
+<p><img src="http://scottmaxiao.github.io/img/uiimageView/UIImageView.png" alt="UIViewContentModeScaleAspectFill" title=""></p>
+
+<hr>
+
+<h3 id="contentscalefactor">contentScaleFactor属性</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在iphone的retina屏幕上面，必须要设置，contentScaleFactor属性。这个属性的默认值是1。对应的retina屏幕需要是2.可以通过下面的方式来设置：</p>
+
+<pre><code>
+[imageView setContentScaleFactor:[[UIScreen mainScreen] scale]];
+</code></pre>
+
+<p>为什么要设置contentScaleFactor属性呢？</p>
+
+<pre><code>比如一个32*32的图片，在高分辨率下，如果要位置大小都不变，那么32*32的图像点显示在64*64的像素(光栅)上。在不改程序的情况下，一个图像点的颜色对应4个颜色一致的像素点。这样图片不光模糊，而且还有锯齿。
+
+所以，要需要一个64*64的新图片代替原图片。在不改程序代码的情况下如何实现？SDK要求我们再加一个图片，比如原图片是image.png，新加的就是image@2x.png，是64*64的。
+
+在系统scale=2.0时，加载图像时先找@2x的，找不到在找原来的，所以就是只要给所有的图像资源文件都加上一个新的高清晰的@2x文件，程序就自动在高分辨屏幕上用高清晰图片，低分辨上用低清晰图像。
+
+看同一张图片，有如下几个情况:
+当UIScreen.scale=2.0时,读取image@2x.png，    UIImage.scale=2.0  UIImage.size=16*16
+当UIScreen.scale=1.0时,读取image.png，       UIImage.scale=1.0  UIImage.size=32*32
+当UIScreen.scale=2.0时,读取image.png，       UIImage.scale=1.0  UIImage.size=32*32 (不存在@2x文件的时候)
+</code></pre>
+
+<p>[参考:]<a href="http://www.douban.com/note/77384858/">http://www.douban.com/note/77384858/</a></p>
+
+<hr>
+
+<h3 id="clipstobounds">clipsTobounds属性</h3>
+
+<p>不显示超出显示范围的图片</p>
+
+<pre><code>
+clipsTobounds = YES
+</code></pre>
+
+<p>[参考]<a href="http://blog.csdn.net/ch_soft/article/details/6742915">http://blog.csdn.net/ch_soft/article/details/6742915</a></p>
+
+<hr>
+
+<h3 id="userinteractionenabled">userInteractionEnabled属性</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;如果父视图为ParentView包含一个Button，如果再ParentView上添加子视图ChildView，且ChildView盖住了Button，那么Button就得到不响应了，为了让Button响应，可以设置ChildView的userInteractionEnabled ＝ NO；</p>
+
+<p>[参考]<a href="http://blog.csdn.net/studyrecord/article/details/6536358">http://blog.csdn.net/studyrecord/article/details/6536358</a></p>
+
+<hr>
+
+<h3 id="">其他属性</h3>
+
+<pre><code>// 是否栅格化。
+    // YES：会栅格化层中的数据（如：图像）
+    // NO：不栅格化
+    // 我们知道，栅格化数据是将矢量图变为位图。所以，如果层中的内容是变动的，每次都需要栅格化，就会影像效率。一般设置为NO
+    [imgShadow.layer setShouldRasterize:NO];
+
+    // 设置边框颜色
+    [imgShadow.layer setBorderColor: [[UIColor whiteColor] CGColor]];
+    // 设置边框宽度
+    [imgShadow.layer setBorderWidth: 1.0];
+    // 设置阴影偏移量，CGSizeMake(x轴方向, y轴方向)
+    [[imgShadow layer] setShadowOffset:CGSizeMake(1, 1)];
+    // 设置阴影颜色
+    [[imgShadow layer] setShadowColor:[UIColor redColor].CGColor];
+    // 设置阴影半径
+    [[imgShadow layer] setShadowRadius:3];
+    // 设置透明度
+    [[imgShadow layer] setShadowOpacity:1];
+
+// 当设置为YES时，超过边界的将被遮盖(隐藏)，经常与cornerRadius，属性使用。这样，圆角外的区域将被遮盖
+
+[imgShadow.layer setMasksToBounds:YES];
+    // 设置圆角
+    imgShadow.layer.cornerRadius = 10;
+</code></pre>
+
+<hr>
+
+<h3 id="">生成新的图片</h3>
+
+<p>解决方案一,使用图片按照一定尺寸生成新的图片</p>
+
+<pre><code>
+-(UIImage*)imageWithName:(NSString*)name andSize:(CGSize) size{
+    UIImage *selTab = [[UIImage imageNamed:name] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];//UIImageRenderingModeAlwaysOriginal 始终绘制图片原始状态，不使用Tint Color。
+    UIGraphicsBeginImageContext(size);
+    [selTab drawInRect:CGRectMake(0, 0, size.width, size.height)];
+    UIImage *reSizeImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return reSizeImage;
+}
+</code></pre>
+
+<p>解决方案二，使用规定的颜色和尺寸生成新的图片</p>
+
+<pre><code>
+- (UIImage *)imageWithColor:(UIColor *)color andSize:(CGSize)size{
+    CGRect rect = CGRectMake(0, 0, size.width, size.height); //  &lt;- Here
+    // Create a 1 by 1 pixel context
+    UIGraphicsBeginImageContextWithOptions(rect.size, NO, 0);
+    [color setFill];
+    UIRectFill(rect);   // Fill it with your color
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    return image;
+}
+</code></pre>
+
+<hr>
+
+<h3 id="">图片拉伸</h3>
+
+<pre><code>
+- (UIImage *)stretchableImageWithLeftCapWidth:(NSInteger)leftCapWidth topCapHeight:(NSInteger)topCapHeight;
+</code></pre>
+
+<p>ios中提供了上面的方法来实现图片的拉伸。leftCapWidth表示是左侧需要保留的像素数。topCapHeight表示是顶部需要保留的像素数。效果相当于只能保持一边固定，拉伸另一边。</p>
+
+<p>调用样例如下：</p>
+
+<pre><code>
+UIImage* image = [UIImage imageNamed:@"listbg2"];  
+image = [image stretchableImageWithLeftCapWidth:floorf(image.size.width/2) topCapHeight:60]; 
+</code></pre>
+
+<p>[参考]<a href="http://blog.csdn.net/w122079514/article/details/7848980">http://blog.csdn.net/w122079514/article/details/7848980</a></p>
+
+<hr>
+
+<h3 id="uiscrollview">UIScrollView控件实现图片缩放功能</h3>
+
+<p>[参考:]<a href="http://www.cnblogs.com/wendingding/p/3754268.html">http://www.cnblogs.com/wendingding/p/3754268.html</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-UIImageView.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

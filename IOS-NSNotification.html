@@ -33,6 +33,10 @@
 
 &nbsp;&nbsp;&nbsp;&nbsp;一个NSNotificationCenter可以有许多的通知消息NSNotification，对于每一个NSNotification可以有很多的观察者Observer来接收通知。
 
+[参考]
+
+<http://www.cnblogs.com/kenshincui/p/4168532.html#localNotification>
+
 ----
 
 ####通知中心
@@ -204,6 +208,10 @@ NSDictionary *userInfo = @{ AFNetworkingReachabilityNotificationStatusItem: @(st
 <p>&nbsp;&nbsp;&nbsp;&nbsp;通知中心实际上是在程序内部提供了消息广播的一种机制。通知中心不能在进程间进行通信。实际上就是一个二传手，把接收到的消息，根据内部的一个消息转发表，来将消息转发给需要的对象。通知中心是基于观察者模式的，它允许注册、删除观察者。</p>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;一个NSNotificationCenter可以有许多的通知消息NSNotification，对于每一个NSNotification可以有很多的观察者Observer来接收通知。</p>
+
+<p>[参考]</p>
+
+<p><a href="http://www.cnblogs.com/kenshincui/p/4168532.html#localNotification">http://www.cnblogs.com/kenshincui/p/4168532.html#localNotification</a></p>
 
 <hr>
 

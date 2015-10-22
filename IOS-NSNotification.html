@@ -1,0 +1,366 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-NSNotification
+
+####介绍
+
+&nbsp;&nbsp;&nbsp;&nbsp;通知中心实际上是在程序内部提供了消息广播的一种机制。通知中心不能在进程间进行通信。实际上就是一个二传手，把接收到的消息，根据内部的一个消息转发表，来将消息转发给需要的对象。通知中心是基于观察者模式的，它允许注册、删除观察者。
+
+&nbsp;&nbsp;&nbsp;&nbsp;一个NSNotificationCenter可以有许多的通知消息NSNotification，对于每一个NSNotification可以有很多的观察者Observer来接收通知。
+
+----
+
+####通知中心
+
+每一个程序都有一个自己的通知中心，即NSNotificationCenter对象。该对象采用单例设计模式，采用defaultCenter方法就可以获得唯一的NSNotificationCenter对象。
+<pre><code>
+ NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+</code></pre>
+
+----
+
+####创建NSNotification
+
+下面是创建通知的两个方法。
+<pre><code>
++ (instancetype)notificationWithName:(NSString *)aName object:(nullable id)anObject;
++ (instancetype)notificationWithName:(NSString *)aName object:(nullable id)anObject userInfo:(nullable NSDictionary *)aUserInfo;
+</code></pre>
+
+- aName :表示通知名称
+- anObject :表示通知发送者
+- aUserInfo :通知传送的内容
+
+注意：如果anObject设置为nil表示以广播方式发消息或者得到消息，这个时候只要消息名字是对的就可以得到这个消息。
+anObject：用来表示 谁发送的消息，或者从谁得到消息。
+
+样例如下
+<pre><code>
+NSNotification *notification=[NSNotification notificationWithName:LogoutNotification object:self];	
+
+NSDictionary *userInfo=@{@"persionId": self.gapSet.persionId,
+					     @"resource_scope":self.gapSet.resourceScope};
+	
+NSNotification *notification=[NSNotification notificationWithName:LoginNotification
+															   object:self
+															 userInfo:userInfo];
+											 
+</code></pre>
+
+----
+
+####发送通知
+
+<pre><code>
+- (void)postNotification:(NSNotification *)notification;
+- (void)postNotificationName:(NSString *)aName object:(nullable id)anObject;
+- (void)postNotificationName:(NSString *)aName object:(nullable id)anObject userInfo:(nullable NSDictionary *)aUserInfo;
+</code></pre>
+
+- 方法一直接把定义好的notification发出。
+- 方法二只定义了消息名和发消息者。
+- 方法三指定消息名称，发消息者，并且传递了userInfo。也就相当于初始化了一个notification，并且用第一个方法发出。
+
+注意：如果anObject设置为nil表示以广播方式发消息或者得到消息，这个时候只要消息名字是对的就可以得到这个消息。anObject：用来表示 谁发送的消息，或者从谁得到消息。
+
+
+<pre><code>
+//方法一发送通知
+[[NSNotificationCenter defaultCenter] postNotification:notification];
+
+//方法二发送通知
+[[NSNotificationCenter defaultCenter] postNotificationName:AFNetworkingOperationDidFinishNotification object:self];
+
+
+//方法二发送通知
+NSDictionary *userInfo = @{ AFNetworkingReachabilityNotificationStatusItem: @(status) };
+[[NSNotificationCenter defaultCenter] postNotificationName:AFNetworkingReachabilityDidChangeNotification object:nil userInfo:userInfo];
+</code></pre>
+
+----
+
+####监听通知
+
+<pre><code>
+- (void)addObserver:(id)observer selector:(SEL)aSelector name:(nullable NSString *)aName object:(nullable id)anObject;
+</code></pre>
+
+- observer : 观察者，一般都是当前对象本身。
+- aSelector :收到通知后执行的方法。
+- aName : 要监听的通知名称。
+- anObject :要监听的通知发送者。
+
+<pre><code>
+[[NSNotificationCenter defaultCenter] addObserver:self
+    selector:@selector(aWindowBecameMain:)
+    name:NSWindowDidBecomeMainNotification object:nil];
+    
+-(void)aWindowBecameMain:(NSNotification *)notification{
+	NSDictionary *userInfo=notification.userInfo;
+	...
+}
+</code></pre>
+
+注意：addObserver:selector:name:object:不仅指定一个观察者，指定通知中心发送给观察者的消息，还有接收通知的名字，以及指定的对象。
+
+&nbsp;&nbsp;&nbsp;&nbsp;一般来说不需要指定name和object，但如果仅仅指定了一个object，观察者将收到该对象的所有通知。例如将上面的代码中name改为nil,那么观察者将接收到object对象的所有消息，但是确定不了接收这些消息的顺序。
+
+&nbsp;&nbsp;&nbsp;&nbsp;如果指指定一个通知名称，观察者将收到它每次发出的通知。例如，上面的代码中object为nil，那么客户对象（self）将收到任何对象发出NSWindowDidBecomeMainNotification通知。
+
+&nbsp;&nbsp;&nbsp;&nbsp;如果既没有指定指定object，也没有指定name，那么该观察者将收到所有对象的所有消息。
+
+----
+
+####取消监听
+
+<pre><code>
+- (void)removeObserver:(id)observer;
+- (void)removeObserver:(id)observer name:(nullable NSString *)aName object:(nullable id)anObject;
+</code></pre>
+
+- observer : 观察者，一般都是当前对象本身。
+- aName : 监听的通知名称。
+- anObject :监听的通知发送者。
+
+<pre><code>
+[[NSNotificationCenter defaultCenter] removeObserver:self];
+
+[[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+</code></pre>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosnsnotification">IOS-NSNotification</h2>
+
+<h4 id="">介绍</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;通知中心实际上是在程序内部提供了消息广播的一种机制。通知中心不能在进程间进行通信。实际上就是一个二传手，把接收到的消息，根据内部的一个消息转发表，来将消息转发给需要的对象。通知中心是基于观察者模式的，它允许注册、删除观察者。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;一个NSNotificationCenter可以有许多的通知消息NSNotification，对于每一个NSNotification可以有很多的观察者Observer来接收通知。</p>
+
+<hr>
+
+<h4 id="">通知中心</h4>
+
+<p>每一个程序都有一个自己的通知中心，即NSNotificationCenter对象。该对象采用单例设计模式，采用defaultCenter方法就可以获得唯一的NSNotificationCenter对象。</p>
+
+<pre><code>
+ NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+</code></pre>
+
+<hr>
+
+<h4 id="nsnotification">创建NSNotification</h4>
+
+<p>下面是创建通知的两个方法。</p>
+
+<pre><code>
++ (instancetype)notificationWithName:(NSString *)aName object:(nullable id)anObject;
++ (instancetype)notificationWithName:(NSString *)aName object:(nullable id)anObject userInfo:(nullable NSDictionary *)aUserInfo;
+</code></pre>
+
+<ul>
+<li>aName :表示通知名称</li>
+<li>anObject :表示通知发送者</li>
+<li>aUserInfo :通知传送的内容</li>
+</ul>
+
+<p>注意：如果anObject设置为nil表示以广播方式发消息或者得到消息，这个时候只要消息名字是对的就可以得到这个消息。
+anObject：用来表示 谁发送的消息，或者从谁得到消息。</p>
+
+<p>样例如下</p>
+
+<pre><code>
+NSNotification *notification=[NSNotification notificationWithName:LogoutNotification object:self];    
+
+NSDictionary *userInfo=@{@"persionId": self.gapSet.persionId,
+                         @"resource_scope":self.gapSet.resourceScope};
+
+NSNotification *notification=[NSNotification notificationWithName:LoginNotification
+                                                               object:self
+                                                             userInfo:userInfo];
+
+</code></pre>
+
+<hr>
+
+<h4 id="">发送通知</h4>
+
+<pre><code>
+- (void)postNotification:(NSNotification *)notification;
+- (void)postNotificationName:(NSString *)aName object:(nullable id)anObject;
+- (void)postNotificationName:(NSString *)aName object:(nullable id)anObject userInfo:(nullable NSDictionary *)aUserInfo;
+</code></pre>
+
+<ul>
+<li>方法一直接把定义好的notification发出。</li>
+<li>方法二只定义了消息名和发消息者。</li>
+<li>方法三指定消息名称，发消息者，并且传递了userInfo。也就相当于初始化了一个notification，并且用第一个方法发出。</li>
+</ul>
+
+<p>注意：如果anObject设置为nil表示以广播方式发消息或者得到消息，这个时候只要消息名字是对的就可以得到这个消息。anObject：用来表示 谁发送的消息，或者从谁得到消息。</p>
+
+<pre><code>
+//方法一发送通知
+[[NSNotificationCenter defaultCenter] postNotification:notification];
+
+//方法二发送通知
+[[NSNotificationCenter defaultCenter] postNotificationName:AFNetworkingOperationDidFinishNotification object:self];
+
+
+//方法二发送通知
+NSDictionary *userInfo = @{ AFNetworkingReachabilityNotificationStatusItem: @(status) };
+[[NSNotificationCenter defaultCenter] postNotificationName:AFNetworkingReachabilityDidChangeNotification object:nil userInfo:userInfo];
+</code></pre>
+
+<hr>
+
+<h4 id="">监听通知</h4>
+
+<pre><code>
+- (void)addObserver:(id)observer selector:(SEL)aSelector name:(nullable NSString *)aName object:(nullable id)anObject;
+</code></pre>
+
+<ul>
+<li>observer : 观察者，一般都是当前对象本身。</li>
+<li>aSelector :收到通知后执行的方法。</li>
+<li>aName : 要监听的通知名称。</li>
+<li>anObject :要监听的通知发送者。</li>
+</ul>
+
+<pre><code>
+[[NSNotificationCenter defaultCenter] addObserver:self
+    selector:@selector(aWindowBecameMain:)
+    name:NSWindowDidBecomeMainNotification object:nil];
+
+-(void)aWindowBecameMain:(NSNotification *)notification{
+    NSDictionary *userInfo=notification.userInfo;
+    ...
+}
+</code></pre>
+
+<p>注意：addObserver:selector:name:object:不仅指定一个观察者，指定通知中心发送给观察者的消息，还有接收通知的名字，以及指定的对象。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;一般来说不需要指定name和object，但如果仅仅指定了一个object，观察者将收到该对象的所有通知。例如将上面的代码中name改为nil,那么观察者将接收到object对象的所有消息，但是确定不了接收这些消息的顺序。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;如果指指定一个通知名称，观察者将收到它每次发出的通知。例如，上面的代码中object为nil，那么客户对象（self）将收到任何对象发出NSWindowDidBecomeMainNotification通知。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;如果既没有指定指定object，也没有指定name，那么该观察者将收到所有对象的所有消息。</p>
+
+<hr>
+
+<h4 id="">取消监听</h4>
+
+<pre><code>
+- (void)removeObserver:(id)observer;
+- (void)removeObserver:(id)observer name:(nullable NSString *)aName object:(nullable id)anObject;
+</code></pre>
+
+<ul>
+<li>observer : 观察者，一般都是当前对象本身。</li>
+<li>aName : 监听的通知名称。</li>
+<li>anObject :监听的通知发送者。</li>
+</ul>
+
+<pre><code>
+[[NSNotificationCenter defaultCenter] removeObserver:self];
+
+[[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+</code></pre>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-NSNotification.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

@@ -401,6 +401,19 @@ Xcode为当前工程提供了诸多配置选项，其中的Build Settings提供�
 
 </code></pre>
 
+----
+
+####设置icon上的数字图标
+<pre><code>
+	NSInteger badge=[UIApplication sharedApplication].applicationIconBadgeNumber;
+	
+	if (badge!=0) {
+		//消掉图标右上角badgenumber
+		[UIApplication sharedApplication].applicationIconBadgeNumber=0;
+	}
+
+</code></pre>
+
 <!-- markdown end -->
 </div>
 <div class="entry" id="main">
@@ -793,6 +806,20 @@ personWithName方法返回的是ZOCPerson对象实例。
     NSString *  locationString=[dateformatter stringFromDate:senddate];
     return locationString;
 }
+
+</code></pre>
+
+<hr>
+
+<h4 id="icon">设置icon上的数字图标</h4>
+
+<pre><code>
+    NSInteger badge=[UIApplication sharedApplication].applicationIconBadgeNumber;
+
+    if (badge!=0) {
+        //消掉图标右上角badgenumber
+        [UIApplication sharedApplication].applicationIconBadgeNumber=0;
+    }
 
 </code></pre>
 <!-- content end -->

@@ -152,6 +152,47 @@ NSDictionary *userInfo = @{ AFNetworkingReachabilityNotificationStatusItem: @(st
 
 [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
 </code></pre>
+
+----
+
+####监听键盘高度变化   
+
+<pre><code>
+-(void)viewWillAppear:(BOOL)animated
+{
+	[super viewWillAppear:animated];
+	
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardShow:) name:UIKeyboardWillShowNotification object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardHide:) name:UIKeyboardWillHideNotification object:nil];
+}
+
+- (void)viewWillDisappear:(BOOL)animated{
+	[super viewWillDisappear:animated];
+	
+	[[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+	[[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
+}
+
+-(void)keyboardShow:(NSNotification *)note
+{
+	CGRect keyBoardRect=[note.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
+	CGFloat keyBoardHeight=keyBoardRect.size.height;
+	
+	[UIView animateWithDuration:[note.userInfo[UIKeyboardAnimationDurationUserInfoKey] floatValue] animations:^{
+		
+		[self.contentTextView setFrame:CGRectMake(...)];
+	}];
+}
+-(void)keyboardHide:(NSNotification *)note
+{
+	
+	[UIView animateWithDuration:[note.userInfo[UIKeyboardAnimationDurationUserInfoKey] floatValue] animations:^{
+		
+		[self.contentTextView setFrame:CGRectMake(...)];
+	}];
+}
+</code></pre>
+
 <!-- markdown end -->
 </div>
 <div class="entry" id="main">
@@ -292,6 +333,46 @@ NSDictionary *userInfo = @{ AFNetworkingReachabilityNotificationStatusItem: @(st
 [[NSNotificationCenter defaultCenter] removeObserver:self];
 
 [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+</code></pre>
+
+<hr>
+
+<h4 id="">监听键盘高度变化</h4>
+
+<pre><code>
+-(void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardShow:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardHide:) name:UIKeyboardWillHideNotification object:nil];
+}
+
+- (void)viewWillDisappear:(BOOL)animated{
+    [super viewWillDisappear:animated];
+
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
+}
+
+-(void)keyboardShow:(NSNotification *)note
+{
+    CGRect keyBoardRect=[note.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    CGFloat keyBoardHeight=keyBoardRect.size.height;
+
+    [UIView animateWithDuration:[note.userInfo[UIKeyboardAnimationDurationUserInfoKey] floatValue] animations:^{
+
+        [self.contentTextView setFrame:CGRectMake(...)];
+    }];
+}
+-(void)keyboardHide:(NSNotification *)note
+{
+
+    [UIView animateWithDuration:[note.userInfo[UIKeyboardAnimationDurationUserInfoKey] floatValue] animations:^{
+
+        [self.contentTextView setFrame:CGRectMake(...)];
+    }];
+}
 </code></pre>
 <!-- content end -->
 </div>

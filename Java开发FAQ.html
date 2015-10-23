@@ -27,6 +27,56 @@
 <!-- markdown -->
 ##Java开发FAQ
 
+####tomcat 6.0.X getParameter 问题
+问题描述:
+Tomcat5.5升级到Tomcat6.0.44，在web.xml中配置的字符集使用GBK。
+
+    <filter>  
+        <filter-name>EncodFilter</filter-name>  
+        <filter-class>  
+            com.test.test.EncodeFilter  
+        </filter-class>  
+        <init-param>  
+            <param-name>encoding</param-name>  
+            <param-value>GBK</param-value>  
+        </init-param>  
+    </filter>  
+  
+    <filter-mapping>  
+        <filter-name>EncodFilter</filter-name>  
+        <url-pattern>*.do</url-pattern>  
+    </filter-mapping>  
+    <filter-mapping>  
+        <filter-name>EncodFilter</filter-name>  
+        <url-pattern>*.jsp</url-pattern>  
+    </filter-mapping> 
+
+现像
+
+1、当a.jsp中的userName输入的是1个字符(如1、a、b)等，registUser.do输出的userName永远都为空字符串
+ 
+2、当a.jsp中的userName输入的是1个字符以上(如11、ab、bd)等，registUser.do输出的userName为a.jsp中输入的字符
+
+解决方案
+
+修改web.xml中的encoding值，GBK修改为GB18030
+
+        <init-param>  
+            <param-name>encoding</param-name>  
+            <param-value>GB18030</param-value>  
+        </init-param>  
+
+修改Tomcat中的 server.xml配置
+
+    <Connector port="9999" maxHttpHeaderSize="8192"
+               maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
+                URIEncoding="GB18030"
+                enableLookups="false" redirectPort="8443" acceptCount="100"
+                connectionTimeout="20000" disableUploadTimeout="true" />
+
+[参考]<http://blog.csdn.net/rainbow0101/article/details/7098181>
+
+----
 ####使用axis开发webservice服务java.net.ConnectException: Connection refused: connect异常的解决办法
 
 问题描述: 
@@ -387,6 +437,61 @@ private final Boolean validateResponse(final String response){
 <div class="entry" id="main">
 <!-- content -->
 <h2 id="javafaq">Java开发FAQ</h2>
+
+<h4 id="tomcat60xgetparameter">tomcat 6.0.X getParameter 问题</h4>
+
+<p>问题描述:
+Tomcat5.5升级到Tomcat6.0.44，在web.xml中配置的字符集使用GBK。</p>
+
+<pre><code>&lt;filter&gt;  
+    &lt;filter-name&gt;EncodFilter&lt;/filter-name&gt;  
+    &lt;filter-class&gt;  
+        com.test.test.EncodeFilter  
+    &lt;/filter-class&gt;  
+    &lt;init-param&gt;  
+        &lt;param-name&gt;encoding&lt;/param-name&gt;  
+        &lt;param-value&gt;GBK&lt;/param-value&gt;  
+    &lt;/init-param&gt;  
+&lt;/filter&gt;  
+
+&lt;filter-mapping&gt;  
+    &lt;filter-name&gt;EncodFilter&lt;/filter-name&gt;  
+    &lt;url-pattern&gt;*.do&lt;/url-pattern&gt;  
+&lt;/filter-mapping&gt;  
+&lt;filter-mapping&gt;  
+    &lt;filter-name&gt;EncodFilter&lt;/filter-name&gt;  
+    &lt;url-pattern&gt;*.jsp&lt;/url-pattern&gt;  
+&lt;/filter-mapping&gt; 
+</code></pre>
+
+<p>现像</p>
+
+<p>1、当a.jsp中的userName输入的是1个字符(如1、a、b)等，registUser.do输出的userName永远都为空字符串</p>
+
+<p>2、当a.jsp中的userName输入的是1个字符以上(如11、ab、bd)等，registUser.do输出的userName为a.jsp中输入的字符</p>
+
+<p>解决方案</p>
+
+<p>修改web.xml中的encoding值，GBK修改为GB18030</p>
+
+<pre><code>    &lt;init-param&gt;  
+        &lt;param-name&gt;encoding&lt;/param-name&gt;  
+        &lt;param-value&gt;GB18030&lt;/param-value&gt;  
+    &lt;/init-param&gt;  
+</code></pre>
+
+<p>修改Tomcat中的 server.xml配置</p>
+
+<pre><code>&lt;Connector port="9999" maxHttpHeaderSize="8192"
+           maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
+            URIEncoding="GB18030"
+            enableLookups="false" redirectPort="8443" acceptCount="100"
+            connectionTimeout="20000" disableUploadTimeout="true" /&gt;
+</code></pre>
+
+<p>[参考]<a href="http://blog.csdn.net/rainbow0101/article/details/7098181">http://blog.csdn.net/rainbow0101/article/details/7098181</a></p>
+
+<hr>
 
 <h4 id="axiswebservicejavanetconnectexceptionconnectionrefusedconnect">使用axis开发webservice服务java.net.ConnectException: Connection refused: connect异常的解决办法</h4>
 

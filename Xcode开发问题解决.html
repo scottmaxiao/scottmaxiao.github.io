@@ -68,6 +68,18 @@ Xcode为当前工程提供了诸多配置选项，其中的Build Settings提供�
 
 [参考链接:]<http://bbs.feng.com/read-htm-tid-9619460.html>
 
+----
+
+####Failed to instantiate the default view controller for UIMainStoryboardFile
+
+&nbsp;&nbsp;&nbsp;&nbsp;在XCode6.1中，在StoryBoard中设置了一个view controller，出现“Failed to instantiate the default view controller for UIMainStoryboardFile”的警告。启动模拟器，显示黑屏。
+
+&nbsp;&nbsp;&nbsp;&nbsp;原因是在StoryBoard中没有一个view controller设置了Initial Scene。
+
+&nbsp;&nbsp;&nbsp;&nbsp;解决方案：在Storyboard中，选择一个view conroller作为story board的第一启动界面
+
+![framework](http://scottmaxiao.github.io/img/xcode/xcode03.png)
+
 <!-- markdown end -->
 </div>
 <div class="entry" id="main">
@@ -110,6 +122,18 @@ Xcode为当前工程提供了诸多配置选项，其中的Build Settings提供�
 <p>&nbsp;&nbsp;&nbsp;&nbsp;临时解决办法在Info.plist中添加  NSAppTransportSecurity 类型  Dictionary Dictionary 下添加  NSAllowsArbitraryLoads 类型 Boolean ,值设为  YES</p>
 
 <p>[参考链接:]<a href="http://bbs.feng.com/read-htm-tid-9619460.html">http://bbs.feng.com/read-htm-tid-9619460.html</a></p>
+
+<hr>
+
+<h4 id="failedtoinstantiatethedefaultviewcontrollerforuimainstoryboardfile">Failed to instantiate the default view controller for UIMainStoryboardFile</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在XCode6.1中，在StoryBoard中设置了一个view controller，出现“Failed to instantiate the default view controller for UIMainStoryboardFile”的警告。启动模拟器，显示黑屏。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;原因是在StoryBoard中没有一个view controller设置了Initial Scene。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;解决方案：在Storyboard中，选择一个view conroller作为story board的第一启动界面</p>
+
+<p><img src="http://scottmaxiao.github.io/img/xcode/xcode03.png" alt="framework" title=""></p>
 <!-- content end -->
 </div>
 <br>

@@ -1,0 +1,576 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-手势
+
+&nbsp;&nbsp;&nbsp;&nbsp;为了完成手势识别，必须借助于手势识别器：UIGestureRecognizer 。UIGestureRecognizer是一个抽象类，定义了所有的手势基本行为，使用它的子类才能处理具体的手势。
+
+<table>
+<tr>
+<td>手势</td>
+<td>说明</td>
+</tr>
+<tr>
+<td>UITapGestureRecognizer</td>
+<td>点按手势</td>
+</tr>
+<tr>
+<td>UIPinchGestureRecognizer</td>
+<td>捏合手势,用于缩放</td>
+</tr>
+<tr>
+<td>UIPanGestureRecognizer</td>
+<td>拖动手势</td>
+</tr>
+<tr>
+<td>UISwipeGestureRecognizer</td>
+<td>轻扫手势，支持四个方向的轻扫，但是不同的方向要分别定义轻扫手势</td>
+</tr>
+<tr>
+<td>UIRotationGestureRecognizer</td>
+<td>旋转手势</td>
+</tr>
+<tr>
+<td>UILongPressGestureRecognizer</td>
+<td>长按手势</td>
+</tr>
+</table>
+
+####手势状态
+
+在iOS中将手势状态分为如下几种：
+
+<pre><code>
+typedef NS_ENUM(NSInteger, UIGestureRecognizerState) {
+    UIGestureRecognizerStatePossible,   // 尚未识别是何种手势操作（但可能已经触发了触摸事件），默认状态
+    
+    UIGestureRecognizerStateBegan,      // 手势已经开始，此时已经被识别，但是这个过程中可能发生变化，手势操作尚未完成
+    UIGestureRecognizerStateChanged,    // 手势状态发生转变
+    UIGestureRecognizerStateEnded,      // 手势识别操作完成（此时已经松开手指）
+    UIGestureRecognizerStateCancelled,  // 手势被取消，恢复到默认状态
+    
+    UIGestureRecognizerStateFailed,     // 手势识别失败，恢复到默认状态
+    
+    UIGestureRecognizerStateRecognized = UIGestureRecognizerStateEnded // 手势识别完成，同UIGestureRecognizerStateEnded
+};
+
+</code></pre>
+
+
+####使用手势
+
+在iOS中添加手势比较简单，可以归纳为以下几个步骤：
+
+创建对应的手势对象；
+设置手势识别属性【可选】；
+附加手势到指定的对象；
+编写手势操作方法；
+
+
+**添加点按手势**
+
+<pre><code>
+//创建手势对象
+UITapGestureRecognizer *tapGesture=[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tapImage:)];
+//设置手势属性
+tapGesture.numberOfTapsRequired=1;//设置点按次数，默认为1，注意在iOS中很少用双击操作
+tapGesture.numberOfTouchesRequired=1;//点按的手指数
+//添加手势到对象
+[self.view addGestureRecognizer:tapGesture];
+
+
+-(void)tapImage:(UITapGestureRecognizer *)gesture{
+    NSLog(@"tap:%i",gesture.state);
+}
+</code></pre>
+
+**添加长按手势**
+
+<pre><code>
+UILongPressGestureRecognizer *longPressGesture=[[UILongPressGestureRecognizer alloc]initWithTarget:self action:@selector(longPressImage:)];
+
+longPressGesture.minimumPressDuration=0.5;//设置长按时间，默认0.5秒，一般这个值不要修改
+[_imageView addGestureRecognizer:longPressGesture];
+
+
+-(void)longPressImage:(UILongPressGestureRecognizer *)gesture{
+    //NSLog(@"longpress:%i",gesture.state);
+    //注意其实在手势里面有一个view属性可以获取点按的视图
+    //UIImageView *imageView=(UIImageView *)gesture.view;
+    
+    //由于连续手势此方法会调用多次，所以需要判断其手势状态
+    if (gesture.state==UIGestureRecognizerStateBegan) {
+        ...
+    }
+}
+</code></pre>
+
+**添加捏合手势**
+
+<pre><code>
+UIPinchGestureRecognizer *pinchGesture=[[UIPinchGestureRecognizer alloc]initWithTarget:self action:@selector(pinchImage:)];
+
+[self.view addGestureRecognizer:pinchGesture];
+
+-(void)pinchImage:(UIPinchGestureRecognizer *)gesture{
+    if (gesture.state==UIGestureRecognizerStateChanged) {
+        //捏合手势中scale属性记录的缩放比例
+        _imageView.transform=CGAffineTransformMakeScale(gesture.scale, gesture.scale);
+    }else if(gesture.state==UIGestureRecognizerStateEnded){//结束后恢复
+        [UIView animateWithDuration:.5 animations:^{
+            _imageView.transform=CGAffineTransformIdentity;//取消一切形变
+        }];
+    }
+}
+</code></pre>
+
+**添加旋转手势**
+
+<pre><code>
+UIRotationGestureRecognizer *rotationGesture=[[UIRotationGestureRecognizer alloc]initWithTarget:self action:@selector(rotateImage:)];
+    
+[self.view addGestureRecognizer:rotationGesture];
+
+
+-(void)rotateImage:(UIRotationGestureRecognizer *)gesture{
+    if (gesture.state==UIGestureRecognizerStateChanged) {
+        //旋转手势中rotation属性记录了旋转弧度
+        _imageView.transform=CGAffineTransformMakeRotation(gesture.rotation);
+    }else if(gesture.state==UIGestureRecognizerStateEnded){
+        [UIView animateWithDuration:0.8 animations:^{
+            _imageView.transform=CGAffineTransformIdentity;//取消形变
+        }];
+    }
+}
+
+</code></pre>
+
+**添加拖动手势**
+
+<pre><code>
+UIPanGestureRecognizer *panGesture=[[UIPanGestureRecognizer alloc]initWithTarget:self action:@selector(panImage:)];
+
+[_imageView addGestureRecognizer:panGesture];
+
+
+-(void)panImage:(UIPanGestureRecognizer *)gesture{
+    if (gesture.state==UIGestureRecognizerStateChanged) {
+        CGPoint translation=[gesture translationInView:self.view];//利用拖动手势的translationInView:方法取得在相对指定视图（这里是控制器根视图）的移动
+        _imageView.transform=CGAffineTransformMakeTranslation(translation.x, translation.y);
+    }else if(gesture.state==UIGestureRecognizerStateEnded){
+        [UIView animateWithDuration:0.5 animations:^{
+            _imageView.transform=CGAffineTransformIdentity;
+        }];
+    }
+    
+}
+</code></pre>
+
+**添加轻扫手势**
+
+<pre><code>
+//注意一个轻扫手势只能控制一个方向，默认向右，通过direction进行方向控制
+UISwipeGestureRecognizer *swipeGestureToRight=[[UISwipeGestureRecognizer alloc]initWithTarget:self action:@selector(swipeImage:)];
+//swipeGestureToRight.direction=UISwipeGestureRecognizerDirectionRight;//默认为向右轻扫
+[self.view addGestureRecognizer:swipeGestureToRight];
+    
+UISwipeGestureRecognizer *swipeGestureToLeft=[[UISwipeGestureRecognizer alloc]initWithTarget:self action:@selector(swipeImage:)];
+swipeGestureToLeft.direction=UISwipeGestureRecognizerDirectionLeft;
+[self.view addGestureRecognizer:swipeGestureToLeft];
+
+
+//注意虽然轻扫手势是连续手势，但是只有在识别结束才会触发，不用判断状态
+-(void)swipeImage:(UISwipeGestureRecognizer *)gesture{
+        //direction记录的轻扫的方向
+        if (gesture.direction==UISwipeGestureRecognizerDirectionRight) {//向右
+			...
+        }else if(gesture.direction==UISwipeGestureRecognizerDirectionLeft){//向左
+			...
+        }
+}
+</code></pre>
+
+
+####解决手势冲突
+
+**方案一 使其中一个gesture recognizer失败的情况下，另一个gesture recognizer才能分析事件**
+
+&nbsp;&nbsp;&nbsp;&nbsp;在iOS中，如果一个手势A的识别部分是另一个手势B的子部分时，默认情况下A就会先识别，B就无法识别了。要解决这个冲突可以利用- (void)requireGestureRecognizerToFail:(UIGestureRecognizer *)otherGestureRecognizer;方法来完成。
+
+&nbsp;&nbsp;&nbsp;&nbsp;这个方法可以指定某个手势执行的前提是另一个手势失败才会识别执行。也就是说如果我们指定拖动手势的执行前提为轻扫手势失败就可以了，这样一来当我们手指轻轻滑动时系统会优先考虑轻扫手势，如果最后发现该操作不是轻扫，那么就会执行拖动。只要将下面的代码添加到添加手势之后就能解决这个问题了：
+
+<pre><code>
+//解决在图片上滑动时拖动手势和轻扫手势的冲突
+[panGesture requireGestureRecognizerToFail:swipeGestureToRight];
+[panGesture requireGestureRecognizerToFail:swipeGestureToLeft];
+//解决拖动和长按手势之间的冲突
+[longPressGesture requireGestureRecognizerToFail:panGesture];
+
+</code></pre>
+
+**方案二 允许多个手势识别器共同识别**
+
+&nbsp;&nbsp;&nbsp;&nbsp;我们知道在iOS的触摸事件中，事件触发是根据响应者链进行的，上层触摸事件执行后就不再向下传播。默认情况下手势也是类似的，先识别的手势会阻断手势识别操作继续传播。那么如何让两个有层次关系并且都添加了手势的控件都能正确识别手势呢？
+<pre><code>
+-(BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+
+</code></pre>
+这个代理方法默认返回NO，会阻断继续向下识别手势，如果返回YES则可以继续向下传播识别。
+
+样例如下:
+<pre><code>
+viewLongPressGesture.delegate=self;
+...
+
+-(BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer{
+    //NSLog(@"%i,%i",gestureRecognizer.view.tag,otherGestureRecognizer.view.tag);
+    
+    //注意，这里控制只有在UIImageView中才能向下传播，其他情况不允许
+    if ([otherGestureRecognizer.view isKindOfClass:[UIImageView class]]) {
+        return YES;
+    }
+    return NO;
+}
+</code></pre>
+
+
+[参考:]
+<http://www.cnblogs.com/kenshincui/p/3950646.html#gesture>
+<http://my.oschina.net/aofe/blog/268749>
+<http://blog.csdn.net/chun799/article/details/8194893>
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="ios">IOS-手势</h2>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;为了完成手势识别，必须借助于手势识别器：UIGestureRecognizer 。UIGestureRecognizer是一个抽象类，定义了所有的手势基本行为，使用它的子类才能处理具体的手势。</p>
+
+<table>
+<tbody><tr>
+<td>手势</td>
+<td>说明</td>
+</tr>
+<tr>
+<td>UITapGestureRecognizer</td>
+<td>点按手势</td>
+</tr>
+<tr>
+<td>UIPinchGestureRecognizer</td>
+<td>捏合手势,用于缩放</td>
+</tr>
+<tr>
+<td>UIPanGestureRecognizer</td>
+<td>拖动手势</td>
+</tr>
+<tr>
+<td>UISwipeGestureRecognizer</td>
+<td>轻扫手势，支持四个方向的轻扫，但是不同的方向要分别定义轻扫手势</td>
+</tr>
+<tr>
+<td>UIRotationGestureRecognizer</td>
+<td>旋转手势</td>
+</tr>
+<tr>
+<td>UILongPressGestureRecognizer</td>
+<td>长按手势</td>
+</tr>
+</tbody></table>
+
+<h4 id="">手势状态</h4>
+
+<p>在iOS中将手势状态分为如下几种：</p>
+
+<pre><code>
+typedef NS_ENUM(NSInteger, UIGestureRecognizerState) {
+    UIGestureRecognizerStatePossible,   // 尚未识别是何种手势操作（但可能已经触发了触摸事件），默认状态
+
+    UIGestureRecognizerStateBegan,      // 手势已经开始，此时已经被识别，但是这个过程中可能发生变化，手势操作尚未完成
+    UIGestureRecognizerStateChanged,    // 手势状态发生转变
+    UIGestureRecognizerStateEnded,      // 手势识别操作完成（此时已经松开手指）
+    UIGestureRecognizerStateCancelled,  // 手势被取消，恢复到默认状态
+
+    UIGestureRecognizerStateFailed,     // 手势识别失败，恢复到默认状态
+
+    UIGestureRecognizerStateRecognized = UIGestureRecognizerStateEnded // 手势识别完成，同UIGestureRecognizerStateEnded
+};
+
+</code></pre>
+
+<h4 id="">使用手势</h4>
+
+<p>在iOS中添加手势比较简单，可以归纳为以下几个步骤：</p>
+
+<p>创建对应的手势对象；
+设置手势识别属性【可选】；
+附加手势到指定的对象；
+编写手势操作方法；</p>
+
+<p><strong>添加点按手势</strong></p>
+
+<pre><code>
+//创建手势对象
+UITapGestureRecognizer *tapGesture=[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tapImage:)];
+//设置手势属性
+tapGesture.numberOfTapsRequired=1;//设置点按次数，默认为1，注意在iOS中很少用双击操作
+tapGesture.numberOfTouchesRequired=1;//点按的手指数
+//添加手势到对象
+[self.view addGestureRecognizer:tapGesture];
+
+
+-(void)tapImage:(UITapGestureRecognizer *)gesture{
+    NSLog(@"tap:%i",gesture.state);
+}
+</code></pre>
+
+<p><strong>添加长按手势</strong></p>
+
+<pre><code>
+UILongPressGestureRecognizer *longPressGesture=[[UILongPressGestureRecognizer alloc]initWithTarget:self action:@selector(longPressImage:)];
+
+longPressGesture.minimumPressDuration=0.5;//设置长按时间，默认0.5秒，一般这个值不要修改
+[_imageView addGestureRecognizer:longPressGesture];
+
+
+-(void)longPressImage:(UILongPressGestureRecognizer *)gesture{
+    //NSLog(@"longpress:%i",gesture.state);
+    //注意其实在手势里面有一个view属性可以获取点按的视图
+    //UIImageView *imageView=(UIImageView *)gesture.view;
+
+    //由于连续手势此方法会调用多次，所以需要判断其手势状态
+    if (gesture.state==UIGestureRecognizerStateBegan) {
+        ...
+    }
+}
+</code></pre>
+
+<p><strong>添加捏合手势</strong></p>
+
+<pre><code>
+UIPinchGestureRecognizer *pinchGesture=[[UIPinchGestureRecognizer alloc]initWithTarget:self action:@selector(pinchImage:)];
+
+[self.view addGestureRecognizer:pinchGesture];
+
+-(void)pinchImage:(UIPinchGestureRecognizer *)gesture{
+    if (gesture.state==UIGestureRecognizerStateChanged) {
+        //捏合手势中scale属性记录的缩放比例
+        _imageView.transform=CGAffineTransformMakeScale(gesture.scale, gesture.scale);
+    }else if(gesture.state==UIGestureRecognizerStateEnded){//结束后恢复
+        [UIView animateWithDuration:.5 animations:^{
+            _imageView.transform=CGAffineTransformIdentity;//取消一切形变
+        }];
+    }
+}
+</code></pre>
+
+<p><strong>添加旋转手势</strong></p>
+
+<pre><code>
+UIRotationGestureRecognizer *rotationGesture=[[UIRotationGestureRecognizer alloc]initWithTarget:self action:@selector(rotateImage:)];
+
+[self.view addGestureRecognizer:rotationGesture];
+
+
+-(void)rotateImage:(UIRotationGestureRecognizer *)gesture{
+    if (gesture.state==UIGestureRecognizerStateChanged) {
+        //旋转手势中rotation属性记录了旋转弧度
+        _imageView.transform=CGAffineTransformMakeRotation(gesture.rotation);
+    }else if(gesture.state==UIGestureRecognizerStateEnded){
+        [UIView animateWithDuration:0.8 animations:^{
+            _imageView.transform=CGAffineTransformIdentity;//取消形变
+        }];
+    }
+}
+
+</code></pre>
+
+<p><strong>添加拖动手势</strong></p>
+
+<pre><code>
+UIPanGestureRecognizer *panGesture=[[UIPanGestureRecognizer alloc]initWithTarget:self action:@selector(panImage:)];
+
+[_imageView addGestureRecognizer:panGesture];
+
+
+-(void)panImage:(UIPanGestureRecognizer *)gesture{
+    if (gesture.state==UIGestureRecognizerStateChanged) {
+        CGPoint translation=[gesture translationInView:self.view];//利用拖动手势的translationInView:方法取得在相对指定视图（这里是控制器根视图）的移动
+        _imageView.transform=CGAffineTransformMakeTranslation(translation.x, translation.y);
+    }else if(gesture.state==UIGestureRecognizerStateEnded){
+        [UIView animateWithDuration:0.5 animations:^{
+            _imageView.transform=CGAffineTransformIdentity;
+        }];
+    }
+
+}
+</code></pre>
+
+<p><strong>添加轻扫手势</strong></p>
+
+<pre><code>
+//注意一个轻扫手势只能控制一个方向，默认向右，通过direction进行方向控制
+UISwipeGestureRecognizer *swipeGestureToRight=[[UISwipeGestureRecognizer alloc]initWithTarget:self action:@selector(swipeImage:)];
+//swipeGestureToRight.direction=UISwipeGestureRecognizerDirectionRight;//默认为向右轻扫
+[self.view addGestureRecognizer:swipeGestureToRight];
+
+UISwipeGestureRecognizer *swipeGestureToLeft=[[UISwipeGestureRecognizer alloc]initWithTarget:self action:@selector(swipeImage:)];
+swipeGestureToLeft.direction=UISwipeGestureRecognizerDirectionLeft;
+[self.view addGestureRecognizer:swipeGestureToLeft];
+
+
+//注意虽然轻扫手势是连续手势，但是只有在识别结束才会触发，不用判断状态
+-(void)swipeImage:(UISwipeGestureRecognizer *)gesture{
+        //direction记录的轻扫的方向
+        if (gesture.direction==UISwipeGestureRecognizerDirectionRight) {//向右
+            ...
+        }else if(gesture.direction==UISwipeGestureRecognizerDirectionLeft){//向左
+            ...
+        }
+}
+</code></pre>
+
+<h4 id="">解决手势冲突</h4>
+
+<p><strong>方案一 使其中一个gesture recognizer失败的情况下，另一个gesture recognizer才能分析事件</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在iOS中，如果一个手势A的识别部分是另一个手势B的子部分时，默认情况下A就会先识别，B就无法识别了。要解决这个冲突可以利用- (void)requireGestureRecognizerToFail:(UIGestureRecognizer *)otherGestureRecognizer;方法来完成。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;这个方法可以指定某个手势执行的前提是另一个手势失败才会识别执行。也就是说如果我们指定拖动手势的执行前提为轻扫手势失败就可以了，这样一来当我们手指轻轻滑动时系统会优先考虑轻扫手势，如果最后发现该操作不是轻扫，那么就会执行拖动。只要将下面的代码添加到添加手势之后就能解决这个问题了：</p>
+
+<pre><code>
+//解决在图片上滑动时拖动手势和轻扫手势的冲突
+[panGesture requireGestureRecognizerToFail:swipeGestureToRight];
+[panGesture requireGestureRecognizerToFail:swipeGestureToLeft];
+//解决拖动和长按手势之间的冲突
+[longPressGesture requireGestureRecognizerToFail:panGesture];
+
+</code></pre>
+
+<p><strong>方案二 允许多个手势识别器共同识别</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;我们知道在iOS的触摸事件中，事件触发是根据响应者链进行的，上层触摸事件执行后就不再向下传播。默认情况下手势也是类似的，先识别的手势会阻断手势识别操作继续传播。那么如何让两个有层次关系并且都添加了手势的控件都能正确识别手势呢？</p>
+
+<pre><code>
+-(BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+
+</code></pre>
+
+<p>这个代理方法默认返回NO，会阻断继续向下识别手势，如果返回YES则可以继续向下传播识别。</p>
+
+<p>样例如下:</p>
+
+<pre><code>
+viewLongPressGesture.delegate=self;
+...
+
+-(BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer{
+    //NSLog(@"%i,%i",gestureRecognizer.view.tag,otherGestureRecognizer.view.tag);
+
+    //注意，这里控制只有在UIImageView中才能向下传播，其他情况不允许
+    if ([otherGestureRecognizer.view isKindOfClass:[UIImageView class]]) {
+        return YES;
+    }
+    return NO;
+}
+</code></pre>
+
+<p>[参考:]
+<a href="http://www.cnblogs.com/kenshincui/p/3950646.html#gesture">http://www.cnblogs.com/kenshincui/p/3950646.html#gesture</a>
+<a href="http://my.oschina.net/aofe/blog/268749">http://my.oschina.net/aofe/blog/268749</a>
+<a href="http://blog.csdn.net/chun799/article/details/8194893">http://blog.csdn.net/chun799/article/details/8194893</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-手势.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

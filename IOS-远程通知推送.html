@@ -1,0 +1,418 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-远程通知推送
+
+&nbsp;&nbsp;&nbsp;&nbsp;推送通知是由应用服务提供商发起的，通过苹果的APNs（Apple Push Notification Server）发送到应用客户端。下面是苹果官方关于推送通知的过程示意图：
+
+![apns](http://scottmaxiao.github.io/img/APNs/apns01.jpg)
+
+推送通知的过程可以分为以下几步：
+
+1. 应用服务提供商从服务器端把要发送的消息和设备令牌（device token）发送给苹果的消息推送服务器APNs。
+2. APNs根据设备令牌在已注册的设备（iPhone、iPad、iTouch、mac等）查找对应的设备，将消息发送给相应的设备。
+3. 客户端设备接将接收到的消息传递给相应的应用程序，应用程序根据用户设置弹出通知消息。
+
+&nbsp;&nbsp;&nbsp;&nbsp;当然，这只是一个简单的流程，有了这个流程我们还无从下手编写程序，将上面的流程细化可以得到如下流程图（图片来自互联网），在这个过程中会也会提到如何在程序中完成这些步骤：
+
+![apns](http://scottmaxiao.github.io/img/APNs/apns02.jpg)
+
+1. [Client App]注册消息推送；
+2. [Client App]跟[APNS Service]要deviceToken, [Client App]接收deviceToken；
+3. [Client App]将deviceToken发送给[Provider]Push服务端程序；
+4. 当Push服务端程序满足发送消息条件了，[Provider]向[APNS Service]发送消息；
+5. [APNS Service]将消息发送给[Client App].
+
+###名词解释
+
+**iOS（开发）证书**
+
+&nbsp;&nbsp;&nbsp;&nbsp;iOS证书是用来证明iOS App内容（executable code）的合法性和完整性的数字证书。对于想安装到真机或发布到AppStore的应用程序（App），只有经过签名验证（Signature Validated）才能确保来源可信，并且保证App内容是完整、未经篡改的。
+
+&nbsp;&nbsp;&nbsp;&nbsp;iOS证书分为两类：Development和Production（Distribution）。
+
+- Development证书用来开发和调试应用程序：A development certificate identifies you, as a team member, in a development provisioning profile that allows apps signed by you to launch on devices. 
+
+- Production主要用来分发应用程序（根据证书种类有不同作用）：A distribution certificate identifies your team or organization in a distribution provisioning profile and allows you to submit  your app to the store. Only a team agent or an admin can create a distribution certificate.
+
+&nbsp;&nbsp;&nbsp;&nbsp;普通个人开发账号最多可注册iOS Development/Distribution证书各2个，用户可在网站上删除（Revoke）已注册的Certificate。
+
+###前期准备
+
+####生成*.certSigningRequest文件
+
+&nbsp;&nbsp;&nbsp;&nbsp;通过Keychain证书助理从证书颁发机构请求证书：填写开发账号邮件和常用名称，勾选【存储到磁盘】。
+![apns](http://scottmaxiao.github.io/img/APNs/apns06.png)
+
+####登录苹果开发者账号
+&nbsp;&nbsp;&nbsp;&nbsp;首先必须有苹果的开发者账号。通过下面的地址"https://developer.apple.com/account/overview.action"可以登录苹果的用户中心(Member Center)。
+
+![apns](http://scottmaxiao.github.io/img/APNs/apns03.png)
+
+然后点击“Certificates, Identifiers & Profiles”。
+
+####注册App IDs
+&nbsp;&nbsp;&nbsp;&nbsp;首先要注册"iOS App IDs",注册的时候可以勾选上“Push Notifications”。
+
+![apns](http://scottmaxiao.github.io/img/APNs/apns04.png)
+
+    App ID即Product ID，用于标识一个或者一组App。
+    
+    App ID应该和Xcode中的Bundle Identifier是一致（Explicit）的或匹配（Wildcard）的。
+    
+    App ID字符串通常以反域名（reverse-domain-name）格式的Company Identifier（Company ID）作为前缀（Prefix/Seed），一般不超过255个ASCII字符。
+    
+    App ID全名会被追加Application Identifier Prefix（一般为TeamID.），分为两类：
+    
+        Explicit App ID：唯一的App ID，用于唯一标识一个应用程序。例如“com.apple.garageband”这个App ID，用于标识Bundle Identifier为“com.apple.garageband”的App。
+    
+        Wildcard App ID：含有通配符的App ID，用于标识一组应用程序。例如“*”（实际上是Application Identifier Prefix）表示所有应用程序；而“com.apple.*”可以表示Bundle Identifier以“com.apple.”开头（苹果公司）的所有应用程序。
+     
+用户可在Developer MemberCenter网站上注册（Register）或删除（Delete）已注册的App IDs。
+
+####注册证书
+![apns](http://scottmaxiao.github.io/img/APNs/apns05.png)
+
+![apns](http://scottmaxiao.github.io/img/APNs/apns07.png)
+
+&nbsp;&nbsp;&nbsp;&nbsp;从Apple Member Center网站下载证书到Mac上双击即可安装（当然也可在Xcode中添加开发账号自动同步证书和[生成]配置文件）。证书安装成功后，在KeychainAccess|Keys中展开创建CSR时生成的Key Pair中的私钥前面的箭头，可以查看到包含其对应公钥的证书（Your requested certificate will be the public half of the key pair.）；在Keychain Access|Certificates中展开安装的证书（ios_development.cer）前面的箭头，可以看到其对应的私钥。
+
+####生成Provisioning Profiles
+&nbsp;&nbsp;&nbsp;&nbsp;Provisioning Profile决定Xcode用哪个证书（公钥）/私钥组合（Key Pair/Signing Identity）来签署应用程序（Signing Product）,将在应用程序打包时嵌入到.ipa包里。安装应用程序时，Provisioning Profile文件被拷贝到iOS设备中，运行该iOS App的设备也通过它来认证安装的程序。
+
+&nbsp;&nbsp;&nbsp;&nbsp;如果要打包或者在真机上运行一个APP，一般要经历以下三步：
+
+- 首先，需要指明它的App ID，并且验证Bundle ID是否与其一致；
+- 其次，需要证书对应的私钥来进行签名，用于标识这个APP是合法、安全、完整的；
+- 然后，如果是真机调试，需要确认这台设备是否授权运行该APP。
+
+####生成p12文件
+&nbsp;&nbsp;&nbsp;&nbsp;在Keychain Access中选中欲导出的certificate或其下private key，右键Export或者通过菜单File|Export Items导出Certificates.p12——PKCS12 file holds the private key and certificate。
+
+&nbsp;&nbsp;&nbsp;&nbsp;其他Mac机器上双击Certificates.p12（如有密码需输入密码）即可安装该共享证书。有了共享证书之后，在开发者网站上将欲调试的iOS设备注册到该开发者账号名下，并下载对应证书授权了iOS调试设备的Provisioning Profile文件，方可在iOS真机设备上开发调试。
+
+###客户端代码实现
+
+修改AppDelegate.m文件
+<pre><code>
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    //注册推送通知
+	// IOS8 新系统需要使用新的代码
+	if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0)
+	{
+		[[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings
+																			 settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge)
+																			 categories:nil]];
+		
+		
+		[[UIApplication sharedApplication] registerForRemoteNotifications];
+	}
+	else
+	{
+		//这里还是原来的代码
+		[[UIApplication sharedApplication] registerForRemoteNotificationTypes:
+		 (UIUserNotificationTypeBadge | UIUserNotificationTypeSound | UIUserNotificationTypeAlert)];
+	}
+	
+	
+	return YES;
+}
+#pragma mark 注册推送通知之后
+//在此接收设备令牌
+-(void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken{
+//	[self addDeviceToken:deviceToken];
+	NSLog(@"device token:%@",deviceToken);
+	
+	//删除deviceToken中的<>字符
+	NSString *deviceTokenStr = [[deviceToken description] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]];
+	//转换deviceToken中的空格
+	deviceTokenStr = [deviceTokenStr stringByReplacingOccurrencesOfString:@" " withString:@""];
+
+	NSLog(@"DeviceToken: {%@}",deviceTokenStr);
+	
+}
+
+#pragma mark 获取device token失败后
+-(void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error{
+	NSLog(@"didFailToRegisterForRemoteNotificationsWithError:%@",error.localizedDescription);
+//	[self addDeviceToken:nil];
+}
+
+#pragma mark 接收到推送通知之后
+-(void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo{
+	NSLog(@"receiveRemoteNotification,userInfo is %@",userInfo);
+}
+
+
+</code></pre>
+
+&nbsp;&nbsp;&nbsp;&nbsp;
+
+[参考]
+<http://blog.csdn.net/phunxm/article/details/42685597>
+<http://blog.csdn.net/qq5306546/article/details/9282491>
+<http://www.cnblogs.com/kenshincui/p/4168532.html#pushNotification>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="ios">IOS-远程通知推送</h2>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;推送通知是由应用服务提供商发起的，通过苹果的APNs（Apple Push Notification Server）发送到应用客户端。下面是苹果官方关于推送通知的过程示意图：</p>
+
+<p><img src="http://scottmaxiao.github.io/img/APNs/apns01.jpg" alt="apns" title=""></p>
+
+<p>推送通知的过程可以分为以下几步：</p>
+
+<ol>
+<li>应用服务提供商从服务器端把要发送的消息和设备令牌（device token）发送给苹果的消息推送服务器APNs。</li>
+<li>APNs根据设备令牌在已注册的设备（iPhone、iPad、iTouch、mac等）查找对应的设备，将消息发送给相应的设备。</li>
+<li>客户端设备接将接收到的消息传递给相应的应用程序，应用程序根据用户设置弹出通知消息。</li>
+</ol>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;当然，这只是一个简单的流程，有了这个流程我们还无从下手编写程序，将上面的流程细化可以得到如下流程图（图片来自互联网），在这个过程中会也会提到如何在程序中完成这些步骤：</p>
+
+<p><img src="http://scottmaxiao.github.io/img/APNs/apns02.jpg" alt="apns" title=""></p>
+
+<ol>
+<li>[Client App]注册消息推送；</li>
+<li>[Client App]跟[APNS Service]要deviceToken, [Client App]接收deviceToken；</li>
+<li>[Client App]将deviceToken发送给[Provider]Push服务端程序；</li>
+<li>当Push服务端程序满足发送消息条件了，[Provider]向[APNS Service]发送消息；</li>
+<li>[APNS Service]将消息发送给[Client App].</li>
+</ol>
+
+<h3 id="">名词解释</h3>
+
+<p><strong>iOS（开发）证书</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;iOS证书是用来证明iOS App内容（executable code）的合法性和完整性的数字证书。对于想安装到真机或发布到AppStore的应用程序（App），只有经过签名验证（Signature Validated）才能确保来源可信，并且保证App内容是完整、未经篡改的。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;iOS证书分为两类：Development和Production（Distribution）。</p>
+
+<ul>
+<li><p>Development证书用来开发和调试应用程序：A development certificate identifies you, as a team member, in a development provisioning profile that allows apps signed by you to launch on devices. </p></li>
+<li><p>Production主要用来分发应用程序（根据证书种类有不同作用）：A distribution certificate identifies your team or organization in a distribution provisioning profile and allows you to submit  your app to the store. Only a team agent or an admin can create a distribution certificate.</p></li>
+</ul>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;普通个人开发账号最多可注册iOS Development/Distribution证书各2个，用户可在网站上删除（Revoke）已注册的Certificate。</p>
+
+<h3 id="">前期准备</h3>
+
+<h4 id="certsigningrequest">生成*.certSigningRequest文件</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;通过Keychain证书助理从证书颁发机构请求证书：填写开发账号邮件和常用名称，勾选【存储到磁盘】。
+<img src="http://scottmaxiao.github.io/img/APNs/apns06.png" alt="apns" title=""></p>
+
+<h4 id="">登录苹果开发者账号</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;首先必须有苹果的开发者账号。通过下面的地址"https://developer.apple.com/account/overview.action"可以登录苹果的用户中心(Member Center)。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/APNs/apns03.png" alt="apns" title=""></p>
+
+<p>然后点击“Certificates, Identifiers &amp; Profiles”。</p>
+
+<h4 id="appids">注册App IDs</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;首先要注册"iOS App IDs",注册的时候可以勾选上“Push Notifications”。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/APNs/apns04.png" alt="apns" title=""></p>
+
+<pre><code>App ID即Product ID，用于标识一个或者一组App。
+
+App ID应该和Xcode中的Bundle Identifier是一致（Explicit）的或匹配（Wildcard）的。
+
+App ID字符串通常以反域名（reverse-domain-name）格式的Company Identifier（Company ID）作为前缀（Prefix/Seed），一般不超过255个ASCII字符。
+
+App ID全名会被追加Application Identifier Prefix（一般为TeamID.），分为两类：
+
+    Explicit App ID：唯一的App ID，用于唯一标识一个应用程序。例如“com.apple.garageband”这个App ID，用于标识Bundle Identifier为“com.apple.garageband”的App。
+
+    Wildcard App ID：含有通配符的App ID，用于标识一组应用程序。例如“*”（实际上是Application Identifier Prefix）表示所有应用程序；而“com.apple.*”可以表示Bundle Identifier以“com.apple.”开头（苹果公司）的所有应用程序。
+</code></pre>
+
+<p>用户可在Developer MemberCenter网站上注册（Register）或删除（Delete）已注册的App IDs。</p>
+
+<h4 id="">注册证书</h4>
+
+<p><img src="http://scottmaxiao.github.io/img/APNs/apns05.png" alt="apns" title=""></p>
+
+<p><img src="http://scottmaxiao.github.io/img/APNs/apns07.png" alt="apns" title=""></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;从Apple Member Center网站下载证书到Mac上双击即可安装（当然也可在Xcode中添加开发账号自动同步证书和[生成]配置文件）。证书安装成功后，在KeychainAccess|Keys中展开创建CSR时生成的Key Pair中的私钥前面的箭头，可以查看到包含其对应公钥的证书（Your requested certificate will be the public half of the key pair.）；在Keychain Access|Certificates中展开安装的证书（ios_development.cer）前面的箭头，可以看到其对应的私钥。</p>
+
+<h4 id="provisioningprofiles">生成Provisioning Profiles</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Provisioning Profile决定Xcode用哪个证书（公钥）/私钥组合（Key Pair/Signing Identity）来签署应用程序（Signing Product）,将在应用程序打包时嵌入到.ipa包里。安装应用程序时，Provisioning Profile文件被拷贝到iOS设备中，运行该iOS App的设备也通过它来认证安装的程序。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;如果要打包或者在真机上运行一个APP，一般要经历以下三步：</p>
+
+<ul>
+<li>首先，需要指明它的App ID，并且验证Bundle ID是否与其一致；</li>
+<li>其次，需要证书对应的私钥来进行签名，用于标识这个APP是合法、安全、完整的；</li>
+<li>然后，如果是真机调试，需要确认这台设备是否授权运行该APP。</li>
+</ul>
+
+<h4 id="p12">生成p12文件</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在Keychain Access中选中欲导出的certificate或其下private key，右键Export或者通过菜单File|Export Items导出Certificates.p12——PKCS12 file holds the private key and certificate。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;其他Mac机器上双击Certificates.p12（如有密码需输入密码）即可安装该共享证书。有了共享证书之后，在开发者网站上将欲调试的iOS设备注册到该开发者账号名下，并下载对应证书授权了iOS调试设备的Provisioning Profile文件，方可在iOS真机设备上开发调试。</p>
+
+<h3 id="">客户端代码实现</h3>
+
+<p>修改AppDelegate.m文件</p>
+
+<pre><code>
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    //注册推送通知
+    // IOS8 新系统需要使用新的代码
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] &gt;= 8.0)
+    {
+        [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings
+                                                                             settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge)
+                                                                             categories:nil]];
+
+
+        [[UIApplication sharedApplication] registerForRemoteNotifications];
+    }
+    else
+    {
+        //这里还是原来的代码
+        [[UIApplication sharedApplication] registerForRemoteNotificationTypes:
+         (UIUserNotificationTypeBadge | UIUserNotificationTypeSound | UIUserNotificationTypeAlert)];
+    }
+
+
+    return YES;
+}
+#pragma mark 注册推送通知之后
+//在此接收设备令牌
+-(void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken{
+//    [self addDeviceToken:deviceToken];
+    NSLog(@"device token:%@",deviceToken);
+
+    //删除deviceToken中的&lt;&gt;字符
+    NSString *deviceTokenStr = [[deviceToken description] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"&lt;&gt;"]];
+    //转换deviceToken中的空格
+    deviceTokenStr = [deviceTokenStr stringByReplacingOccurrencesOfString:@" " withString:@""];
+
+    NSLog(@"DeviceToken: {%@}",deviceTokenStr);
+
+}
+
+#pragma mark 获取device token失败后
+-(void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error{
+    NSLog(@"didFailToRegisterForRemoteNotificationsWithError:%@",error.localizedDescription);
+//    [self addDeviceToken:nil];
+}
+
+#pragma mark 接收到推送通知之后
+-(void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo{
+    NSLog(@"receiveRemoteNotification,userInfo is %@",userInfo);
+}
+
+
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
+
+<p>[参考]
+<a href="http://blog.csdn.net/phunxm/article/details/42685597">http://blog.csdn.net/phunxm/article/details/42685597</a>
+<a href="http://blog.csdn.net/qq5306546/article/details/9282491">http://blog.csdn.net/qq5306546/article/details/9282491</a>
+<a href="http://www.cnblogs.com/kenshincui/p/4168532.html#pushNotification">http://www.cnblogs.com/kenshincui/p/4168532.html#pushNotification</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-远程通知推送.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

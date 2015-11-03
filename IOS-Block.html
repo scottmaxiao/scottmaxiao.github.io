@@ -240,7 +240,7 @@ MyViewController *myController = [[MyViewController alloc] init...];
 
 如果出现上面 retain cycle的情况， __weak 就有用武之地了。
 
-**情况2 在 block 外定义一个 __weak 的 引用到 self，并且在 block 里面使用这个弱引用**
+**情况2 在 block 外定义一个 \_\_weak 的 引用到 self，并且在 block 里面使用这个弱引用**
 <pre><code>
 @property (nonatomic,strong) void(^ completionBlock)(void);
 
@@ -255,7 +255,7 @@ MyViewController *myController = [[MyViewController alloc] init...];
                  completion:self.completionHandler];
 
 </code></pre>
-上面代码使用 __weak修饰词，避免了retain cycle的情况。
+上面代码使用 \_\_weak修饰词，避免了retain cycle的情况。
 
 如果 block 被传递或者 copy 了，在执行的时候，weakSelf 可能已经变成 nil。如下面的代码
 <pre><code>
@@ -270,7 +270,7 @@ dispatch_block_t block =  ^{
 
 
 
-**情况 3. 在 block 外定义一个 __weak 的 引用到 self，并在在 block 内部通过这个弱引用定义一个 __strong 的引用**
+**情况 3. 在 block 外定义一个 \_\_weak 的 引用到 self，并在在 block 内部通过这个弱引用定义一个 \_\_strong 的引用**
 
 <pre><code>
 __weak typeof(self) weakSelf = self;
@@ -553,7 +553,7 @@ dispatch_block_t block =  ^{
 
 </code></pre>
 
-<p><strong>情况 3. 在 block 外定义一个 <em>_weak 的 引用到 self，并在在 block 内部通过这个弱引用定义一个 _</em>strong 的引用</strong></p>
+<p><strong>情况 3. 在 block 外定义一个 __weak 的 引用到 self，并在在 block 内部通过这个弱引用定义一个 __strong 的引用</strong></p>
 
 <pre><code>
 __weak typeof(self) weakSelf = self;

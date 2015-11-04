@@ -1,0 +1,618 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-多线程之GCD
+
+###介绍
+
+&nbsp;&nbsp;&nbsp;&nbsp;GCD(Grand Central Dispatch)是基于C语言开发的一套多线程开发机制，也是目前苹果官方推荐的多线程开发方法。GCD 是一套低层API，基于C语言开发，完全面向过程的,用于将任务切分成单一任务提交至队列并发或者串行执行。遵循FIFO原则，先提交到队列的先执行。
+
+&nbsp;&nbsp;&nbsp;&nbsp;iOS4.0中首度引入GCD，GCD是管理任务执行的一项技术，它使得我们对多任务处理变得更加方便和有效。它支持同步或异步任务处理，串行或并行的处理队列（Dispath Queue），非系统调用的信号量机制，定时任务处理，进程、文件或网络的监听任务等。这个庞大的任务处理技术大大减少了线程的管理工作，使基于任务的开发变得更加高效。
+
+&nbsp;&nbsp;&nbsp;&nbsp;GCD 和 block (<http://scottmaxiao.github.io/IOS-Block.html>)的配合使用，可以方便地进行多线程编程。
+
+###基本概念
+
+**串行和并行**
+
+&nbsp;&nbsp;&nbsp;&nbsp;串行：任务按先后顺序逐个执行。
+
+&nbsp;&nbsp;&nbsp;&nbsp;并行：后面的任务不会等前面的任务完成了再执行，同样会遵循先添加先执行的原则，但添加间隔往往忽略不计。所以看上去像是一起执行。
+
+
+**并发和并行**
+
+&nbsp;&nbsp;&nbsp;&nbsp;并发是指两个或多个事件在同一时间间隔内发生。单核CPU并发切换执行多个任务。
+
+&nbsp;&nbsp;&nbsp;&nbsp;并行是指两个或者多个事件在同一时刻发生。多核CPU可以平行执行多个任务。
+
+下图描述的就是并发和并行的区别。
+
+![gcd](http://scottmaxiao.github.io/img/gcd/gcd01.png)
+
+**同步和异步**
+
+&nbsp;&nbsp;&nbsp;&nbsp;同步:一个同步函数只在完成了预定任务后才返回。会阻塞当前线程。
+
+&nbsp;&nbsp;&nbsp;&nbsp;异步：异步时任务开启会立即返回，不阻塞当前线程去执行下一个函数。异步会开启其他线程。
+
+
+###函数说明
+####Dispatch Queue
+&nbsp;&nbsp;&nbsp;&nbsp;Dispatch Queue是用来执行任务的队列，是GCD中最基本的元素之一。
+
+    Dispatch Queue分为两种：
+    - Serial Dispatch Queue，按添加进队列的顺序（先进先出）一个接一个的执行
+    - Concurrent Dispatch Queue，并发执行队列里的任务
+
+    简而言之，Serial Dispatch Queue只使用了一个线程，Concurrent Dispatch Queue使用了多个线程（具体使用了多少个，由系统决定）。
+
+
+#####手动创建Dispatch Queue
+
+<pre><code>
+//创建串行队列
+dispatch_queue_t queue = dispatch_queue_create("me.tutuge.test.gcd", nil);
+//创建串行队列
+dispatch_queue_t queue = dispatch_queue_create("me.tutuge.test.gcd", DISPATCH_QUEUE_SERIAL);
+//创建并行队列
+dispatch_queue_t queue = dispatch_queue_create("me.tutuge.test.gcd", DISPATCH_QUEUE_CONCURRENT);
+</code></pre>
+
+#####获取系统提供的Dispatch Queue
+
+    系统提供的Dispatch Queue有两种类型
+      - Main Dispatch Queue:实际上就是Serial Dispatch Queue（并且只有一个），一般只在需要更新UI时我们才获取Main Dispatch Queue
+      
+      - Global Dispatch Queue:实际上是一个Concurrent Dispatch Queue。大多数情况下，可以不必通过dispatch_queue_create函数生成Concurrent Dispatch Queue，而是只要获取Global Dispatch Queue使用即可。Global Dispatch Queue有4个优先级，分别是：High、Default、Low、Background。
+
+<pre><code>
+//获取Main Dispatch Queue
+dispatch_queue_t mainQueue = dispatch_get_main_queue()
+//获取Global Dispatch Queue
+dispatch_queue_t globalQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)
+</code></pre>
+
+
+需要注意一点，如果是在OS X 10.8或iOS 6以及之后版本中使用，Dispatch Queue将会由ARC自动管理，如果是在此之前的版本，需要自己手动释放，如下： 
+<pre><code>
+//创建串行队列
+dispatch_queue_t queue = dispatch_queue_create("me.tutuge.test.gcd", nil);
+
+dispatch_async(queue, ^{
+        ...
+});
+
+dispatch_release(queue) ;
+</code></pre>
+
+####dispatch_async和dispatch_sync
+
+**dispatch_async()**
+&nbsp;&nbsp;&nbsp;&nbsp;dispatch_async():异步添加进任务队列，它不会做任何等待。
+<pre><code>
+    dispatch_queue_t concurrentQueue = dispatch_queue_create("my.concurrent.queue", DISPATCH_QUEUE_CONCURRENT);
+    NSLog(@"1");
+    dispatch_async(concurrentQueue, ^{
+        NSLog(@"2");
+        [NSThread sleepForTimeInterval:5];
+        NSLog(@"3");
+    });
+    NSLog(@"4");
+
+</code></pre>
+
+    输出
+     11:42:43.820 GCDSeTest[568:303] 1
+
+     11:42:43.820 GCDSeTest[568:303] 4
+
+     11:42:43.820 GCDSeTest[568:1003] 2
+
+     11:42:48.821 GCDSeTest[568:1003] 3//模拟长时间操作时间
+
+**dispatch_sync()**
+&nbsp;&nbsp;&nbsp;&nbsp;dispatch_sync():同步添加操作。他是等待添加进队列里面的操作完成之后再继续执行。
+<pre><code>
+dispatch_queue_t concurrentQueue = dispatch_queue_create("my.concurrent.queue", DISPATCH_QUEUE_CONCURRENT);
+    NSLog(@"1");
+    dispatch_sync(concurrentQueue, ^(){
+        NSLog(@"2");
+        [NSThread sleepForTimeInterval:10];
+        NSLog(@"3");
+    });
+    NSLog(@"4");
+
+</code></pre>
+
+    输出
+    11:36:25.313 GCDSeTest[544:303] 1
+
+    11:36:25.313 GCDSeTest[544:303] 2
+
+    11:36:30.313 GCDSeTest[544:303] 3//模拟长时间操作
+
+    11:36:30.314 GCDSeTest[544:303] 4
+
+关于死锁：
+<pre><code>
+//在main线程使用“同步”方法提交Block，必定会死锁。
+dispatch_async(dispatch_get_main_queue(), ^{
+	NSLog(@"I am block...");
+});
+
+</code></pre>
+
+    著作权归作者所有。
+    商业转载请联系作者获得授权，非商业转载请注明出处。
+    作者：Sasori
+    链接：http://www.zhihu.com/question/23338200/answer/24267222
+    来源：知乎
+
+    dispatch_sync在等待block语句执行完成，而block语句需要在主线程里执行，所以dispatch_sync如果在主线程调用就会造成死锁
+
+
+####dispatch_after()
+&nbsp;&nbsp;&nbsp;&nbsp;Dispatch Queue的延迟执行。
+
+<pre><code>
+// 延迟 2 秒执行：
+double delayInSeconds = 2.0;
+dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+		
+dispatch_after(popTime, dispatch_get_main_queue(), ^{
+    // code to be executed on the main queue after delay
+});
+
+</code></pre>
+
+这里要说一下dispatch_time函数，其原型如下：
+<pre><code>
+dispatch_time_t dispatch_time ( dispatch_time_t when, int64_t delta );
+
+</code></pre>
+
+ - 第一个参数一般是DISPATCH_TIME_NOW，表示从现在开始。
+
+ - 第二个参数就是真正的延时的具体时间。这里要特别注意的是，delta参数是“纳秒！”，就是说，延时1秒的话，delta应该是“1000000000”=。=，太长了，所以理所当然系统提供了常量，如下：
+
+<pre><code>
+#define NSEC_PER_SEC 1000000000ull
+#define USEC_PER_SEC 1000000ull
+#define NSEC_PER_USEC 1000ull
+</code></pre>
+
+    关键词解释：
+     NSEC：纳秒。
+     USEC：微妙。
+     SEC：秒
+     PER：每
+    
+    所以：
+     NSEC_PER_SEC，每秒有多少纳秒。
+     USEC_PER_SEC，每秒有多少毫秒。（注意是指在纳秒的基础上）
+     NSEC_PER_USEC，每毫秒有多少纳秒。
+
+[参考]<http://www.cocoachina.com/ios/20150505/11751.html>
+
+####dispatch_once
+&nbsp;&nbsp;&nbsp;&nbsp;dispatch_once是线程安全的。它能保证多个线程同时调用却只会执行块一次。在dispatch_once返回之前，所有线程将会等待直到执行完毕。
+
+&nbsp;&nbsp;&nbsp;&nbsp;dispatch_once函数通常用在单例模式上，它可以保证在程序运行期间某段代码只执行一次，如果我们要通过dispatch_once创建一个单例类。
+<pre><code>
++(id)getInstance{
+	
+	static GapSet *gapSet;
+	
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+		gapSet = [[GapSet alloc] initObject];
+	});
+	
+	return gapSet;
+}
+
+</code></pre>
+
+注意:dispatch_once_t必须是全局或static变量。
+
+[参考]
+<http://blog.afantree.com/gcd/translation-dispatch-once-secret.html>
+
+####dispatch_group
+
+&nbsp;&nbsp;&nbsp;&nbsp;如果想在dispatch_queue中所有的任务执行完成后在做某种操作，在串行队列中，可以把该操作放到最后一个任务执行完成后继续，但是在并行队列中怎么做呢。这就有dispatch_group 成组操作。比如
+<pre><code>
+
+ dispatch_group_t group = dispatch_group_create();
+ dispatch_group_async(group, dispatch_get_global_queue(0,0), ^{
+      // 并行执行的线程一
+      NSLog(@"dispatch-1");
+ });
+ dispatch_group_async(group, dispatch_get_global_queue(0,0), ^{
+      // 并行执行的线程二
+      NSLog(@"dispatch-2");
+ });
+ dispatch_group_notify(group, dispatch_get_global_queue(0,0), ^{
+      // 汇总结果
+      NSLog(@"dispatch-end");
+ });
+
+</code></pre>
+
+
+[参考]
+
+<http://blog.devtang.com/blog/2012/02/22/use-gcd/>
+
+<http://blog.csdn.net/zhangao0086/article/details/38904923>
+
+<http://www.cocoachina.com/ios/20150505/11751.html>
+
+<http://www.cnblogs.com/SnailFish/articles/3199863.html>
+
+<http://www.cnblogs.com/zhidao-chen/category/461198.html>
+
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosgcd">IOS-多线程之GCD</h2>
+
+<h3 id="">介绍</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;GCD(Grand Central Dispatch)是基于C语言开发的一套多线程开发机制，也是目前苹果官方推荐的多线程开发方法。GCD 是一套低层API，基于C语言开发，完全面向过程的,用于将任务切分成单一任务提交至队列并发或者串行执行。遵循FIFO原则，先提交到队列的先执行。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;iOS4.0中首度引入GCD，GCD是管理任务执行的一项技术，它使得我们对多任务处理变得更加方便和有效。它支持同步或异步任务处理，串行或并行的处理队列（Dispath Queue），非系统调用的信号量机制，定时任务处理，进程、文件或网络的监听任务等。这个庞大的任务处理技术大大减少了线程的管理工作，使基于任务的开发变得更加高效。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;GCD 和 block (<a href="http://scottmaxiao.github.io/IOS-Block.html">http://scottmaxiao.github.io/IOS-Block.html</a>)的配合使用，可以方便地进行多线程编程。</p>
+
+<h3 id="">基本概念</h3>
+
+<p><strong>串行和并行</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;串行：任务按先后顺序逐个执行。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;并行：后面的任务不会等前面的任务完成了再执行，同样会遵循先添加先执行的原则，但添加间隔往往忽略不计。所以看上去像是一起执行。</p>
+
+<p><strong>并发和并行</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;并发是指两个或多个事件在同一时间间隔内发生。单核CPU并发切换执行多个任务。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;并行是指两个或者多个事件在同一时刻发生。多核CPU可以平行执行多个任务。</p>
+
+<p>下图描述的就是并发和并行的区别。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/gcd/gcd01.png" alt="gcd" title=""></p>
+
+<p><strong>同步和异步</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;同步:一个同步函数只在完成了预定任务后才返回。会阻塞当前线程。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;异步：异步时任务开启会立即返回，不阻塞当前线程去执行下一个函数。异步会开启其他线程。</p>
+
+<h3 id="">函数说明</h3>
+
+<h4 id="dispatchqueue">Dispatch Queue</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Dispatch Queue是用来执行任务的队列，是GCD中最基本的元素之一。</p>
+
+<pre><code>Dispatch Queue分为两种：
+- Serial Dispatch Queue，按添加进队列的顺序（先进先出）一个接一个的执行
+- Concurrent Dispatch Queue，并发执行队列里的任务
+
+简而言之，Serial Dispatch Queue只使用了一个线程，Concurrent Dispatch Queue使用了多个线程（具体使用了多少个，由系统决定）。
+</code></pre>
+
+<h5 id="dispatchqueue">手动创建Dispatch Queue</h5>
+
+<pre><code>
+//创建串行队列
+dispatch_queue_t queue = dispatch_queue_create("me.tutuge.test.gcd", nil);
+//创建串行队列
+dispatch_queue_t queue = dispatch_queue_create("me.tutuge.test.gcd", DISPATCH_QUEUE_SERIAL);
+//创建并行队列
+dispatch_queue_t queue = dispatch_queue_create("me.tutuge.test.gcd", DISPATCH_QUEUE_CONCURRENT);
+</code></pre>
+
+<h5 id="dispatchqueue">获取系统提供的Dispatch Queue</h5>
+
+<pre><code>系统提供的Dispatch Queue有两种类型
+  - Main Dispatch Queue:实际上就是Serial Dispatch Queue（并且只有一个），一般只在需要更新UI时我们才获取Main Dispatch Queue
+
+  - Global Dispatch Queue:实际上是一个Concurrent Dispatch Queue。大多数情况下，可以不必通过dispatch_queue_create函数生成Concurrent Dispatch Queue，而是只要获取Global Dispatch Queue使用即可。Global Dispatch Queue有4个优先级，分别是：High、Default、Low、Background。
+</code></pre>
+
+<pre><code>
+//获取Main Dispatch Queue
+dispatch_queue_t mainQueue = dispatch_get_main_queue()
+//获取Global Dispatch Queue
+dispatch_queue_t globalQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)
+</code></pre>
+
+<p>需要注意一点，如果是在OS X 10.8或iOS 6以及之后版本中使用，Dispatch Queue将会由ARC自动管理，如果是在此之前的版本，需要自己手动释放，如下： </p>
+
+<pre><code>
+//创建串行队列
+dispatch_queue_t queue = dispatch_queue_create("me.tutuge.test.gcd", nil);
+
+dispatch_async(queue, ^{
+        ...
+});
+
+dispatch_release(queue) ;
+</code></pre>
+
+<h4 id="dispatch_asyncdispatch_sync">dispatch<em>async和dispatch</em>sync</h4>
+
+<p><strong>dispatch<em>async()</em></strong><em>
+&nbsp;&nbsp;&nbsp;&nbsp;dispatch</em>async():异步添加进任务队列，它不会做任何等待。</p>
+
+<pre><code>
+    dispatch_queue_t concurrentQueue = dispatch_queue_create("my.concurrent.queue", DISPATCH_QUEUE_CONCURRENT);
+    NSLog(@"1");
+    dispatch_async(concurrentQueue, ^{
+        NSLog(@"2");
+        [NSThread sleepForTimeInterval:5];
+        NSLog(@"3");
+    });
+    NSLog(@"4");
+
+</code></pre>
+
+<pre><code>输出
+ 11:42:43.820 GCDSeTest[568:303] 1
+
+ 11:42:43.820 GCDSeTest[568:303] 4
+
+ 11:42:43.820 GCDSeTest[568:1003] 2
+
+ 11:42:48.821 GCDSeTest[568:1003] 3//模拟长时间操作时间
+</code></pre>
+
+<p><strong>dispatch<em>sync()</em></strong><em>
+&nbsp;&nbsp;&nbsp;&nbsp;dispatch</em>sync():同步添加操作。他是等待添加进队列里面的操作完成之后再继续执行。</p>
+
+<pre><code>
+dispatch_queue_t concurrentQueue = dispatch_queue_create("my.concurrent.queue", DISPATCH_QUEUE_CONCURRENT);
+    NSLog(@"1");
+    dispatch_sync(concurrentQueue, ^(){
+        NSLog(@"2");
+        [NSThread sleepForTimeInterval:10];
+        NSLog(@"3");
+    });
+    NSLog(@"4");
+
+</code></pre>
+
+<pre><code>输出
+11:36:25.313 GCDSeTest[544:303] 1
+
+11:36:25.313 GCDSeTest[544:303] 2
+
+11:36:30.313 GCDSeTest[544:303] 3//模拟长时间操作
+
+11:36:30.314 GCDSeTest[544:303] 4
+</code></pre>
+
+<p>关于死锁：</p>
+
+<pre><code>
+//在main线程使用“同步”方法提交Block，必定会死锁。
+dispatch_async(dispatch_get_main_queue(), ^{
+    NSLog(@"I am block...");
+});
+
+</code></pre>
+
+<pre><code>著作权归作者所有。
+商业转载请联系作者获得授权，非商业转载请注明出处。
+作者：Sasori
+链接：http://www.zhihu.com/question/23338200/answer/24267222
+来源：知乎
+
+dispatch_sync在等待block语句执行完成，而block语句需要在主线程里执行，所以dispatch_sync如果在主线程调用就会造成死锁
+</code></pre>
+
+<h4 id="dispatch_after">dispatch_after()</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Dispatch Queue的延迟执行。</p>
+
+<pre><code>
+// 延迟 2 秒执行：
+double delayInSeconds = 2.0;
+dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+
+dispatch_after(popTime, dispatch_get_main_queue(), ^{
+    // code to be executed on the main queue after delay
+});
+
+</code></pre>
+
+<p>这里要说一下dispatch_time函数，其原型如下：</p>
+
+<pre><code>
+dispatch_time_t dispatch_time ( dispatch_time_t when, int64_t delta );
+
+</code></pre>
+
+<ul>
+<li><p>第一个参数一般是DISPATCH<em>TIME</em>NOW，表示从现在开始。</p></li>
+<li><p>第二个参数就是真正的延时的具体时间。这里要特别注意的是，delta参数是“纳秒！”，就是说，延时1秒的话，delta应该是“1000000000”=。=，太长了，所以理所当然系统提供了常量，如下：</p></li>
+</ul>
+
+<pre><code>
+#define NSEC_PER_SEC 1000000000ull
+#define USEC_PER_SEC 1000000ull
+#define NSEC_PER_USEC 1000ull
+</code></pre>
+
+<pre><code>关键词解释：
+ NSEC：纳秒。
+ USEC：微妙。
+ SEC：秒
+ PER：每
+
+所以：
+ NSEC_PER_SEC，每秒有多少纳秒。
+ USEC_PER_SEC，每秒有多少毫秒。（注意是指在纳秒的基础上）
+ NSEC_PER_USEC，每毫秒有多少纳秒。
+</code></pre>
+
+<p>[参考]<a href="http://www.cocoachina.com/ios/20150505/11751.html">http://www.cocoachina.com/ios/20150505/11751.html</a></p>
+
+<h4 id="dispatch_once">dispatch_once</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;dispatch<em>once是线程安全的。它能保证多个线程同时调用却只会执行块一次。在dispatch</em>once返回之前，所有线程将会等待直到执行完毕。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;dispatch<em>once函数通常用在单例模式上，它可以保证在程序运行期间某段代码只执行一次，如果我们要通过dispatch</em>once创建一个单例类。</p>
+
+<pre><code>
++(id)getInstance{
+
+    static GapSet *gapSet;
+
+    static dispatch_once_t onceToken;
+    dispatch_once(&amp;onceToken, ^{
+        gapSet = [[GapSet alloc] initObject];
+    });
+
+    return gapSet;
+}
+
+</code></pre>
+
+<p>注意:dispatch<em>once</em>t必须是全局或static变量。</p>
+
+<p>[参考]
+<a href="http://blog.afantree.com/gcd/translation-dispatch-once-secret.html">http://blog.afantree.com/gcd/translation-dispatch-once-secret.html</a></p>
+
+<h4 id="dispatch_group">dispatch_group</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;如果想在dispatch<em>queue中所有的任务执行完成后在做某种操作，在串行队列中，可以把该操作放到最后一个任务执行完成后继续，但是在并行队列中怎么做呢。这就有dispatch</em>group 成组操作。比如</p>
+
+<pre><code>
+
+ dispatch_group_t group = dispatch_group_create();
+ dispatch_group_async(group, dispatch_get_global_queue(0,0), ^{
+      // 并行执行的线程一
+      NSLog(@"dispatch-1");
+ });
+ dispatch_group_async(group, dispatch_get_global_queue(0,0), ^{
+      // 并行执行的线程二
+      NSLog(@"dispatch-2");
+ });
+ dispatch_group_notify(group, dispatch_get_global_queue(0,0), ^{
+      // 汇总结果
+      NSLog(@"dispatch-end");
+ });
+
+</code></pre>
+
+<p>[参考]</p>
+
+<p><a href="http://blog.devtang.com/blog/2012/02/22/use-gcd/">http://blog.devtang.com/blog/2012/02/22/use-gcd/</a></p>
+
+<p><a href="http://blog.csdn.net/zhangao0086/article/details/38904923">http://blog.csdn.net/zhangao0086/article/details/38904923</a></p>
+
+<p><a href="http://www.cocoachina.com/ios/20150505/11751.html">http://www.cocoachina.com/ios/20150505/11751.html</a></p>
+
+<p><a href="http://www.cnblogs.com/SnailFish/articles/3199863.html">http://www.cnblogs.com/SnailFish/articles/3199863.html</a></p>
+
+<p><a href="http://www.cnblogs.com/zhidao-chen/category/461198.html">http://www.cnblogs.com/zhidao-chen/category/461198.html</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-多线程之GCD.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

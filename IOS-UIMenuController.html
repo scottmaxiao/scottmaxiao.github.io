@@ -1,0 +1,413 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-UIMenuController
+
+UIMenuController 组件用来定制该弹出菜单。使用UIMenuController的步骤如下：
+
+
+1. Menu所处的View必须实现 – (BOOL)canBecomeFirstResponder, 且返回YES
+2. Menu所处的View必须实现 – (BOOL)canPerformAction:withSender, 并根据需求返回YES或NO
+3. 使Menu所处的View成为First Responder (becomeFirstResponder)
+4. 定位Menu (- setTargetRect:inView:)
+5. 展示Menu (- setMenuVisible:animated:)
+
+下面的样例的是在tableViewCell上加入长按手势，展现自定义的菜单项。
+<pre><code>
+- (BOOL)canBecomeFirstResponder{
+	return YES;
+}
+
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender{
+		if (action == @selector(copy:)){
+			return YES;
+		}
+		if (action == @selector(delete:)){
+			return YES;
+		}
+		if (action == @selector(cut:)){
+			return YES;
+		}
+		return NO;
+}
+
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+	ImInfoTableViewCell *cell=[tableView dequeueReusableCellWithIdentifier:kCellIdentifier forIndexPath:indexPath];
+	
+	UILongPressGestureRecognizer *recognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPress:)];
+	[cell.detailContentView addGestureRecognizer:recognizer];
+	
+	return cell;
+}
+
+- (void)longPress:(UILongPressGestureRecognizer *)recognizer{
+	if (recognizer.state == UIGestureRecognizerStateBegan) {
+		[self becomeFirstResponder];
+		
+		//通过定位获取indexPath
+		CGPoint point = [recognizer locationInView:self.tableView];
+		self.cellIndexPath=[self.tableView indexPathForRowAtPoint: point];
+		
+		ImInfoCellView *view = (ImInfoCellView *)recognizer.view;
+		
+		[view becomeFirstResponder];
+		
+		//可以通过UIMenuItem自定义显示的菜单项
+		UIMenuItem *copyMenuItem = [[UIMenuItem alloc] initWithTitle:NSLocalizedString(@"copy", @"复制") action:@selector(cellCopy:)];
+		UIMenuItem *deleteMenuItem = [[UIMenuItem alloc] initWithTitle:NSLocalizedString(@"delete", @"删除") action:@selector(cellDelete:)];
+		
+		UIMenuItem *forwardMenuItem = [[UIMenuItem alloc] initWithTitle:NSLocalizedString(@"forward", @"转发") action:@selector(cellForward:)];
+		
+		UIMenuController *menu = [UIMenuController sharedMenuController];
+		
+		//禁止展现
+		[menu setMenuVisible:NO animated:YES];
+		//设置展现的menu
+		[menu setMenuItems:[NSArray arrayWithObjects:copyMenuItem, deleteMenuItem, forwardMenuItem,nil]];
+		//menu定位
+		[menu setTargetRect:view.frame inView:view.superview];
+		//修改箭头方向
+		//menu.arrowDirection = UIMenuControllerArrowUp;
+		//允许展现
+		[menu setMenuVisible:YES animated:YES];
+		
+		
+	}
+}
+
+/**
+ *  复制按钮执行
+ *
+ *  @param sender
+ */
+- (void)cellCopy:(id)sender {
+	ImInfoCellFrame *cellFrame=self.cellFrames[self.cellIndexPath.row];
+	[UIPasteboard generalPasteboard].string = cellFrame.imInfo.content;
+}
+
+/**
+ *  删除按钮执行
+ *
+ *  @param sender
+ */
+- (void)cellDelete:(id)sender {
+
+}
+/**
+ *  转发按钮执行
+ *
+ *  @param sender
+ */
+- (void)cellForward:(id)sender {
+
+}
+
+
+</code></pre>
+
+----
+
+只是想在 UITableViewCell 中使用系统提供的复制粘贴功能,实现下面三个方法即可
+
+- tableView shouldShowMenuForRowAtIndexPath:允许显示菜单。
+- tableView:canPerformAction:forRowAtIndexPath:withSender 确认是否该显示系统菜单选项并调用。 
+- tableView:performAction:forRowAtIndexPath:withSender: 当用户选择某个选项时执行的方法。
+
+样例如下
+<pre><code>
+- (BOOL)tableView:(UITableView *)tableView shouldShowMenuForRowAtIndexPath:(NSIndexPath *)indexPath {
+
+	return YES;
+}
+
+- (BOOL)tableView:(UITableView *)tableView canPerformAction:(SEL)action forRowAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender {
+	if (action == @selector(copy:)) {
+		return YES;
+		
+	}else if (action == @selector(paste:)) {
+		return YES;
+		
+	}else if (action == @selector(cut:)) {
+		return YES;
+		
+	}
+
+	
+	return NO;
+}
+- (void)tableView:(UITableView *)tableView performAction:(SEL)action forRowAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender {
+	if (action == @selector(copy:)) {
+		//[UIPasteboard generalPasteboard].string = [data objectAtIndex:indexPath.row];
+		
+		ImCellFrame* cellFrame=[self.imArray objectAtIndex:indexPath.row];
+		
+		NSLog(@"copy:cellFrame.fromName=%@",cellFrame.fromName);
+	}else if (action == @selector(paste:)) {
+		ImCellFrame* cellFrame=[self.imArray objectAtIndex:indexPath.row];
+		
+		NSLog(@"paste:cellFrame.fromName=%@",cellFrame.fromName);
+	}else if (action == @selector(cut:)) {
+		ImCellFrame* cellFrame=[self.imArray objectAtIndex:indexPath.row];
+		
+		NSLog(@"cut:cellFrame.fromName=%@",cellFrame.fromName);
+	}
+}
+</code></pre>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosuimenucontroller">IOS-UIMenuController</h2>
+
+<p>UIMenuController 组件用来定制该弹出菜单。使用UIMenuController的步骤如下：</p>
+
+<ol>
+<li>Menu所处的View必须实现 – (BOOL)canBecomeFirstResponder, 且返回YES</li>
+<li>Menu所处的View必须实现 – (BOOL)canPerformAction:withSender, 并根据需求返回YES或NO</li>
+<li>使Menu所处的View成为First Responder (becomeFirstResponder)</li>
+<li>定位Menu (- setTargetRect:inView:)</li>
+<li>展示Menu (- setMenuVisible:animated:)</li>
+</ol>
+
+<p>下面的样例的是在tableViewCell上加入长按手势，展现自定义的菜单项。</p>
+
+<pre><code>
+- (BOOL)canBecomeFirstResponder{
+    return YES;
+}
+
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender{
+        if (action == @selector(copy:)){
+            return YES;
+        }
+        if (action == @selector(delete:)){
+            return YES;
+        }
+        if (action == @selector(cut:)){
+            return YES;
+        }
+        return NO;
+}
+
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    ImInfoTableViewCell *cell=[tableView dequeueReusableCellWithIdentifier:kCellIdentifier forIndexPath:indexPath];
+
+    UILongPressGestureRecognizer *recognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPress:)];
+    [cell.detailContentView addGestureRecognizer:recognizer];
+
+    return cell;
+}
+
+- (void)longPress:(UILongPressGestureRecognizer *)recognizer{
+    if (recognizer.state == UIGestureRecognizerStateBegan) {
+        [self becomeFirstResponder];
+
+        //通过定位获取indexPath
+        CGPoint point = [recognizer locationInView:self.tableView];
+        self.cellIndexPath=[self.tableView indexPathForRowAtPoint: point];
+
+        ImInfoCellView *view = (ImInfoCellView *)recognizer.view;
+
+        [view becomeFirstResponder];
+
+        //可以通过UIMenuItem自定义显示的菜单项
+        UIMenuItem *copyMenuItem = [[UIMenuItem alloc] initWithTitle:NSLocalizedString(@"copy", @"复制") action:@selector(cellCopy:)];
+        UIMenuItem *deleteMenuItem = [[UIMenuItem alloc] initWithTitle:NSLocalizedString(@"delete", @"删除") action:@selector(cellDelete:)];
+
+        UIMenuItem *forwardMenuItem = [[UIMenuItem alloc] initWithTitle:NSLocalizedString(@"forward", @"转发") action:@selector(cellForward:)];
+
+        UIMenuController *menu = [UIMenuController sharedMenuController];
+
+        //禁止展现
+        [menu setMenuVisible:NO animated:YES];
+        //设置展现的menu
+        [menu setMenuItems:[NSArray arrayWithObjects:copyMenuItem, deleteMenuItem, forwardMenuItem,nil]];
+        //menu定位
+        [menu setTargetRect:view.frame inView:view.superview];
+        //修改箭头方向
+        //menu.arrowDirection = UIMenuControllerArrowUp;
+        //允许展现
+        [menu setMenuVisible:YES animated:YES];
+
+
+    }
+}
+
+/**
+ *  复制按钮执行
+ *
+ *  @param sender
+ */
+- (void)cellCopy:(id)sender {
+    ImInfoCellFrame *cellFrame=self.cellFrames[self.cellIndexPath.row];
+    [UIPasteboard generalPasteboard].string = cellFrame.imInfo.content;
+}
+
+/**
+ *  删除按钮执行
+ *
+ *  @param sender
+ */
+- (void)cellDelete:(id)sender {
+
+}
+/**
+ *  转发按钮执行
+ *
+ *  @param sender
+ */
+- (void)cellForward:(id)sender {
+
+}
+
+
+</code></pre>
+
+<hr>
+
+<p>只是想在 UITableViewCell 中使用系统提供的复制粘贴功能,实现下面三个方法即可</p>
+
+<ul>
+<li>tableView shouldShowMenuForRowAtIndexPath:允许显示菜单。</li>
+<li>tableView:canPerformAction:forRowAtIndexPath:withSender 确认是否该显示系统菜单选项并调用。 </li>
+<li>tableView:performAction:forRowAtIndexPath:withSender: 当用户选择某个选项时执行的方法。</li>
+</ul>
+
+<p>样例如下</p>
+
+<pre><code>
+- (BOOL)tableView:(UITableView *)tableView shouldShowMenuForRowAtIndexPath:(NSIndexPath *)indexPath {
+
+    return YES;
+}
+
+- (BOOL)tableView:(UITableView *)tableView canPerformAction:(SEL)action forRowAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender {
+    if (action == @selector(copy:)) {
+        return YES;
+
+    }else if (action == @selector(paste:)) {
+        return YES;
+
+    }else if (action == @selector(cut:)) {
+        return YES;
+
+    }
+
+
+    return NO;
+}
+- (void)tableView:(UITableView *)tableView performAction:(SEL)action forRowAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender {
+    if (action == @selector(copy:)) {
+        //[UIPasteboard generalPasteboard].string = [data objectAtIndex:indexPath.row];
+
+        ImCellFrame* cellFrame=[self.imArray objectAtIndex:indexPath.row];
+
+        NSLog(@"copy:cellFrame.fromName=%@",cellFrame.fromName);
+    }else if (action == @selector(paste:)) {
+        ImCellFrame* cellFrame=[self.imArray objectAtIndex:indexPath.row];
+
+        NSLog(@"paste:cellFrame.fromName=%@",cellFrame.fromName);
+    }else if (action == @selector(cut:)) {
+        ImCellFrame* cellFrame=[self.imArray objectAtIndex:indexPath.row];
+
+        NSLog(@"cut:cellFrame.fromName=%@",cellFrame.fromName);
+    }
+}
+</code></pre>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-UIMenuController.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

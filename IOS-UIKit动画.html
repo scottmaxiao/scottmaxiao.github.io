@@ -1,0 +1,713 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-UIKit动画
+
+&nbsp;&nbsp;&nbsp;&nbsp;从iOS2开始，UIView就有了实现动画的方法，而在iOS4中就添加了运用block的方法。这些方法都是对CoreAnimation层的一个装饰方法，UIView只是通过实例渲染的。
+
+&nbsp;&nbsp;&nbsp;&nbsp;在UIKit中，很多API都可以看到animated参数，表示是否动画显示，其实这是UIKit封装CoreAnimation后的结果。比如大家肯定都写过模态视图和导航控制器，他们在视图展示的时候都会有一个animated参数。
+<pre><code>
+[self.navigationController pushViewController:vc animated:YES];
+
+[self presentViewController:vc animated:YES completion:nil];
+</code></pre>
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;UIView本身对于基本动画和关键帧动画、转场动画都有相应的封装，在对动画细节没有特殊要求的情况下使用起来也要简单的多。可以说在日常开发中90%以上的情况使用UIView的动画封装方法都可以搞定。
+
+
+UIView可以产生动画效果的变化包括：
+
+- 位置变化：在屏幕上移动视图。
+- 大小变化：改变视图框架（frame）和边界。
+- 拉伸变化：改变视图内容的延展区域。
+- 改变透明度：改变视图的alpha值。
+- 改变状态：隐藏或显示状态。
+- 改变视图层次顺序：视图哪个前哪个后。
+- 旋转：即任何应用到视图上的仿射变换（transform）。
+
+
+----
+
+###基础动画
+&nbsp;&nbsp;&nbsp;&nbsp;UIView本身的基本动画有两种实现方式静态编码方式和Block方式。
+
+####静态编码方式
+
+<pre><code>
+	CGContextRef context = UIGraphicsGetCurrentContext();
+    //开始动画
+    [UIView beginAnimations:@"KCBasicAnimation" context:context];
+    [UIView setAnimationCurve:UIViewAnimationCurveLinear];// 设置动画曲线，默认是匀速进行
+    [UIView setAnimationDuration:5.0];//设置动画时长
+    //[UIView setAnimationDelay:1.0];//设置延迟
+    //[UIView setAnimationRepeatAutoreverses:NO];//是否回复,复位
+    //[UIView setAnimationRepeatCount:3];//重复次数
+    //[UIView setAnimationStartDate:(NSDate *)];//设置动画开始运行的时间
+    //[UIView setAnimationDelegate:self];//设置代理
+    //[UIView setAnimationWillStartSelector:(SEL)];//设置动画开始运动的执行方法
+    //[UIView setAnimationDidStopSelector:(SEL)];//设置动画运行结束后的执行方法
+    
+    _imageView.center=CGPointMake(50.0, 52.0);
+    //开始动画
+    [UIView commitAnimations];
+</code></pre>
+
+&nbsp;&nbsp;&nbsp;&nbsp;setAnimationCurve方法的参数是UIViewAnimationCurve枚举类型,包括下面值:
+
+- UIViewAnimationCurveEaseInOut : 动画的开始和结束都较慢的效果
+- UIViewAnimationCurveEaseIn: 动画的开始较慢的效果
+- UIViewAnimationCurveEaseOut: 动画的结束较慢的效果
+- UIViewAnimationCurveLinear: 动画匀速效果
+
+####Block方式
+<pre><code>
+    /*开始动画，UIView的动画方法执行完后动画会停留在重点位置，而不需要进行任何特殊处理
+     duration:执行时间
+     delay:延迟时间
+     options:动画设置，例如自动恢复、渐入渐出、匀速运动等
+     completion:动画完成回调方法
+     */
+    [UIView animateWithDuration:5.0 delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        _imageView.center=CGPointMake(50.0, 52.0);
+    } completion:^(BOOL finished) {
+        NSLog(@"Animation end.");
+    }];
+</code></pre>
+
+&nbsp;&nbsp;&nbsp;&nbsp;在动画方法中有一个option参数，UIViewAnimationOptions类型，它是一个枚举类型，动画参数分为三类，可以组合使用：
+
+1.常规动画属性设置（可以同时选择多个进行设置）
+
+- UIViewAnimationOptionLayoutSubviews：动画过程中保证子视图跟随运动。
+
+- UIViewAnimationOptionAllowUserInteraction：动画过程中允许用户交互。
+
+- UIViewAnimationOptionBeginFromCurrentState：所有视图从当前状态开始运行。
+
+- UIViewAnimationOptionRepeat：重复运行动画。
+
+- UIViewAnimationOptionAutoreverse ：动画运行到结束点后仍然以动画方式回到初始点。
+
+- UIViewAnimationOptionOverrideInheritedDuration：忽略嵌套动画时间设置。
+
+- UIViewAnimationOptionOverrideInheritedCurve：忽略嵌套动画速度设置。
+
+- UIViewAnimationOptionAllowAnimatedContent：动画过程中重绘视图（注意仅仅适用于转场动画）。 
+
+- UIViewAnimationOptionShowHideTransitionViews：视图切换时直接隐藏旧视图、显示新视图，而不是将旧视图从父视图移除（仅仅适用于转场动画）
+- UIViewAnimationOptionOverrideInheritedOptions ：不继承父动画设置或动画类型。
+
+
+2.动画速度控制（可从其中选择一个设置）
+
+- UIViewAnimationOptionCurveEaseInOut：动画先缓慢，然后逐渐加速。
+
+- UIViewAnimationOptionCurveEaseIn ：动画逐渐变慢。
+
+- UIViewAnimationOptionCurveEaseOut：动画逐渐加速。
+
+- UIViewAnimationOptionCurveLinear ：动画匀速执行，默认值。
+
+
+3.转场类型（仅适用于转场动画设置，可以从中选择一个进行设置，基本动画、关键帧动画不需要设置）
+
+- UIViewAnimationOptionTransitionNone：没有转场动画效果。
+
+- UIViewAnimationOptionTransitionFlipFromLeft ：从左侧翻转效果。
+
+- UIViewAnimationOptionTransitionFlipFromRight：从右侧翻转效果。
+
+- UIViewAnimationOptionTransitionCurlUp：向后翻页的动画过渡效果。   
+
+- UIViewAnimationOptionTransitionCurlDown ：向前翻页的动画过渡效果。   
+
+- UIViewAnimationOptionTransitionCrossDissolve：旧视图溶解消失显示下一个新视图的效果。   
+
+- UIViewAnimationOptionTransitionFlipFromTop ：从上方翻转效果。   
+
+- UIViewAnimationOptionTransitionFlipFromBottom：从底部翻转效果。
+
+
+
+**弹簧振动效果**
+
+由于在iOS开发中弹性动画使用很普遍，所以在iOS7苹果官方直接提供了一个方法用于弹性动画开发
+
+<pre><code>
+    [UIView animateWithDuration:5.0 delay:0 usingSpringWithDamping:0.1 initialSpringVelocity:1.0 options:UIViewAnimationOptionCurveLinear animations:^{
+        _imageView.center=CGPointMake(160, 284);
+    } completion:nil];
+</code></pre>
+
+usingSpringWithDamping：阻尼,它的范围为 0.0f 到 1.0f ，数值越小「弹簧」的振动效果越明显。
+
+initialSpringVelocity：弹性复位的速度，数值越大一开始移动越快。值得注意的是，取值较高而时间较短时，也会出现反弹情况。
+
+----
+
+###关键帧动画
+&nbsp;&nbsp;&nbsp;&nbsp;UIView动画已经具备高级的方法来创建动画，而且可以更好地理解和构建动画。IOS7以后苹果新加了一个animateKeyframesWithDuration的方法，我们可以使用它来创建更多更复杂更酷炫的动画效果，而不需要去使用到核心动画（CoreAnimatino）。
+
+<pre><code>
+/**
+ *  添加关键帧方法
+ *
+ *  @param duration   动画时长
+ *  @param delay      动画延迟
+ *  @param options    动画效果选项
+ *  @param animations 动画执行代码
+ *  @param completion 动画结束执行代码
+ */
++ (void)animateKeyframesWithDuration:(NSTimeInterval)duration
+                               delay:(NSTimeInterval)delay
+                             options:(UIViewKeyframeAnimationOptions)options
+                          animations:(void (^)(void))animations
+                          completion:(void (^)(BOOL finished))completion;
+                          
+                          
+/**
+ *  添加关键帧
+ *
+ *  @param frameStartTime 动画相对开始时间
+ *  @param frameDuration  动画相对持续时间
+ *  @param animations     动画执行代码
+ */
++ (void)addKeyframeWithRelativeStartTime:(double)frameStartTime
+                        relativeDuration:(double)frameDuration
+                              animations:(void (^)(void))animations;                         
+</code></pre>
+
+样例代码如下:
+<pre><code>
+	[UIView animateKeyframesWithDuration:10.0 delay:0 options: UIViewKeyframeAnimationOptionCalculationModePaced animations:^{
+		//第二关键帧（准确的说第一个关键帧是开始位置）:从0秒开始持续50%的时间，也就是10.0*0.3=3秒
+		[UIView addKeyframeWithRelativeStartTime:0.0 relativeDuration:0.3 animations:^{
+			_imageView.center=CGPointMake(80.0, 220.0);
+		}];
+		//第三个关键帧，从0.3*10.0秒开始，持续10.0*0.2=2秒
+		[UIView addKeyframeWithRelativeStartTime:0.3 relativeDuration:0.2 animations:^{
+			_imageView.center=CGPointMake(45.0, 300.0);
+		}];
+		//第四个关键帧：从0.5*10.0秒开始，持所需10.0*0.2=2秒
+		[UIView addKeyframeWithRelativeStartTime:0.5 relativeDuration:0.2 animations:^{
+			_imageView.center=CGPointMake(55.0, 400.0);
+		}];
+		//第五个关键帧：从0.75*10.0秒开始，持所需10.0*0.3=3秒
+		[UIView addKeyframeWithRelativeStartTime:0.75 relativeDuration:0.3 animations:^{
+			_imageView.center=CGPointMake(75.0, 480.0);
+		}];
+	} completion:^(BOOL finished) {
+		NSLog(@"Animation end.");
+		
+	}];
+</code></pre>
+
+&nbsp;&nbsp;&nbsp;&nbsp;对于关键帧动画也有一些动画参数设置options，UIViewKeyframeAnimationOptions类型，和上面基本动画参数设置有些差别，关键帧动画设置参数分为两类，可以组合使用：
+
+1.常规动画属性设置（可以同时选择多个进行设置）
+
+- UIViewAnimationOptionLayoutSubviews：动画过程中保证子视图跟随运动。
+
+- UIViewAnimationOptionAllowUserInteraction：动画过程中允许用户交互。
+
+- UIViewAnimationOptionBeginFromCurrentState：所有视图从当前状态开始运行。
+
+- UIViewAnimationOptionRepeat：重复运行动画。
+
+- UIViewAnimationOptionAutoreverse ：动画运行到结束点后仍然以动画方式回到初始点。
+
+- UIViewAnimationOptionOverrideInheritedDuration：忽略嵌套动画时间设置。
+
+- UIViewAnimationOptionOverrideInheritedOptions ：不继承父动画设置或动画类型。
+
+2.动画模式设置（同前面关键帧动画动画模式一一对应，可以从其中选择一个进行设置）
+
+- UIViewKeyframeAnimationOptionCalculationModeLinear：连续运算模式。
+
+- UIViewKeyframeAnimationOptionCalculationModeDiscrete ：离散运算模式。
+
+- UIViewKeyframeAnimationOptionCalculationModePaced：均匀执行运算模式。
+
+- UIViewKeyframeAnimationOptionCalculationModeCubic：平滑运算模式。
+
+- UIViewKeyframeAnimationOptionCalculationModeCubicPaced：平滑均匀运算模式。
+
+注意：前面说过关键帧动画有两种形式，上面演示的是属性值关键帧动画，路径关键帧动画目前UIView还不支持。
+
+
+下图描绘出了几种动画模式的关系（横坐标是运行时间，纵坐标是动画属性[例如位置、透明度等]）：
+
+![KeyframeAnimationOption](http://scottmaxiao.github.io/img/Animation/KeyframeAnimationOption.png)
+
+----
+
+###转场动画
+
+&nbsp;&nbsp;&nbsp;&nbsp;从iOS4.0开始，UIView直接封装了转场动画，使用起来同样很简单。
+
+<pre><code>
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    //定义图片控件
+    _imageView=[[UIImageView alloc]init];
+    _imageView.frame=[UIScreen mainScreen].applicationFrame;
+    _imageView.contentMode=UIViewContentModeScaleAspectFit;
+    _imageView.image=[UIImage imageNamed:@"0.jpg"];//默认图片
+    [self.view addSubview:_imageView];
+    //添加手势
+    UISwipeGestureRecognizer *leftSwipeGesture=[[UISwipeGestureRecognizer alloc]initWithTarget:self action:@selector(leftSwipe:)];
+    leftSwipeGesture.direction=UISwipeGestureRecognizerDirectionLeft;
+    [self.view addGestureRecognizer:leftSwipeGesture];
+    
+    UISwipeGestureRecognizer *rightSwipeGesture=[[UISwipeGestureRecognizer alloc]initWithTarget:self action:@selector(rightSwipe:)];
+    rightSwipeGesture.direction=UISwipeGestureRecognizerDirectionRight;
+    [self.view addGestureRecognizer:rightSwipeGesture];
+}
+
+#pragma mark 向左滑动浏览下一张图片
+-(void)leftSwipe:(UISwipeGestureRecognizer *)gesture{
+    [self transitionAnimation:YES];
+}
+
+#pragma mark 向右滑动浏览上一张图片
+-(void)rightSwipe:(UISwipeGestureRecognizer *)gesture{
+    [self transitionAnimation:NO];
+}
+
+
+#pragma mark 转场动画
+-(void)transitionAnimation:(BOOL)isNext{
+    UIViewAnimationOptions option;
+    if (isNext) {
+        option=UIViewAnimationOptionCurveEaseIn|UIViewAnimationOptionTransitionFlipFromRight;
+    }else{
+        option=UIViewAnimationOptionCurveEaseOut|UIViewAnimationOptionTransitionFlipFromLeft;
+    }
+    
+    [UIView transitionWithView:_imageView duration:3.0 options:option animations:^{
+        _imageView.image=[self getImage:isNext];
+    } completion:nil];
+}
+
+#pragma mark 取得当前图片
+-(UIImage *)getImage:(BOOL)isNext{
+    if (isNext) {
+        _currentIndex=(_currentIndex+1)%IMAGE_COUNT;
+    }else{
+        _currentIndex=(_currentIndex-1+IMAGE_COUNT)%IMAGE_COUNT;
+    }
+    NSString *imageName=[NSString stringWithFormat:@"%i.jpg",_currentIndex];
+    return [UIImage imageNamed:imageName];
+}
+
+</code></pre>
+----
+
+[参考:]
+
+<http://www.cnblogs.com/kenshincui/p/3972100.html#uiviewanimation>
+
+<http://www.cnblogs.com/lovecode/archive/2011/11/05/2237077.html>
+
+<http://www.cnblogs.com/GarveyCalvin/p/4193963.html?utm_source=tuicool&utm_medium=referral>
+
+<http://www.cnblogs.com/wendingding/p/3802830.html>
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosuikit">IOS-UIKit动画</h2>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;从iOS2开始，UIView就有了实现动画的方法，而在iOS4中就添加了运用block的方法。这些方法都是对CoreAnimation层的一个装饰方法，UIView只是通过实例渲染的。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在UIKit中，很多API都可以看到animated参数，表示是否动画显示，其实这是UIKit封装CoreAnimation后的结果。比如大家肯定都写过模态视图和导航控制器，他们在视图展示的时候都会有一个animated参数。</p>
+
+<pre><code>
+[self.navigationController pushViewController:vc animated:YES];
+
+[self presentViewController:vc animated:YES completion:nil];
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;UIView本身对于基本动画和关键帧动画、转场动画都有相应的封装，在对动画细节没有特殊要求的情况下使用起来也要简单的多。可以说在日常开发中90%以上的情况使用UIView的动画封装方法都可以搞定。</p>
+
+<p>UIView可以产生动画效果的变化包括：</p>
+
+<ul>
+<li>位置变化：在屏幕上移动视图。</li>
+<li>大小变化：改变视图框架（frame）和边界。</li>
+<li>拉伸变化：改变视图内容的延展区域。</li>
+<li>改变透明度：改变视图的alpha值。</li>
+<li>改变状态：隐藏或显示状态。</li>
+<li>改变视图层次顺序：视图哪个前哪个后。</li>
+<li>旋转：即任何应用到视图上的仿射变换（transform）。</li>
+</ul>
+
+<hr>
+
+<h3 id="">基础动画</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;UIView本身的基本动画有两种实现方式静态编码方式和Block方式。</p>
+
+<h4 id="">静态编码方式</h4>
+
+<pre><code>
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    //开始动画
+    [UIView beginAnimations:@"KCBasicAnimation" context:context];
+    [UIView setAnimationCurve:UIViewAnimationCurveLinear];// 设置动画曲线，默认是匀速进行
+    [UIView setAnimationDuration:5.0];//设置动画时长
+    //[UIView setAnimationDelay:1.0];//设置延迟
+    //[UIView setAnimationRepeatAutoreverses:NO];//是否回复,复位
+    //[UIView setAnimationRepeatCount:3];//重复次数
+    //[UIView setAnimationStartDate:(NSDate *)];//设置动画开始运行的时间
+    //[UIView setAnimationDelegate:self];//设置代理
+    //[UIView setAnimationWillStartSelector:(SEL)];//设置动画开始运动的执行方法
+    //[UIView setAnimationDidStopSelector:(SEL)];//设置动画运行结束后的执行方法
+
+    _imageView.center=CGPointMake(50.0, 52.0);
+    //开始动画
+    [UIView commitAnimations];
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;setAnimationCurve方法的参数是UIViewAnimationCurve枚举类型,包括下面值:</p>
+
+<ul>
+<li>UIViewAnimationCurveEaseInOut : 动画的开始和结束都较慢的效果</li>
+<li>UIViewAnimationCurveEaseIn: 动画的开始较慢的效果</li>
+<li>UIViewAnimationCurveEaseOut: 动画的结束较慢的效果</li>
+<li>UIViewAnimationCurveLinear: 动画匀速效果</li>
+</ul>
+
+<h4 id="block">Block方式</h4>
+
+<pre><code>
+    /*开始动画，UIView的动画方法执行完后动画会停留在重点位置，而不需要进行任何特殊处理
+     duration:执行时间
+     delay:延迟时间
+     options:动画设置，例如自动恢复、渐入渐出、匀速运动等
+     completion:动画完成回调方法
+     */
+    [UIView animateWithDuration:5.0 delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        _imageView.center=CGPointMake(50.0, 52.0);
+    } completion:^(BOOL finished) {
+        NSLog(@"Animation end.");
+    }];
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在动画方法中有一个option参数，UIViewAnimationOptions类型，它是一个枚举类型，动画参数分为三类，可以组合使用：</p>
+
+<p>1.常规动画属性设置（可以同时选择多个进行设置）</p>
+
+<ul>
+<li><p>UIViewAnimationOptionLayoutSubviews：动画过程中保证子视图跟随运动。</p></li>
+<li><p>UIViewAnimationOptionAllowUserInteraction：动画过程中允许用户交互。</p></li>
+<li><p>UIViewAnimationOptionBeginFromCurrentState：所有视图从当前状态开始运行。</p></li>
+<li><p>UIViewAnimationOptionRepeat：重复运行动画。</p></li>
+<li><p>UIViewAnimationOptionAutoreverse ：动画运行到结束点后仍然以动画方式回到初始点。</p></li>
+<li><p>UIViewAnimationOptionOverrideInheritedDuration：忽略嵌套动画时间设置。</p></li>
+<li><p>UIViewAnimationOptionOverrideInheritedCurve：忽略嵌套动画速度设置。</p></li>
+<li><p>UIViewAnimationOptionAllowAnimatedContent：动画过程中重绘视图（注意仅仅适用于转场动画）。 </p></li>
+<li><p>UIViewAnimationOptionShowHideTransitionViews：视图切换时直接隐藏旧视图、显示新视图，而不是将旧视图从父视图移除（仅仅适用于转场动画）</p></li>
+<li>UIViewAnimationOptionOverrideInheritedOptions ：不继承父动画设置或动画类型。</li>
+</ul>
+
+<p>2.动画速度控制（可从其中选择一个设置）</p>
+
+<ul>
+<li><p>UIViewAnimationOptionCurveEaseInOut：动画先缓慢，然后逐渐加速。</p></li>
+<li><p>UIViewAnimationOptionCurveEaseIn ：动画逐渐变慢。</p></li>
+<li><p>UIViewAnimationOptionCurveEaseOut：动画逐渐加速。</p></li>
+<li><p>UIViewAnimationOptionCurveLinear ：动画匀速执行，默认值。</p></li>
+</ul>
+
+<p>3.转场类型（仅适用于转场动画设置，可以从中选择一个进行设置，基本动画、关键帧动画不需要设置）</p>
+
+<ul>
+<li><p>UIViewAnimationOptionTransitionNone：没有转场动画效果。</p></li>
+<li><p>UIViewAnimationOptionTransitionFlipFromLeft ：从左侧翻转效果。</p></li>
+<li><p>UIViewAnimationOptionTransitionFlipFromRight：从右侧翻转效果。</p></li>
+<li><p>UIViewAnimationOptionTransitionCurlUp：向后翻页的动画过渡效果。   </p></li>
+<li><p>UIViewAnimationOptionTransitionCurlDown ：向前翻页的动画过渡效果。   </p></li>
+<li><p>UIViewAnimationOptionTransitionCrossDissolve：旧视图溶解消失显示下一个新视图的效果。   </p></li>
+<li><p>UIViewAnimationOptionTransitionFlipFromTop ：从上方翻转效果。   </p></li>
+<li><p>UIViewAnimationOptionTransitionFlipFromBottom：从底部翻转效果。</p></li>
+</ul>
+
+<p><strong>弹簧振动效果</strong></p>
+
+<p>由于在iOS开发中弹性动画使用很普遍，所以在iOS7苹果官方直接提供了一个方法用于弹性动画开发</p>
+
+<pre><code>
+    [UIView animateWithDuration:5.0 delay:0 usingSpringWithDamping:0.1 initialSpringVelocity:1.0 options:UIViewAnimationOptionCurveLinear animations:^{
+        _imageView.center=CGPointMake(160, 284);
+    } completion:nil];
+</code></pre>
+
+<p>usingSpringWithDamping：阻尼,它的范围为 0.0f 到 1.0f ，数值越小「弹簧」的振动效果越明显。</p>
+
+<p>initialSpringVelocity：弹性复位的速度，数值越大一开始移动越快。值得注意的是，取值较高而时间较短时，也会出现反弹情况。</p>
+
+<hr>
+
+<h3 id="">关键帧动画</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;UIView动画已经具备高级的方法来创建动画，而且可以更好地理解和构建动画。IOS7以后苹果新加了一个animateKeyframesWithDuration的方法，我们可以使用它来创建更多更复杂更酷炫的动画效果，而不需要去使用到核心动画（CoreAnimatino）。</p>
+
+<pre><code>
+/**
+ *  添加关键帧方法
+ *
+ *  @param duration   动画时长
+ *  @param delay      动画延迟
+ *  @param options    动画效果选项
+ *  @param animations 动画执行代码
+ *  @param completion 动画结束执行代码
+ */
++ (void)animateKeyframesWithDuration:(NSTimeInterval)duration
+                               delay:(NSTimeInterval)delay
+                             options:(UIViewKeyframeAnimationOptions)options
+                          animations:(void (^)(void))animations
+                          completion:(void (^)(BOOL finished))completion;
+
+
+/**
+ *  添加关键帧
+ *
+ *  @param frameStartTime 动画相对开始时间
+ *  @param frameDuration  动画相对持续时间
+ *  @param animations     动画执行代码
+ */
++ (void)addKeyframeWithRelativeStartTime:(double)frameStartTime
+                        relativeDuration:(double)frameDuration
+                              animations:(void (^)(void))animations;                         
+</code></pre>
+
+<p>样例代码如下:</p>
+
+<pre><code>
+    [UIView animateKeyframesWithDuration:10.0 delay:0 options: UIViewKeyframeAnimationOptionCalculationModePaced animations:^{
+        //第二关键帧（准确的说第一个关键帧是开始位置）:从0秒开始持续50%的时间，也就是10.0*0.3=3秒
+        [UIView addKeyframeWithRelativeStartTime:0.0 relativeDuration:0.3 animations:^{
+            _imageView.center=CGPointMake(80.0, 220.0);
+        }];
+        //第三个关键帧，从0.3*10.0秒开始，持续10.0*0.2=2秒
+        [UIView addKeyframeWithRelativeStartTime:0.3 relativeDuration:0.2 animations:^{
+            _imageView.center=CGPointMake(45.0, 300.0);
+        }];
+        //第四个关键帧：从0.5*10.0秒开始，持所需10.0*0.2=2秒
+        [UIView addKeyframeWithRelativeStartTime:0.5 relativeDuration:0.2 animations:^{
+            _imageView.center=CGPointMake(55.0, 400.0);
+        }];
+        //第五个关键帧：从0.75*10.0秒开始，持所需10.0*0.3=3秒
+        [UIView addKeyframeWithRelativeStartTime:0.75 relativeDuration:0.3 animations:^{
+            _imageView.center=CGPointMake(75.0, 480.0);
+        }];
+    } completion:^(BOOL finished) {
+        NSLog(@"Animation end.");
+
+    }];
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;对于关键帧动画也有一些动画参数设置options，UIViewKeyframeAnimationOptions类型，和上面基本动画参数设置有些差别，关键帧动画设置参数分为两类，可以组合使用：</p>
+
+<p>1.常规动画属性设置（可以同时选择多个进行设置）</p>
+
+<ul>
+<li><p>UIViewAnimationOptionLayoutSubviews：动画过程中保证子视图跟随运动。</p></li>
+<li><p>UIViewAnimationOptionAllowUserInteraction：动画过程中允许用户交互。</p></li>
+<li><p>UIViewAnimationOptionBeginFromCurrentState：所有视图从当前状态开始运行。</p></li>
+<li><p>UIViewAnimationOptionRepeat：重复运行动画。</p></li>
+<li><p>UIViewAnimationOptionAutoreverse ：动画运行到结束点后仍然以动画方式回到初始点。</p></li>
+<li><p>UIViewAnimationOptionOverrideInheritedDuration：忽略嵌套动画时间设置。</p></li>
+<li><p>UIViewAnimationOptionOverrideInheritedOptions ：不继承父动画设置或动画类型。</p></li>
+</ul>
+
+<p>2.动画模式设置（同前面关键帧动画动画模式一一对应，可以从其中选择一个进行设置）</p>
+
+<ul>
+<li><p>UIViewKeyframeAnimationOptionCalculationModeLinear：连续运算模式。</p></li>
+<li><p>UIViewKeyframeAnimationOptionCalculationModeDiscrete ：离散运算模式。</p></li>
+<li><p>UIViewKeyframeAnimationOptionCalculationModePaced：均匀执行运算模式。</p></li>
+<li><p>UIViewKeyframeAnimationOptionCalculationModeCubic：平滑运算模式。</p></li>
+<li><p>UIViewKeyframeAnimationOptionCalculationModeCubicPaced：平滑均匀运算模式。</p></li>
+</ul>
+
+<p>注意：前面说过关键帧动画有两种形式，上面演示的是属性值关键帧动画，路径关键帧动画目前UIView还不支持。</p>
+
+<p>下图描绘出了几种动画模式的关系（横坐标是运行时间，纵坐标是动画属性[例如位置、透明度等]）：</p>
+
+<p><img src="http://scottmaxiao.github.io/img/Animation/KeyframeAnimationOption.png" alt="KeyframeAnimationOption" title=""></p>
+
+<hr>
+
+<h3 id="">转场动画</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;从iOS4.0开始，UIView直接封装了转场动画，使用起来同样很简单。</p>
+
+<pre><code>
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    //定义图片控件
+    _imageView=[[UIImageView alloc]init];
+    _imageView.frame=[UIScreen mainScreen].applicationFrame;
+    _imageView.contentMode=UIViewContentModeScaleAspectFit;
+    _imageView.image=[UIImage imageNamed:@"0.jpg"];//默认图片
+    [self.view addSubview:_imageView];
+    //添加手势
+    UISwipeGestureRecognizer *leftSwipeGesture=[[UISwipeGestureRecognizer alloc]initWithTarget:self action:@selector(leftSwipe:)];
+    leftSwipeGesture.direction=UISwipeGestureRecognizerDirectionLeft;
+    [self.view addGestureRecognizer:leftSwipeGesture];
+
+    UISwipeGestureRecognizer *rightSwipeGesture=[[UISwipeGestureRecognizer alloc]initWithTarget:self action:@selector(rightSwipe:)];
+    rightSwipeGesture.direction=UISwipeGestureRecognizerDirectionRight;
+    [self.view addGestureRecognizer:rightSwipeGesture];
+}
+
+#pragma mark 向左滑动浏览下一张图片
+-(void)leftSwipe:(UISwipeGestureRecognizer *)gesture{
+    [self transitionAnimation:YES];
+}
+
+#pragma mark 向右滑动浏览上一张图片
+-(void)rightSwipe:(UISwipeGestureRecognizer *)gesture{
+    [self transitionAnimation:NO];
+}
+
+
+#pragma mark 转场动画
+-(void)transitionAnimation:(BOOL)isNext{
+    UIViewAnimationOptions option;
+    if (isNext) {
+        option=UIViewAnimationOptionCurveEaseIn|UIViewAnimationOptionTransitionFlipFromRight;
+    }else{
+        option=UIViewAnimationOptionCurveEaseOut|UIViewAnimationOptionTransitionFlipFromLeft;
+    }
+
+    [UIView transitionWithView:_imageView duration:3.0 options:option animations:^{
+        _imageView.image=[self getImage:isNext];
+    } completion:nil];
+}
+
+#pragma mark 取得当前图片
+-(UIImage *)getImage:(BOOL)isNext{
+    if (isNext) {
+        _currentIndex=(_currentIndex+1)%IMAGE_COUNT;
+    }else{
+        _currentIndex=(_currentIndex-1+IMAGE_COUNT)%IMAGE_COUNT;
+    }
+    NSString *imageName=[NSString stringWithFormat:@"%i.jpg",_currentIndex];
+    return [UIImage imageNamed:imageName];
+}
+
+</code></pre>
+
+<hr>
+
+<p>[参考:]</p>
+
+<p><a href="http://www.cnblogs.com/kenshincui/p/3972100.html#uiviewanimation">http://www.cnblogs.com/kenshincui/p/3972100.html#uiviewanimation</a></p>
+
+<p><a href="http://www.cnblogs.com/lovecode/archive/2011/11/05/2237077.html">http://www.cnblogs.com/lovecode/archive/2011/11/05/2237077.html</a></p>
+
+<p><a href="http://www.cnblogs.com/GarveyCalvin/p/4193963.html?utm_source=tuicool&amp;utm_medium=referral">http://www.cnblogs.com/GarveyCalvin/p/4193963.html?utm_source=tuicool&amp;utm_medium=referral</a></p>
+
+<p><a href="http://www.cnblogs.com/wendingding/p/3802830.html">http://www.cnblogs.com/wendingding/p/3802830.html</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-UIKit动画.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

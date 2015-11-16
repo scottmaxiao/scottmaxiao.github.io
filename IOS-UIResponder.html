@@ -1,0 +1,359 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-UIResponder
+
+###iOS事件
+在iOS中事件分为三类：
+
+- 触摸事件：通过触摸、手势进行触发（例如手指点击、缩放）
+- 运动事件：通过加速器进行触发（例如手机晃动）
+- 远程控制事件：通过其他远程设备触发（例如耳机控制按钮）
+
+下图是苹果官方对于这三种事件的形象描述：
+
+![UIResponder](http://scottmaxiao.github.io/img/UIResponder/UIResponder.png)
+
+----
+
+&nbsp;&nbsp;&nbsp;&nbsp;在iOS中并不是所有的类都能处理接收并事件，只有继承自UIResponder类的对象才能处理事件（如我们常用的UIView、UIViewController、UIApplication都继承自UIResponder，它们都能接收并处理事件）。
+
+在UIResponder中定义了上面三类事件相关的处理方法：
+
+<table>
+<tr>
+<td>事件</td><td>说明</td>
+</tr>
+<tr>
+<td colspan=2>触摸事件</td>
+</tr>
+<tr>
+<td>- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;</td><td>一根或多根手指开始触摸屏幕时执行；</td>
+</tr>
+<tr>
+<td>- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;</td><td>一根或多根手指在屏幕上移动时执行，注意此方法在移动过程中会重复调用；</td>
+</tr>
+<tr>
+<td>- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;</td><td>一根或多根手指触摸结束离开屏幕时执行；</td>
+</tr>
+<tr>
+<td>- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;</td><td>触摸意外取消时执行（例如正在触摸时打入电话）；</td>
+</tr>
+
+<tr>
+<td colspan=2>运动事件</td>
+</tr>
+<tr>
+<td>- (void)motionBegan:(UIEventSubtype)motion withEvent:(UIEvent *)event NS_AVAILABLE_IOS(3_0);</td><td>运动开始时执行；</td>
+</tr>
+<tr>
+<td>- (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event NS_AVAILABLE_IOS(3_0);</td><td>运动结束后执行；</td>
+</tr>
+<tr>
+<td>- (void)motionCancelled:(UIEventSubtype)motion withEvent:(UIEvent *)event NS_AVAILABLE_IOS(3_0);</td><td>运动被意外取消时执行；</td>
+</tr>
+
+<tr>
+<td colspan=2>远程控制事件</td>
+</tr>
+<tr>
+<td>- (void)remoteControlReceivedWithEvent:(UIEvent *)event NS_AVAILABLE_IOS(4_0);</td><td>接收到远程控制消息时执行；</td>
+</tr>
+</table>
+
+
+样例代码如下：
+<pre><code>
+-(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
+    //取得一个触摸对象（对于多点触摸可能有多个对象）
+    UITouch *touch=[touches anyObject];
+    //NSLog(@"%@",touch);
+    
+    //取得当前位置
+    CGPoint current=[touch locationInView:self.view];
+    //取得前一个位置
+    CGPoint previous=[touch previousLocationInView:self.view];
+    
+    //移动前的中点位置
+    CGPoint center=_image.center;
+    //移动偏移量
+    CGPoint offset=CGPointMake(current.x-previous.x, current.y-previous.y);
+    
+    //重新设置新位置
+    _image.center=CGPointMake(center.x+offset.x, center.y+offset.y);
+    
+    NSLog(@"UIViewController moving...");
+
+}
+</code></pre>
+
+上面示例中我们用到了UITouch类，当执行触摸事件时会将这个对象传入。在这个对象中包含了触摸的所有信息：
+
+- window：触摸时所在的窗口
+- view：触摸时所在视图
+- tapCount:短时间内点击的次数
+- timestamp:触摸产生或变化的时间戳
+- phase:触摸周期内的各个状态
+- locationInView:方法：取得在指定视图的位置
+- previousLocationInView:方法：取得移动的前一个位置
+
+----
+
+###响应者链
+&nbsp;&nbsp;&nbsp;&nbsp;什么是响应者链呢？我们知道在iOS程序中无论是最后面的UIWindow还是最前面的某个按钮，它们的摆放是有前后关系的，一个控件可以放到另一个控件上面或下面，那么用户点击某个控件时是触发上面的控件还是下面的控件呢，这种先后关系构成一个链条就叫“响应者链”。在iOS中响应者链的关系可以用下图表示：
+
+
+![UIResponder](http://scottmaxiao.github.io/img/UIResponder/UIResponder01.png)
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;当一个事件发生后首先看initial view能否处理这个事件，如果不能则会将事件传递给其上级视图（inital view的superView）；如果上级视图仍然无法处理则会继续往上传递；一直传递到视图控制器view controller，首先判断视图控制器的根视图view是否能处理此事件；如果不能则接着判断该视图控制器能否处理此事件，如果还是不能则继续向上传递；（对于第二个图视图控制器本身还在另一个视图控制器中，则继续交给父视图控制器的根视图，如果根视图不能处理则交给父视图控制器处理）；一直到window，如果window还是不能处理此事件则继续交给application（UIApplication单例对象）处理，如果最后application还是不能处理此事件则将其丢弃。
+
+&nbsp;&nbsp;&nbsp;&nbsp;这个过程大家理解起来并不难，关键问题是在这个过程中各个对象如何知道自己能不能处理该事件呢？对于继承UIResponder的对象，其不能处理事件有几个条件：
+
+- userInteractionEnabled=NO
+- hidden=YES
+- alpha=0~0.01
+- 没有实现开始触摸方法（注意是touchesBegan:withEvent:而不是移动和结束触摸事件）
+
+&nbsp;&nbsp;&nbsp;&nbsp;当然前三点都是针对UIView控件或其子控件而言的，第四点可以针对UIView也可以针对视图控制器等其他UIResponder子类。对于第四种情况这里再次强调是对象中重写了开始触摸方法，则会处理这个事件，如果仅仅写了移动、停止触摸或取消触摸事件（或者这三个事件都重写了）没有写开始触摸事件，则此事件该对象不会进行处理。
+
+
+----
+
+参考：
+
+<http://www.cnblogs.com/kenshincui/p/3950646.html#touch>
+
+<http://blog.csdn.net/jimzhai/article/details/23283515>
+
+<http://blog.csdn.net/maojudong/article/details/7798138>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosuiresponder">IOS-UIResponder</h2>
+
+<h3 id="ios">iOS事件</h3>
+
+<p>在iOS中事件分为三类：</p>
+
+<ul>
+<li>触摸事件：通过触摸、手势进行触发（例如手指点击、缩放）</li>
+<li>运动事件：通过加速器进行触发（例如手机晃动）</li>
+<li>远程控制事件：通过其他远程设备触发（例如耳机控制按钮）</li>
+</ul>
+
+<p>下图是苹果官方对于这三种事件的形象描述：</p>
+
+<p><img src="http://scottmaxiao.github.io/img/UIResponder/UIResponder.png" alt="UIResponder" title=""></p>
+
+<hr>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在iOS中并不是所有的类都能处理接收并事件，只有继承自UIResponder类的对象才能处理事件（如我们常用的UIView、UIViewController、UIApplication都继承自UIResponder，它们都能接收并处理事件）。</p>
+
+<p>在UIResponder中定义了上面三类事件相关的处理方法：</p>
+
+<table>
+<tbody><tr>
+<td>事件</td><td>说明</td>
+</tr>
+<tr>
+<td colspan="2">触摸事件</td>
+</tr>
+<tr>
+<td>- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;</td><td>一根或多根手指开始触摸屏幕时执行；</td>
+</tr>
+<tr>
+<td>- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;</td><td>一根或多根手指在屏幕上移动时执行，注意此方法在移动过程中会重复调用；</td>
+</tr>
+<tr>
+<td>- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;</td><td>一根或多根手指触摸结束离开屏幕时执行；</td>
+</tr>
+<tr>
+<td>- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;</td><td>触摸意外取消时执行（例如正在触摸时打入电话）；</td>
+</tr>
+
+<tr>
+<td colspan="2">运动事件</td>
+</tr>
+<tr>
+<td>- (void)motionBegan:(UIEventSubtype)motion withEvent:(UIEvent *)event NS_AVAILABLE_IOS(3_0);</td><td>运动开始时执行；</td>
+</tr>
+<tr>
+<td>- (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event NS_AVAILABLE_IOS(3_0);</td><td>运动结束后执行；</td>
+</tr>
+<tr>
+<td>- (void)motionCancelled:(UIEventSubtype)motion withEvent:(UIEvent *)event NS_AVAILABLE_IOS(3_0);</td><td>运动被意外取消时执行；</td>
+</tr>
+
+<tr>
+<td colspan="2">远程控制事件</td>
+</tr>
+<tr>
+<td>- (void)remoteControlReceivedWithEvent:(UIEvent *)event NS_AVAILABLE_IOS(4_0);</td><td>接收到远程控制消息时执行；</td>
+</tr>
+</tbody></table>
+
+<p>样例代码如下：</p>
+
+<pre><code>
+-(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
+    //取得一个触摸对象（对于多点触摸可能有多个对象）
+    UITouch *touch=[touches anyObject];
+    //NSLog(@"%@",touch);
+
+    //取得当前位置
+    CGPoint current=[touch locationInView:self.view];
+    //取得前一个位置
+    CGPoint previous=[touch previousLocationInView:self.view];
+
+    //移动前的中点位置
+    CGPoint center=_image.center;
+    //移动偏移量
+    CGPoint offset=CGPointMake(current.x-previous.x, current.y-previous.y);
+
+    //重新设置新位置
+    _image.center=CGPointMake(center.x+offset.x, center.y+offset.y);
+
+    NSLog(@"UIViewController moving...");
+
+}
+</code></pre>
+
+<p>上面示例中我们用到了UITouch类，当执行触摸事件时会将这个对象传入。在这个对象中包含了触摸的所有信息：</p>
+
+<ul>
+<li>window：触摸时所在的窗口</li>
+<li>view：触摸时所在视图</li>
+<li>tapCount:短时间内点击的次数</li>
+<li>timestamp:触摸产生或变化的时间戳</li>
+<li>phase:触摸周期内的各个状态</li>
+<li>locationInView:方法：取得在指定视图的位置</li>
+<li>previousLocationInView:方法：取得移动的前一个位置</li>
+</ul>
+
+<hr>
+
+<h3 id="">响应者链</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;什么是响应者链呢？我们知道在iOS程序中无论是最后面的UIWindow还是最前面的某个按钮，它们的摆放是有前后关系的，一个控件可以放到另一个控件上面或下面，那么用户点击某个控件时是触发上面的控件还是下面的控件呢，这种先后关系构成一个链条就叫“响应者链”。在iOS中响应者链的关系可以用下图表示：</p>
+
+<p><img src="http://scottmaxiao.github.io/img/UIResponder/UIResponder01.png" alt="UIResponder" title=""></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;当一个事件发生后首先看initial view能否处理这个事件，如果不能则会将事件传递给其上级视图（inital view的superView）；如果上级视图仍然无法处理则会继续往上传递；一直传递到视图控制器view controller，首先判断视图控制器的根视图view是否能处理此事件；如果不能则接着判断该视图控制器能否处理此事件，如果还是不能则继续向上传递；（对于第二个图视图控制器本身还在另一个视图控制器中，则继续交给父视图控制器的根视图，如果根视图不能处理则交给父视图控制器处理）；一直到window，如果window还是不能处理此事件则继续交给application（UIApplication单例对象）处理，如果最后application还是不能处理此事件则将其丢弃。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;这个过程大家理解起来并不难，关键问题是在这个过程中各个对象如何知道自己能不能处理该事件呢？对于继承UIResponder的对象，其不能处理事件有几个条件：</p>
+
+<ul>
+<li>userInteractionEnabled=NO</li>
+<li>hidden=YES</li>
+<li>alpha=0~0.01</li>
+<li>没有实现开始触摸方法（注意是touchesBegan:withEvent:而不是移动和结束触摸事件）</li>
+</ul>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;当然前三点都是针对UIView控件或其子控件而言的，第四点可以针对UIView也可以针对视图控制器等其他UIResponder子类。对于第四种情况这里再次强调是对象中重写了开始触摸方法，则会处理这个事件，如果仅仅写了移动、停止触摸或取消触摸事件（或者这三个事件都重写了）没有写开始触摸事件，则此事件该对象不会进行处理。</p>
+
+<hr>
+
+<p>参考：</p>
+
+<p><a href="http://www.cnblogs.com/kenshincui/p/3950646.html#touch">http://www.cnblogs.com/kenshincui/p/3950646.html#touch</a></p>
+
+<p><a href="http://blog.csdn.net/jimzhai/article/details/23283515">http://blog.csdn.net/jimzhai/article/details/23283515</a></p>
+
+<p><a href="http://blog.csdn.net/maojudong/article/details/7798138">http://blog.csdn.net/maojudong/article/details/7798138</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-UIResponder.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

@@ -27,6 +27,10 @@
 <!-- markdown -->
 ##IOS-手势
 
+&nbsp;&nbsp;&nbsp;&nbsp;iPhone中处理触摸屏的操作，在IOS3.2之前是主要使用的是由UIResponder而来，参考<http://scottmaxiao.github.io/IOS-UIResponder.html>。
+
+&nbsp;&nbsp;&nbsp;&nbsp;触摸事件使用起来比较容易，但是对于多个手指触摸并进行不同的变化操作就要复杂的多了。例如说如果两个手指捏合，我们虽然在触摸开始、移动等事件中可以通过UITouchs得到两个触摸对象，但是我们如何能判断用户是用两个手指捏合还是横扫或者拖动呢？在iOS3.2之后苹果引入了手势识别,对于用户常用的手势操作进行了识别并封装成具体的类供开发者使用，这样在开发过程中我们就不必再自己编写算法识别用户的触摸操作了。
+
 &nbsp;&nbsp;&nbsp;&nbsp;为了完成手势识别，必须借助于手势识别器：UIGestureRecognizer 。UIGestureRecognizer是一个抽象类，定义了所有的手势基本行为，使用它的子类才能处理具体的手势。
 
 <table>
@@ -257,10 +261,14 @@ viewLongPressGesture.delegate=self;
 }
 </code></pre>
 
+----
 
 [参考:]
+
 <http://www.cnblogs.com/kenshincui/p/3950646.html#gesture>
+
 <http://my.oschina.net/aofe/blog/268749>
+
 <http://blog.csdn.net/chun799/article/details/8194893>
 
 <!-- markdown end -->
@@ -268,6 +276,10 @@ viewLongPressGesture.delegate=self;
 <div class="entry" id="main">
 <!-- content -->
 <h2 id="ios">IOS-手势</h2>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;iPhone中处理触摸屏的操作，在IOS3.2之前是主要使用的是由UIResponder而来，参考<a href="http://scottmaxiao.github.io/IOS-UIResponder.html">http://scottmaxiao.github.io/IOS-UIResponder.html</a>。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;触摸事件使用起来比较容易，但是对于多个手指触摸并进行不同的变化操作就要复杂的多了。例如说如果两个手指捏合，我们虽然在触摸开始、移动等事件中可以通过UITouchs得到两个触摸对象，但是我们如何能判断用户是用两个手指捏合还是横扫或者拖动呢？在iOS3.2之后苹果引入了手势识别,对于用户常用的手势操作进行了识别并封装成具体的类供开发者使用，这样在开发过程中我们就不必再自己编写算法识别用户的触摸操作了。</p>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;为了完成手势识别，必须借助于手势识别器：UIGestureRecognizer 。UIGestureRecognizer是一个抽象类，定义了所有的手势基本行为，使用它的子类才能处理具体的手势。</p>
 
@@ -499,10 +511,15 @@ viewLongPressGesture.delegate=self;
 }
 </code></pre>
 
-<p>[参考:]
-<a href="http://www.cnblogs.com/kenshincui/p/3950646.html#gesture">http://www.cnblogs.com/kenshincui/p/3950646.html#gesture</a>
-<a href="http://my.oschina.net/aofe/blog/268749">http://my.oschina.net/aofe/blog/268749</a>
-<a href="http://blog.csdn.net/chun799/article/details/8194893">http://blog.csdn.net/chun799/article/details/8194893</a></p>
+<hr>
+
+<p>[参考:]</p>
+
+<p><a href="http://www.cnblogs.com/kenshincui/p/3950646.html#gesture">http://www.cnblogs.com/kenshincui/p/3950646.html#gesture</a></p>
+
+<p><a href="http://my.oschina.net/aofe/blog/268749">http://my.oschina.net/aofe/blog/268749</a></p>
+
+<p><a href="http://blog.csdn.net/chun799/article/details/8194893">http://blog.csdn.net/chun799/article/details/8194893</a></p>
 <!-- content end -->
 </div>
 <br>

@@ -1,0 +1,389 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##Linux目录介绍
+
+&nbsp;&nbsp;&nbsp;&nbsp;Linux和UNIX的文件系统是一个以“/ “为根的阶层式的树状文件结构，/ 因此被称为根目录。所有的文件和目录都置于根目录/ 之下。根目录/下面有/bin，/home，/usr等子目录。在早期的UNIX系统中，各个厂家各自定义了自己的UNIX系统的文件系统构成，比较混乱。
+
+&nbsp;&nbsp;&nbsp;&nbsp;为了避免在Linux也产生同样的问题，在Linux面世不久，就开始了对Linux文件系统进行标准化的活动，于1994年推出了名为 FSSTND(Filesystem Standard)的Linux文件系统层次结构标准。之后，FSSTND标准吸引了UNIX社团的开发人员，他们把FSSTND扩大到UNIX系 统，FSSTND就变为FHS (Filesystem Hierarchy Standard)。2001年3月，FHS 2.2版本发布，2004年1月29日发行了最新版本2.3。
+
+----
+
+&nbsp;&nbsp;&nbsp;&nbsp;FHS定义出根目录(/)底下应该要有底下这些次目录的存在
+
+**/bin**
+
+&nbsp;&nbsp;&nbsp;&nbsp;一般用户使用的命令,主要有：cat, chmod, chown, date, mv, mkdir, cp, bash等等常用的指令。
+
+**/boot**
+
+&nbsp;&nbsp;&nbsp;&nbsp;放置内核及LILO、GRUB等导引程序(bootloader)的文件，用于启动。
+
+**/dev**
+
+&nbsp;&nbsp;&nbsp;&nbsp;硬盘，分区，键盘，鼠标，USB，tty等所有的设备文件都放在这个目录。
+
+**/etc**
+
+&nbsp;&nbsp;&nbsp;&nbsp;系统主要的设定档几乎都放置在这个目录内，例如人员的帐号密码档、 各种服务的启始档等等。一般来说，这个目录下的各档案属性是可以让一般使用者查阅的， 但是只有root有权力修改。
+
+- /etc/init.d/：所有服务的预设启动 script 都是放在这里的，例如要启动或者关闭 iptables 的话：‘ /etc/init.d/iptables start’、‘/etc/init.d/iptables stop’
+- /etc/xinetd.d/：这就是所谓的super daemon管理的各项服务的设定档目录。
+- /etc/X11/：与 X Window 有关的各种设定档都在这里，尤其是 xorg.conf 这个 X Server 的设定档。
+
+**/home**
+
+&nbsp;&nbsp;&nbsp;&nbsp;这是系统预设的使用者家目录(home directory)。在你新增一个一般使用者帐号时， 预设的使用者家目录都会规范到这里来。
+
+**/lib**
+
+&nbsp;&nbsp;&nbsp;&nbsp;系统的函式库非常的多，而/lib放置的则是在开机时会用到的函式库， 以及在/bin或/sbin底下的指令会呼叫的函式库而已。 什么是函式库呢？你可以将他想成是‘外挂’，某些指令必须要有这些‘外挂’才能够顺利完成程式的执行之意。 
+
+**/media**
+
+&nbsp;&nbsp;&nbsp;&nbsp;放置的就是可移除的装置啦！ 包括软碟、光碟、DVD等等装置都暂时挂载于此。常见的档名有：/media/floppy, /media/cdrom等等。
+
+**/mnt**
+
+&nbsp;&nbsp;&nbsp;&nbsp;移动设备文件系统的挂点。
+
+**/opt**
+
+&nbsp;&nbsp;&nbsp;&nbsp;这个是给第三方协力软体放置的目录。什么是第三方协力软体啊？ 举例来说，KDE这个桌面管理系统是一个独立的计划，不过他可以安装到Linux系统中，因此KDE的软体就建议放置到此目录下了。 另外，如果你想要自行安装额外的软体(非原本的distribution提供的)，那么也能够将你的软体安装到这里来。 不过，以前的Linux系统中，我们还是习惯放置在/usr/local目录下呢！
+
+**/root**
+
+&nbsp;&nbsp;&nbsp;&nbsp;系统管理员(root)的家目录。之所以放在这里，是因为如果进入单人维护模式而仅挂载根目录时， 该目录就能够拥有root的家目录，所以我们会希望root的家目录与根目录放置在同一个分割槽中。
+
+**/sbin**
+
+&nbsp;&nbsp;&nbsp;&nbsp;Linux有非常多指令是用来设定系统环境的，这些指令只有root才能够利用来‘设定’系统，其他使用者最多只能用来‘查询’而已。 放在/sbin底下的为开机过程中所需要的，里面包括了开机、修复、还原系统所需要的指令。 至于某些伺服器软体程式，一般则放置到/usr/sbin/当中。至于本机自行安装的软体所产生的系统执行档(system binary)， 则放置到/usr/local/sbin/当中了。常见的指令包括：fdisk, fsck, ifconfig, init, mkfs等等。
+
+**/tmp**
+
+&nbsp;&nbsp;&nbsp;&nbsp;这是让一般使用者或者是正在执行的程序暂时放置档案的地方。 这个目录是任何人都能够存取的，所以你需要定期的清理一下。当然，重要资料不可放置在此目录啊！ 因为FHS甚至建议在开机时，应该要将/tmp下的资料都删除。
+
+
+----
+
+&nbsp;&nbsp;&nbsp;&nbsp;事实上FHS针对根目录所定义的标准就仅有上面的咚咚，不过我们的Linux底下还有许多目录你也需要了解一下的。 底下是几个在Linux当中也是非常重要的目录喔：
+
+**/lost+found**
+
+&nbsp;&nbsp;&nbsp;&nbsp;这个目录是使用标准的ext2/ext3档案系统格式才会产生的一个目录，目的在于当档案系统发生错误时， 将一些遗失的片段放置到这个目录下。这个目录通常会在分割槽的最顶层存在， 例如你加装一颗硬碟于/disk中，那在这个系统下就会自动产生一个这样的目录‘/disk/lost+found’
+
+**/proc**
+
+&nbsp;&nbsp;&nbsp;&nbsp;这个目录本身是一个‘虚拟档案系统(virtual filesystem)’喔！他放置的资料都是在记忆体当中， 例如系统核心、行程资讯(process)、周边装置的状态及网路状态等等。因为这个目录下的资料都是在记忆体当中， 所以本身不占任何硬碟空间啊！比较重要的档案例如：/proc/cpuinfo, /proc/dma, /proc/interrupts, /proc/ioports, /proc/net/* 等等。
+
+**/sys**
+
+&nbsp;&nbsp;&nbsp;&nbsp;这个目录其实跟/proc非常类似，也是一个虚拟的档案系统，主要也是记录与核心相关的资讯。 包括目前已载入的核心模组与核心侦测到的硬体装置资讯等等。这个目录同样不占硬碟容量喔！
+
+**/usr**
+
+&nbsp;&nbsp;&nbsp;&nbsp;usr是Unix Software Resource的缩写， 也就是‘Unix作业系统软体资源’所放置的目录，而不是使用者的资料啦！这点要注意。 FHS建议所有软体开发者，应该将他们的资料合理的分别放置到这个目录下的次目录，而不要自行建立该软体自己独立的目录。
+
+- /usr/bin/:
+
+    绝大部分的使用者可使用指令都放在这里！请注意到他与/bin的不同之处。(是否与开机过程有关)
+    
+- /usr/include/:
+
+    c/c++等程式语言的档头(header)与包含档(include)放置处，当我们以tarball方式 (*.tar.gz 的方式安装软体)安装某些资料时，会使用到里头的许多包含档喔！
+
+- /usr/lib/:
+
+    包含各应用软体的函式库、目标档案(object file)，以及不被一般使用者惯用的执行档或脚本(script)。 某些软体会提供一些特殊的指令来进行伺服器的设定，这些指令也不会经常被系统管理员操作， 那就会被摆放到这个目录下啦。要注意的是，如果你使用的是X86_64的Linux系统， 那可能会有/usr/lib64/目录产生喔！
+
+- /usr/local/:
+
+     系统管理员在本机自行安装自己下载的软体(非distribution预设提供者)，建议安装到此目录， 这样会比较便于管理。举例来说，你的distribution提供的软体较旧，你想安装较新的软体但又不想移除旧版， 此时你可以将新版软体安装于/usr/local/目录下，可与原先的旧版软体有分别啦！ 你可以自行到/usr/local去看看，该目录下也是具有bin, etc, include, lib...的次目录喔！
+
+- /usr/sbin/:
+
+    非系统正常运作所需要的系统指令。最常见的就是某些网路伺服器软体的服务指令(daemon)啰！
+
+- /usr/share/:
+
+    放置共享文件的地方，在这个目录下放置的资料几乎是不分硬体架构均可读取的资料， 因为几乎都是文字档案嘛！
+
+- /usr/src/:
+
+    一般原始码建议放置到这里，src有source的意思。至于核心原始码则建议放置到/usr/src/linux/目录下。
+
+**/var**
+
+&nbsp;&nbsp;&nbsp;&nbsp;如果/usr是安装时会占用较大硬碟容量的目录，那么/var就是在系统运作后才会渐渐占用硬碟容量的目录。 因为/var目录主要针对常态性变动的档案，包括快取(cache)、登录档(log file)以及某些软体运作所产生的档案， 包括程序档案(lock file, run file)，或者例如MySQL资料库的档案等等。常见的次目录有：
+
+- /var/cache/:
+
+    应用程式本身运作过程中会产生的一些暂存档；
+
+- /var/lib/:
+
+    程式本身执行的过程中，需要使用到的资料档案放置的目录。在此目录下各自的软体应该要有各自的目录。 举例来说，MySQL的资料库放置到/var/lib/mysql/而rpm的资料库则放到/var/lib/rpm去！
+
+- /var/lock/:
+
+    某些装置或者是档案资源一次只能被一个应用程式所使用，如果同时有两个程式使用该装置时， 就可能产生一些错误的状况，因此就得要将该装置上锁(lock)，以确保该装置只会给单一软体所使用。 
+
+- /var/log/:
+
+    该目录用于存放系统日志
+    
+- /var/run/:
+
+    某些程式或者是服务启动后，会将他们的PID放置在这个目录下喔！pid文件的内容：pid文件为文本文件，内容只有一行, 记录了该进程的ID。
+
+
+----
+
+参考
+
+鸟哥的Linux私房菜
+
+<http://blog.chinaunix.net/uid-21736802-id-1817727.html>
+
+<http://www.cnblogs.com/shishm/archive/2011/11/03/2234954.html>
+
+
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="linux">Linux目录介绍</h2>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Linux和UNIX的文件系统是一个以“/ “为根的阶层式的树状文件结构，/ 因此被称为根目录。所有的文件和目录都置于根目录/ 之下。根目录/下面有/bin，/home，/usr等子目录。在早期的UNIX系统中，各个厂家各自定义了自己的UNIX系统的文件系统构成，比较混乱。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;为了避免在Linux也产生同样的问题，在Linux面世不久，就开始了对Linux文件系统进行标准化的活动，于1994年推出了名为 FSSTND(Filesystem Standard)的Linux文件系统层次结构标准。之后，FSSTND标准吸引了UNIX社团的开发人员，他们把FSSTND扩大到UNIX系 统，FSSTND就变为FHS (Filesystem Hierarchy Standard)。2001年3月，FHS 2.2版本发布，2004年1月29日发行了最新版本2.3。</p>
+
+<hr>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;FHS定义出根目录(/)底下应该要有底下这些次目录的存在</p>
+
+<p><strong>/bin</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;一般用户使用的命令,主要有：cat, chmod, chown, date, mv, mkdir, cp, bash等等常用的指令。</p>
+
+<p><strong>/boot</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;放置内核及LILO、GRUB等导引程序(bootloader)的文件，用于启动。</p>
+
+<p><strong>/dev</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;硬盘，分区，键盘，鼠标，USB，tty等所有的设备文件都放在这个目录。</p>
+
+<p><strong>/etc</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;系统主要的设定档几乎都放置在这个目录内，例如人员的帐号密码档、 各种服务的启始档等等。一般来说，这个目录下的各档案属性是可以让一般使用者查阅的， 但是只有root有权力修改。</p>
+
+<ul>
+<li>/etc/init.d/：所有服务的预设启动 script 都是放在这里的，例如要启动或者关闭 iptables 的话：‘ /etc/init.d/iptables start’、‘/etc/init.d/iptables stop’</li>
+<li>/etc/xinetd.d/：这就是所谓的super daemon管理的各项服务的设定档目录。</li>
+<li>/etc/X11/：与 X Window 有关的各种设定档都在这里，尤其是 xorg.conf 这个 X Server 的设定档。</li>
+</ul>
+
+<p><strong>/home</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;这是系统预设的使用者家目录(home directory)。在你新增一个一般使用者帐号时， 预设的使用者家目录都会规范到这里来。</p>
+
+<p><strong>/lib</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;系统的函式库非常的多，而/lib放置的则是在开机时会用到的函式库， 以及在/bin或/sbin底下的指令会呼叫的函式库而已。 什么是函式库呢？你可以将他想成是‘外挂’，某些指令必须要有这些‘外挂’才能够顺利完成程式的执行之意。 </p>
+
+<p><strong>/media</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;放置的就是可移除的装置啦！ 包括软碟、光碟、DVD等等装置都暂时挂载于此。常见的档名有：/media/floppy, /media/cdrom等等。</p>
+
+<p><strong>/mnt</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;移动设备文件系统的挂点。</p>
+
+<p><strong>/opt</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;这个是给第三方协力软体放置的目录。什么是第三方协力软体啊？ 举例来说，KDE这个桌面管理系统是一个独立的计划，不过他可以安装到Linux系统中，因此KDE的软体就建议放置到此目录下了。 另外，如果你想要自行安装额外的软体(非原本的distribution提供的)，那么也能够将你的软体安装到这里来。 不过，以前的Linux系统中，我们还是习惯放置在/usr/local目录下呢！</p>
+
+<p><strong>/root</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;系统管理员(root)的家目录。之所以放在这里，是因为如果进入单人维护模式而仅挂载根目录时， 该目录就能够拥有root的家目录，所以我们会希望root的家目录与根目录放置在同一个分割槽中。</p>
+
+<p><strong>/sbin</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Linux有非常多指令是用来设定系统环境的，这些指令只有root才能够利用来‘设定’系统，其他使用者最多只能用来‘查询’而已。 放在/sbin底下的为开机过程中所需要的，里面包括了开机、修复、还原系统所需要的指令。 至于某些伺服器软体程式，一般则放置到/usr/sbin/当中。至于本机自行安装的软体所产生的系统执行档(system binary)， 则放置到/usr/local/sbin/当中了。常见的指令包括：fdisk, fsck, ifconfig, init, mkfs等等。</p>
+
+<p><strong>/tmp</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;这是让一般使用者或者是正在执行的程序暂时放置档案的地方。 这个目录是任何人都能够存取的，所以你需要定期的清理一下。当然，重要资料不可放置在此目录啊！ 因为FHS甚至建议在开机时，应该要将/tmp下的资料都删除。</p>
+
+<hr>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;事实上FHS针对根目录所定义的标准就仅有上面的咚咚，不过我们的Linux底下还有许多目录你也需要了解一下的。 底下是几个在Linux当中也是非常重要的目录喔：</p>
+
+<p><strong>/lost+found</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;这个目录是使用标准的ext2/ext3档案系统格式才会产生的一个目录，目的在于当档案系统发生错误时， 将一些遗失的片段放置到这个目录下。这个目录通常会在分割槽的最顶层存在， 例如你加装一颗硬碟于/disk中，那在这个系统下就会自动产生一个这样的目录‘/disk/lost+found’</p>
+
+<p><strong>/proc</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;这个目录本身是一个‘虚拟档案系统(virtual filesystem)’喔！他放置的资料都是在记忆体当中， 例如系统核心、行程资讯(process)、周边装置的状态及网路状态等等。因为这个目录下的资料都是在记忆体当中， 所以本身不占任何硬碟空间啊！比较重要的档案例如：/proc/cpuinfo, /proc/dma, /proc/interrupts, /proc/ioports, /proc/net/* 等等。</p>
+
+<p><strong>/sys</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;这个目录其实跟/proc非常类似，也是一个虚拟的档案系统，主要也是记录与核心相关的资讯。 包括目前已载入的核心模组与核心侦测到的硬体装置资讯等等。这个目录同样不占硬碟容量喔！</p>
+
+<p><strong>/usr</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;usr是Unix Software Resource的缩写， 也就是‘Unix作业系统软体资源’所放置的目录，而不是使用者的资料啦！这点要注意。 FHS建议所有软体开发者，应该将他们的资料合理的分别放置到这个目录下的次目录，而不要自行建立该软体自己独立的目录。</p>
+
+<ul>
+<li><p>/usr/bin/:</p>
+
+<p>绝大部分的使用者可使用指令都放在这里！请注意到他与/bin的不同之处。(是否与开机过程有关)</p></li>
+<li><p>/usr/include/:</p>
+
+<p>c/c++等程式语言的档头(header)与包含档(include)放置处，当我们以tarball方式 (*.tar.gz 的方式安装软体)安装某些资料时，会使用到里头的许多包含档喔！</p></li>
+<li><p>/usr/lib/:</p>
+
+<p>包含各应用软体的函式库、目标档案(object file)，以及不被一般使用者惯用的执行档或脚本(script)。 某些软体会提供一些特殊的指令来进行伺服器的设定，这些指令也不会经常被系统管理员操作， 那就会被摆放到这个目录下啦。要注意的是，如果你使用的是X86_64的Linux系统， 那可能会有/usr/lib64/目录产生喔！</p></li>
+<li><p>/usr/local/:</p>
+
+<p>系统管理员在本机自行安装自己下载的软体(非distribution预设提供者)，建议安装到此目录， 这样会比较便于管理。举例来说，你的distribution提供的软体较旧，你想安装较新的软体但又不想移除旧版， 此时你可以将新版软体安装于/usr/local/目录下，可与原先的旧版软体有分别啦！ 你可以自行到/usr/local去看看，该目录下也是具有bin, etc, include, lib...的次目录喔！</p></li>
+<li><p>/usr/sbin/:</p>
+
+<p>非系统正常运作所需要的系统指令。最常见的就是某些网路伺服器软体的服务指令(daemon)啰！</p></li>
+<li><p>/usr/share/:</p>
+
+<p>放置共享文件的地方，在这个目录下放置的资料几乎是不分硬体架构均可读取的资料， 因为几乎都是文字档案嘛！</p></li>
+<li><p>/usr/src/:</p>
+
+<p>一般原始码建议放置到这里，src有source的意思。至于核心原始码则建议放置到/usr/src/linux/目录下。</p></li>
+</ul>
+
+<p><strong>/var</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;如果/usr是安装时会占用较大硬碟容量的目录，那么/var就是在系统运作后才会渐渐占用硬碟容量的目录。 因为/var目录主要针对常态性变动的档案，包括快取(cache)、登录档(log file)以及某些软体运作所产生的档案， 包括程序档案(lock file, run file)，或者例如MySQL资料库的档案等等。常见的次目录有：</p>
+
+<ul>
+<li><p>/var/cache/:</p>
+
+<p>应用程式本身运作过程中会产生的一些暂存档；</p></li>
+<li><p>/var/lib/:</p>
+
+<p>程式本身执行的过程中，需要使用到的资料档案放置的目录。在此目录下各自的软体应该要有各自的目录。 举例来说，MySQL的资料库放置到/var/lib/mysql/而rpm的资料库则放到/var/lib/rpm去！</p></li>
+<li><p>/var/lock/:</p>
+
+<p>某些装置或者是档案资源一次只能被一个应用程式所使用，如果同时有两个程式使用该装置时， 就可能产生一些错误的状况，因此就得要将该装置上锁(lock)，以确保该装置只会给单一软体所使用。 </p></li>
+<li><p>/var/log/:</p>
+
+<p>该目录用于存放系统日志</p></li>
+<li><p>/var/run/:</p>
+
+<p>某些程式或者是服务启动后，会将他们的PID放置在这个目录下喔！pid文件的内容：pid文件为文本文件，内容只有一行, 记录了该进程的ID。</p></li>
+</ul>
+
+<hr>
+
+<p>参考</p>
+
+<p>鸟哥的Linux私房菜</p>
+
+<p><a href="http://blog.chinaunix.net/uid-21736802-id-1817727.html">http://blog.chinaunix.net/uid-21736802-id-1817727.html</a></p>
+
+<p><a href="http://www.cnblogs.com/shishm/archive/2011/11/03/2234954.html">http://www.cnblogs.com/shishm/archive/2011/11/03/2234954.html</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "Linux目录介绍.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

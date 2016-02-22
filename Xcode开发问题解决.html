@@ -144,6 +144,19 @@ Missing iOS Distribution signing identity for XXXXXX
 
 [参考]<http://blog.csdn.net/ioshot/article/details/50669791>
 
+----
+
+####pch文件不见了
+
+Xcode 6以上版本创建的项目默认是不带pch文件的，当然了旧版本的项目是会保留的。那么如何添加pch文件？  Command + N 然后在Other里面选择"PCH File "， 在Build Settings里面找到"Prefix Header"
+
+![framework](http://scottmaxiao.github.io/img/xcode/xcode06.jpg)
+
+
+注意: 添加pch文件，规则是: 项目名/xxxxx.pch
+
+[参考]<http://bawn.github.io/ios/2014/09/20/iOS8.html>
+
 <!-- markdown end -->
 </div>
 <div class="entry" id="main">
@@ -262,6 +275,18 @@ Missing iOS Distribution signing identity for XXXXXX
 </ul>
 
 <p>[参考]<a href="http://blog.csdn.net/ioshot/article/details/50669791">http://blog.csdn.net/ioshot/article/details/50669791</a></p>
+
+<hr>
+
+<h4 id="pch">pch文件不见了</h4>
+
+<p>Xcode 6以上版本创建的项目默认是不带pch文件的，当然了旧版本的项目是会保留的。那么如何添加pch文件？  Command + N 然后在Other里面选择"PCH File "， 在Build Settings里面找到"Prefix Header"</p>
+
+<p><img src="http://scottmaxiao.github.io/img/xcode/xcode06.jpg" alt="framework" title=""></p>
+
+<p>注意: 添加pch文件，规则是: 项目名/xxxxx.pch</p>
+
+<p>[参考]<a href="http://bawn.github.io/ios/2014/09/20/iOS8.html">http://bawn.github.io/ios/2014/09/20/iOS8.html</a></p>
 <!-- content end -->
 </div>
 <br>

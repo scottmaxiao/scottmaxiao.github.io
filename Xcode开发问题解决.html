@@ -80,6 +80,70 @@ Xcode为当前工程提供了诸多配置选项，其中的Build Settings提供�
 
 ![framework](http://scottmaxiao.github.io/img/xcode/xcode03.png)
 
+[参考]<http://blog.csdn.net/jiajiayouba/article/details/41678101>
+
+
+----
+
+
+####Xcode升级后插件不能使用的解决方案
+
+**手动解决**
+<pre><code>
+1.打开xcode插件所在的目录：
+~/{当前用户名}/library/Application Support/Developer/Shared/Xcode/Plug-ins
+2.选择已经安装的插件例如VVDocument，右键点击show package contents，
+3.找到info.plist 文件，找到DVTPlugInCompatibilityUUIDs的项目，
+4.添加C4A681B0-4A26-480E-93EC-1218098B9AA0（当前xcode的一个号码），这个号码怎么得到？
+ 在终端执行 defaults read /Applications/Xcode.app/Contents/Info DVTPlugInCompatibilityUUID 即可
+5.再右键“打开报内容”双击contents\MacOS目录下的一个黑色图标，会打开终端窗口，最后打印“进程已完成”之类，
+6重启xcode
+</code></pre>
+
+**命令行解决**
+
+<pre><code>
+find ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-ins -name Info.plist -maxdepth 3 | xargs -I{} defaults write {} DVTPlugInCompatibilityUUIDs -array-add `defaults read /Applications/Xcode.app/Contents/Info.plist DVTPlugInCompatibilityUUID`
+</code></pre>
+
+[参考]<http://joeshang.github.io/2015/04/10/fix-xcode-upgrade-plugin-invalid/>
+
+----
+
+####Missing iOS Distribution signing identity for XXXXXX
+
+&nbsp;&nbsp;&nbsp;&nbsp;在XCode中，选择"Product"->"Archiv"执行APP程序打包时，报错信息如下:
+
+<pre><code>
+Missing iOS Distribution signing identity for XXXXXX
+</code></pre>
+![framework](http://scottmaxiao.github.io/img/xcode/xcode04.png)
+
+查看证书后发现，Develop证书和Distribution证书都提示“此证书的签发者无效”。
+
+![framework](http://scottmaxiao.github.io/img/xcode/xcode05.png)
+
+**问题原因**
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;问题产生的原因就是AppleWWDRCA (Apple Worldwide Developer Relations Certification Authority) 证书过期了。 
+
+    
+&nbsp;&nbsp;&nbsp;&nbsp;AppleWWDRCA证书实际上就是对iOS证书（即Develop证书和Distribution证书）的授权认证，其公钥用于解密认证证书的可靠性。
+    
+&nbsp;&nbsp;&nbsp;&nbsp;iOS以及Mac OS X系统（在安装Xcode时）将自动安装AppleWWDRCA.cer(Apple Worldwide Developer Relations Certification Authority)这个中间证书（Intermediate Certificates）。
+
+**问题解决**
+
+- 1.https://developer.apple.com/certificationauthority/AppleWWDRCA.cer下载最新AppleWWDRCA证书，双击安装。
+- 2.打开钥匙串，选择登录，然后选择下面的证书。
+- 3.选择桌面左上角的显示→显示已过期的证书。
+- 4.这时候你会发现一个过期的“WWDR Certificate”（Apple Worldwide Developer Relations Certification Authority），删除它。
+   特别注意：有的在系统那一栏也有这个过期的“WWDR Certificate”，也一并删除它，没有就不作处理。
+- 5.再回头点击Develop证书和Distribution证书，不出意外他们都变成“此证书有效”了。
+
+[参考]<http://blog.csdn.net/ioshot/article/details/50669791>
+
 <!-- markdown end -->
 </div>
 <div class="entry" id="main">
@@ -134,6 +198,70 @@ Xcode为当前工程提供了诸多配置选项，其中的Build Settings提供�
 <p>&nbsp;&nbsp;&nbsp;&nbsp;解决方案：在Storyboard中，选择一个view conroller作为story board的第一启动界面</p>
 
 <p><img src="http://scottmaxiao.github.io/img/xcode/xcode03.png" alt="framework" title=""></p>
+
+<p>[参考]<a href="http://blog.csdn.net/jiajiayouba/article/details/41678101">http://blog.csdn.net/jiajiayouba/article/details/41678101</a></p>
+
+<hr>
+
+<h4 id="xcode">Xcode升级后插件不能使用的解决方案</h4>
+
+<p><strong>手动解决</strong></p>
+
+<pre><code>
+1.打开xcode插件所在的目录：
+~/{当前用户名}/library/Application Support/Developer/Shared/Xcode/Plug-ins
+2.选择已经安装的插件例如VVDocument，右键点击show package contents，
+3.找到info.plist 文件，找到DVTPlugInCompatibilityUUIDs的项目，
+4.添加C4A681B0-4A26-480E-93EC-1218098B9AA0（当前xcode的一个号码），这个号码怎么得到？
+ 在终端执行 defaults read /Applications/Xcode.app/Contents/Info DVTPlugInCompatibilityUUID 即可
+5.再右键“打开报内容”双击contents\MacOS目录下的一个黑色图标，会打开终端窗口，最后打印“进程已完成”之类，
+6重启xcode
+</code></pre>
+
+<p><strong>命令行解决</strong></p>
+
+<pre><code>
+find ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-ins -name Info.plist -maxdepth 3 | xargs -I{} defaults write {} DVTPlugInCompatibilityUUIDs -array-add `defaults read /Applications/Xcode.app/Contents/Info.plist DVTPlugInCompatibilityUUID`
+</code></pre>
+
+<p>[参考]<a href="http://joeshang.github.io/2015/04/10/fix-xcode-upgrade-plugin-invalid/">http://joeshang.github.io/2015/04/10/fix-xcode-upgrade-plugin-invalid/</a></p>
+
+<hr>
+
+<h4 id="missingiosdistributionsigningidentityforxxxxxx">Missing iOS Distribution signing identity for XXXXXX</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在XCode中，选择"Product"-&gt;"Archiv"执行APP程序打包时，报错信息如下:</p>
+
+<pre><code>
+Missing iOS Distribution signing identity for XXXXXX
+</code></pre>
+
+<p><img src="http://scottmaxiao.github.io/img/xcode/xcode04.png" alt="framework" title=""></p>
+
+<p>查看证书后发现，Develop证书和Distribution证书都提示“此证书的签发者无效”。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/xcode/xcode05.png" alt="framework" title=""></p>
+
+<p><strong>问题原因</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;问题产生的原因就是AppleWWDRCA (Apple Worldwide Developer Relations Certification Authority) 证书过期了。 </p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;AppleWWDRCA证书实际上就是对iOS证书（即Develop证书和Distribution证书）的授权认证，其公钥用于解密认证证书的可靠性。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;iOS以及Mac OS X系统（在安装Xcode时）将自动安装AppleWWDRCA.cer(Apple Worldwide Developer Relations Certification Authority)这个中间证书（Intermediate Certificates）。</p>
+
+<p><strong>问题解决</strong></p>
+
+<ul>
+<li>1.https://developer.apple.com/certificationauthority/AppleWWDRCA.cer下载最新AppleWWDRCA证书，双击安装。</li>
+<li>2.打开钥匙串，选择登录，然后选择下面的证书。</li>
+<li>3.选择桌面左上角的显示→显示已过期的证书。</li>
+<li>4.这时候你会发现一个过期的“WWDR Certificate”（Apple Worldwide Developer Relations Certification Authority），删除它。
+特别注意：有的在系统那一栏也有这个过期的“WWDR Certificate”，也一并删除它，没有就不作处理。</li>
+<li>5.再回头点击Develop证书和Distribution证书，不出意外他们都变成“此证书有效”了。</li>
+</ul>
+
+<p>[参考]<a href="http://blog.csdn.net/ioshot/article/details/50669791">http://blog.csdn.net/ioshot/article/details/50669791</a></p>
 <!-- content end -->
 </div>
 <br>

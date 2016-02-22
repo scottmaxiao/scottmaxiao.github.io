@@ -55,6 +55,8 @@ self.navController = [[UINavigationController alloc] init];
 //返回某个上级试图
 [self.navigationController popToViewController:viewController animated:YES]
 
+[self.navigationController popToViewController:[self.navigationController.viewControllers objectAtIndex:1]  animated:YES];
+
 //返回最顶层试图
 [self.navigationController popToRootViewControllerAnimated:YES];
 
@@ -166,6 +168,8 @@ self.navController = [[UINavigationController alloc] init];
 
 //返回某个上级试图
 [self.navigationController popToViewController:viewController animated:YES]
+
+[self.navigationController popToViewController:[self.navigationController.viewControllers objectAtIndex:1]  animated:YES];
 
 //返回最顶层试图
 [self.navigationController popToRootViewControllerAnimated:YES];

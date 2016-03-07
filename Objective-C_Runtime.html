@@ -282,6 +282,49 @@ id objc_getAssociatedObject ( id object, const void *key );
 void objc_removeAssociatedObjects ( id object );
 </code></pre>
 
+样例代码如下：
+<pre><code>
+
+@interface Lender : NSObject
+
+@property (nonatomic, strong) NSString * objectTag;
+
+@end
+
+=======================================================
+
+static char const * const ObjectTagKey;
+
+@implementation Lender
+
+@dynamic objectTag;
+
+- (id)objectTag {
+	return objc_getAssociatedObject(self, ObjectTagKey);
+}
+
+- (void)setObjectTag:(NSString*)newObjectTag {
+	objc_setAssociatedObject(self, ObjectTagKey, newObjectTag, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+@end
+
+=======================================================
+
+Lender *lender=[Lender new];
+	
+lender.objectTag=@"maxiao";
+	
+NSLog(@"object.property=%@",lender.objectTag);
+
+</code></pre>
+
+@dynamic关键字
+
+Objective-C2.0 提供了@dynamic关键字。这个关键字有两个作用：
+
+①告诉编译器不要创建实现属性所用的实例变量；
+
+②告诉编译器不要创建该属性的get和setter方法。
 
 
 ###runtime system消息转发机制
@@ -709,6 +752,51 @@ id objc_getAssociatedObject ( id object, const void *key );
 
 void objc_removeAssociatedObjects ( id object );
 </code></pre>
+
+<p>样例代码如下：</p>
+
+<pre><code>
+
+@interface Lender : NSObject
+
+@property (nonatomic, strong) NSString * objectTag;
+
+@end
+
+=======================================================
+
+static char const * const ObjectTagKey;
+
+@implementation Lender
+
+@dynamic objectTag;
+
+- (id)objectTag {
+    return objc_getAssociatedObject(self, ObjectTagKey);
+}
+
+- (void)setObjectTag:(NSString*)newObjectTag {
+    objc_setAssociatedObject(self, ObjectTagKey, newObjectTag, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+@end
+
+=======================================================
+
+Lender *lender=[Lender new];
+
+lender.objectTag=@"maxiao";
+
+NSLog(@"object.property=%@",lender.objectTag);
+
+</code></pre>
+
+<p>@dynamic关键字</p>
+
+<p>Objective-C2.0 提供了@dynamic关键字。这个关键字有两个作用：</p>
+
+<p>①告诉编译器不要创建实现属性所用的实例变量；</p>
+
+<p>②告诉编译器不要创建该属性的get和setter方法。</p>
 
 <h3 id="runtimesystem">runtime system消息转发机制</h3>
 

@@ -52,7 +52,7 @@ objc_msgSend(array, @selector(insertObject:atIndex:), foo, 5);
 typedef struct objc_selector *SEL;
 </code></pre>
 
-&nbsp;&nbsp;&nbsp;&nbsp;其实它就是映射到方法的C字符串，你可以通过Objc编译器命令@selector()或者Runtime系统的sel_registerName函数来获取一个SEL类型的方法选择器。
+&nbsp;&nbsp;&nbsp;&nbsp;其实它就是映射到方法的C字符串，你可以通过Objc编译器命令@selector()或者Runtime系统的sel\_registerName函数来获取一个SEL类型的方法选择器。
 
 &nbsp;&nbsp;&nbsp;&nbsp;如果你知道selector对应的方法名是什么，可以通过NSString* NSStringFromSelector(SEL aSelector)方法将SEL转化为字符串，再用NSLog打印。
 
@@ -70,7 +70,7 @@ struct objc_object {
 typedef struct objc_object *id;
 </code></pre>
 
-&nbsp;&nbsp;&nbsp;&nbsp;id其实就是一个指向objc_object结构体指针，它包含一个Class isa成员，根据isa指针就可以顺藤摸瓜找到对象所属的类。
+&nbsp;&nbsp;&nbsp;&nbsp;id其实就是一个指向objc\_object结构体指针，它包含一个Class isa成员，根据isa指针就可以顺藤摸瓜找到对象所属的类。
 
 &nbsp;&nbsp;&nbsp;&nbsp;注意：根据Apple的官方文档[Key-Value Observing Implementation Details](https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/KeyValueObserving/Articles/KVOImplementation.html)提及，key-value observing是使用isa-swizzling的技术实现的，isa指针在运行时被修改，指向一个中间类而不是真正的类。所以，你不应该使用isa指针来确定类的关系，而是使用class方法来确定实例对象的类。
 
@@ -83,7 +83,7 @@ typedef struct objc_object *id;
 typedef struct objc_class *Class;
 </code></pre>
 
-&nbsp;&nbsp;&nbsp;&nbsp;可以查看到Class其实就是一个objc_class结构体指针，但这个头文件找不到它的定义，需要在runtime.h才能找到objc_class结构体的定义。
+&nbsp;&nbsp;&nbsp;&nbsp;可以查看到Class其实就是一个objc\_class结构体指针，但这个头文件找不到它的定义，需要在runtime.h才能找到objc_class结构体的定义。
 <pre><code>
 struct objc_class {
 Class isa  OBJC_ISA_AVAILABILITY;
@@ -185,19 +185,19 @@ PS:这里说的分发表其实就是Class中的方法列表，它将方法选择
 
 ![framework](http://scottmaxiao.github.io/img/Runtime/Runtime02.gif)
 
-&nbsp;&nbsp;&nbsp;&nbsp;其实编译器会根据情况在objc_msgSend, objc_msgSend_stret, objc_msgSendSuper, 或 objc_msgSendSuper_stret四个方法中选择一个来调用。如果消息是传递给超类，那么会调用名字带有”Super”的函数；如果消息返回值是数据结构而不是简单值时，那么会调用名字带有”stret”的函数。排列组合正好四个方法。
+&nbsp;&nbsp;&nbsp;&nbsp;其实编译器会根据情况在objc\_msgSend, objc\_msgSend\_stret, objc\_msgSendSuper, 或 objc\_msgSendSuper\_stret四个方法中选择一个来调用。如果消息是传递给超类，那么会调用名字带有”Super”的函数；如果消息返回值是数据结构而不是简单值时，那么会调用名字带有”stret”的函数。排列组合正好四个方法。
 
 &nbsp;&nbsp;&nbsp;&nbsp;PS：有木有发现这些函数的命名规律哦？带“Super”的是消息传递给超类；“stret”可分为“st”+“ret”两部分，分别代表“struct”和“return”；“fpret”就是“fp”+“ret”，分别代表“floating-point”和“return”。
 
 
 **super关键字**
 
-&nbsp;&nbsp;&nbsp;&nbsp;当方法中的super关键字接收到消息时，编译器会创建一个objc_super结构体：
+&nbsp;&nbsp;&nbsp;&nbsp;当方法中的super关键字接收到消息时，编译器会创建一个objc\_super结构体：
 <pre><code>
 struct objc_super { id receiver; Class class; };
 </code></pre>
 
-&nbsp;&nbsp;&nbsp;&nbsp;这个结构体指明了消息应该被传递给特定超类的定义。但receiver仍然是self本身，这点需要注意，因为当我们想通过[super class]获取超类时，编译器只是将指向self的id指针和class的SEL传递给了objc_msgSendSuper函数，因为只有在NSObject类才能找到class方法，然后class方法调用object_getClass()，接着调用objc_msgSend(objc_super->receiver, @selector(class))，传入的第一个参数是指向self的id指针，与调用[self class]相同，所以我们得到的永远都是self的类型。
+&nbsp;&nbsp;&nbsp;&nbsp;这个结构体指明了消息应该被传递给特定超类的定义。但receiver仍然是self本身，这点需要注意，因为当我们想通过[super class]获取超类时，编译器只是将指向self的id指针和class的SEL传递给了objc\_msgSendSuper函数，因为只有在NSObject类才能找到class方法，然后class方法调用object\_getClass()，接着调用objc_msgSend(objc_super->receiver, @selector(class))，传入的第一个参数是指向self的id指针，与调用[self class]相同，所以我们得到的永远都是self的类型。
 
 还可以参考-[刨根问底Objective－C Runtime（1）－ Self & Super](http://chun.tips/blog/2014/11/05/bao-gen-wen-di-objective%5Bnil%5Dc-runtime\(1\)%5Bnil%5D-self-and-super/)
 
@@ -549,7 +549,7 @@ typedef struct objc_object *id;
 typedef struct objc_class *Class;
 </code></pre>
 
-<p>&nbsp;&nbsp;&nbsp;&nbsp;可以查看到Class其实就是一个objc<em>class结构体指针，但这个头文件找不到它的定义，需要在runtime.h才能找到objc</em>class结构体的定义。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;可以查看到Class其实就是一个objc_class结构体指针，但这个头文件找不到它的定义，需要在runtime.h才能找到objc_class结构体的定义。</p>
 
 <pre><code>
 struct objc_class {
@@ -655,7 +655,7 @@ struct objc_cache {
 
 <p><img src="http://scottmaxiao.github.io/img/Runtime/Runtime02.gif" alt="framework" title=""></p>
 
-<p>&nbsp;&nbsp;&nbsp;&nbsp;其实编译器会根据情况在objc<em>msgSend, objc</em>msgSend<em>stret, objc</em>msgSendSuper, 或 objc<em>msgSendSuper</em>stret四个方法中选择一个来调用。如果消息是传递给超类，那么会调用名字带有”Super”的函数；如果消息返回值是数据结构而不是简单值时，那么会调用名字带有”stret”的函数。排列组合正好四个方法。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;其实编译器会根据情况在objc_msgSend, objc_msgSend_stret, objc_msgSendSuper, 或 objc_msgSendSuper_stret四个方法中选择一个来调用。如果消息是传递给超类，那么会调用名字带有”Super”的函数；如果消息返回值是数据结构而不是简单值时，那么会调用名字带有”stret”的函数。排列组合正好四个方法。</p>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;PS：有木有发现这些函数的命名规律哦？带“Super”的是消息传递给超类；“stret”可分为“st”+“ret”两部分，分别代表“struct”和“return”；“fpret”就是“fp”+“ret”，分别代表“floating-point”和“return”。</p>
 
@@ -667,7 +667,7 @@ struct objc_cache {
 struct objc_super { id receiver; Class class; };
 </code></pre>
 
-<p>&nbsp;&nbsp;&nbsp;&nbsp;这个结构体指明了消息应该被传递给特定超类的定义。但receiver仍然是self本身，这点需要注意，因为当我们想通过[super class]获取超类时，编译器只是将指向self的id指针和class的SEL传递给了objc<em>msgSendSuper函数，因为只有在NSObject类才能找到class方法，然后class方法调用object</em>getClass()，接着调用objc<em>msgSend(objc</em>super-&gt;receiver, @selector(class))，传入的第一个参数是指向self的id指针，与调用[self class]相同，所以我们得到的永远都是self的类型。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;这个结构体指明了消息应该被传递给特定超类的定义。但receiver仍然是self本身，这点需要注意，因为当我们想通过[super class]获取超类时，编译器只是将指向self的id指针和class的SEL传递给了objc_msgSendSuper函数，因为只有在NSObject类才能找到class方法，然后class方法调用object_getClass()，接着调用objc<em>msgSend(objc</em>super-&gt;receiver, @selector(class))，传入的第一个参数是指向self的id指针，与调用[self class]相同，所以我们得到的永远都是self的类型。</p>
 
 <p>还可以参考-<a href="http://chun.tips/blog/2014/11/05/bao-gen-wen-di-objective%5Bnil%5Dc-runtime(1)%5Bnil%5D-self-and-super/">刨根问底Objective－C Runtime（1）－ Self &amp; Super</a></p>
 

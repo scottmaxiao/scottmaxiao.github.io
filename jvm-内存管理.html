@@ -1,0 +1,570 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##jvm-内存管理
+
+本文章中涉及的jvm参数都是基于JDK1.6版本的虚拟机(Java HotSpot(TM) 64-Bit Server VM)。
+
+###基础概念
+
+**数据类型**
+
+&nbsp;&nbsp;&nbsp;&nbsp;Java虚拟机中，数据类型可以分为两类：基本类型和引用类型。基本类型的变量保存原始值，即：他代表的值就是数值本身；而引用类型的变量保存引用值。“引用值”代表了某个对象的引用，而不是对象本身，对象本身存放在这个引用值所表示的地址的位置。
+
+&nbsp;&nbsp;&nbsp;&nbsp;基本类型包括：byte、short、int、long、char、float、double、Boolean、returnAddress
+
+&nbsp;&nbsp;&nbsp;&nbsp;引用类型包括：类类型、接口类型、数组
+
+![framework](http://scottmaxiao.github.io/img/JVM/jvm02.png)
+
+###JVM内存的结构
+
+![framework](http://scottmaxiao.github.io/img/JVM/jvm03.png)
+
+**程序计数器（Program Counter Register）**
+
+&nbsp;&nbsp;&nbsp;&nbsp;这是一块比较小的内存，不在Ram上，而是直接划分在CPU上的，程序员无法直接操作它，它的作用是：JVM在解释字节码文件（.class）时，存储当前线程所执行的字节码的行号，只是一种概念模型，各种JVM所采用的方式不同，字节码解释器工作时，就是通过改变程序计数器的值来选取下一条要执行的指令，分支、循环、跳转、等基础功能都是依赖此技术区完成的。还有一种情况，就是我们常说的Java多线程方面的，多线程就是通过现程轮流切换而达到的，同一时刻，一个内核只能执行一个指令，所以，对于每一个程序来说，必须有一个计数器来记录程序的执行进度，这样，当现程恢复执行的时候，才能从正确的地方开始，所以，每个线程都必须有一个独立的程序计数器，这类计数器为线程私有的内存。如果一个线程正在执行一个Java方法，则计数器记录的是字节码的指令的地址，如果执行的一个Native方法，则计数器的记录为空，此内存区是唯一一个在Java规范中没有任何OutOfMemoryError情况的区域。
+
+**JVM虚拟机栈（JVM Stacks）**
+
+&nbsp;&nbsp;&nbsp;&nbsp;JVM虚拟机栈就是我们常说的堆栈的栈（我们常常把内存粗略分为堆和栈），和程序计数器一样，也是线程私有的，生命周期和线程一样，每个方法被执行的时候会产生一个栈帧，用于存储局部变量表、动态链接、操作数、方法出口等信息。方法的执行过程就是栈帧在JVM中出栈和入栈的过程。局部变量表中存放的是各种基本数据类型，如boolean、byte、char、等8种，及引用类型（存放的是指向各个对象的内存地址），因此，它有一个特点：内存空间可以在编译期间就确定，运行期不在改变。这个内存区域会有两种可能的Java异常：StackOverFlowError和OutOfMemoryError。
+
+**本地方法栈（Native Method Stacks）**
+
+&nbsp;&nbsp;&nbsp;&nbsp;从名字即可看出，本地方法栈就是用来处理Java中的本地方法的，Java类的祖先类Object中有众多Native方法，如hashCode()、wait()等，他们的执行很多时候是借助于操作系统，但是JVM需要对他们做一些规范，来处理他们的执行过程。此区域，可以有不同的实现方法，向我们常用的Sun的JVM就是本地方法栈和JVM虚拟机栈是同一个。
+
+**堆（Heap）**
+
+&nbsp;&nbsp;&nbsp;&nbsp;堆内存是内存中最重要的一块，也是最有必要进行深究的一部分。因为Java性能的优化，主要就是针对这部分内存的。所有的对象实例及数组都是在堆上面分配的（随着JIT技术的逐渐成熟，这句话视乎有些绝对，不过至少目前还基本是这样的），可通过-Xmx和-Xms来控制堆的大小。JIT技术的发展产生了新的技术，如栈上分配和标量替换，也许在不久的几年里，即时编译会诞生及成熟，那个时候，“所有的对象实例及数组都是在堆上面分配的”这句话就应该稍微改改了。堆内存是垃圾回收的主要区域，所以在下文垃圾回收板块会重点介绍，此处只做概念方面的解释。在32位系统上最大为2G，64位系统上无限制。可通过-Xms和-Xmx控制，-Xms为JVM启动时申请的最小Heap内存，-Xmx为JVM可申请的最大Heap内存。
+
+**方法区（Method Area）**
+
+&nbsp;&nbsp;&nbsp;&nbsp;方法区是所有线程共享的内存区域，用于存储已经被JVM加载的类信息、常量、静态变量等数据，一般来说，方法区属于持久代（关于持久代，会在GC部分详细介绍，除了持久代，还有新生代和旧生代），也难怪Java规范将方法区描述为堆的一个逻辑部分，但是它不是堆。方法区的垃圾回收比较棘手，就算是Sun的HotSpot VM在这方面也没有做得多么完美。此处引入方法区中一个重要的概念：运行时常量池。主要用于存放在编译过程中产生的字面量（字面量简单理解就是常量）和引用。一般情况，常量的内存分配在编译期间就能确定，但不一定全是，有一些可能就是运行时也可将常量放入常量池中，如String类中有个Native方法intern()<关于intern()的详细说明，请看另一篇文章：http://blog.csdn.net/zhangerqing/article/details/8093919>
+此处补充一个在JVM内存管理之外的一个内存区：直接内存。在JDK1.4中新加入类NIO类，引入了一种基于通道与缓冲区的I/O方式，它可以使用Native函数库直接分配堆外内存，即我们所说的直接内存，这样在某些场景中会提高程序的性能。
+
+**堆和栈**
+
+堆和栈是程序运行的关键，很有必要把他们的关系说清楚。
+
+- 栈是运行时的单位，而堆是存储的单位。
+- 栈解决程序的运行问题，即程序如何执行，或者说如何处理数据；堆解决的是数据存储的问题，即数据怎么放、放在哪儿。
+
+为什么要把堆和栈区分出来呢？栈中不是也可以存储数据吗？
+
+- 从软件设计的角度看，栈代表了处理逻辑，而堆代表了数据。这样分开，使得处理逻辑更为清晰。分而治之的思想。这种隔离、模块化的思想在软件设计的方方面面都有体现。
+
+- 堆与栈的分离，使得堆中的内容可以被多个栈共享（也可以理解为多个线程访问同一个对象）。这种共享的收益是很多的。一方面这种共享提供了一种有效的数据交互方式(如：共享内存)，另一方面，堆中的共享常量和缓存可以被所有栈访问，节省了空间。
+
+- 栈因为运行时的需要，比如保存系统运行的上下文，需要进行地址段的划分。由于栈只能向上增长，因此就会限制住栈存储内容的能力。而堆不同，堆中的对象是可以根据需要动态增长的，因此栈和堆的拆分，使得动态增长成为可能，相应栈中只需记录堆中的一个地址即可。
+
+- 面向对象就是堆和栈的完美结合。其实，面向对象方式的程序与以前结构化的程序在执行上没有任何区别。但是，面向对象的引入，使得对待问题的思考方式发生了改变，而更接近于自然方式的思考。当我们把对象拆开，你会发现，对象的属性其实就是数据，存放在堆中；而对象的行为（方法），就是运行逻辑，放在栈中。我们在编写对象的时候，其实即编写了数据结构，也编写的处理数据的逻辑。
+
+
+###内存管理
+
+&nbsp;&nbsp;&nbsp;&nbsp;jvm管理的内存大致包括三种不同类型的内存区域：方法区（Method Area）、Heap space(堆区域)、Java Stacks(Java栈）。
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;其中方法区(又叫永久代，Permanent Generation space)主要存放Class（类）和Meta的信息，Class第一次被Load的时候被放入PermGen space区域，Class需要存储的内容主要包括方法和静态属性。
+
+&nbsp;&nbsp;&nbsp;&nbsp;堆内存：用来存放由 new 创建的对象和数组，在堆中分配的内存，由 Java 虚拟机的自动垃圾回收器来管理。注意创建出来的对象只包含属于各自的成员变量，并不包括成员方法。因为同一个类的对象拥有各自的成员变量，存储在各自的堆中，但是他们共享该类的方法，并不是每创建一个对象就把成员方法复制一次。
+
+&nbsp;&nbsp;&nbsp;&nbsp;栈内存：保存局部变量的值包括：1.保存基本数据类型的值；2.保存引用变量，即堆区对象的引用(指针)。也可以用来保存加载方法时的帧。
+
+&nbsp;&nbsp;&nbsp;&nbsp;Java 中的堆是 JVM 所管理的最大的一块内存空间，主要用于存放各种类的实例对象。
+在 Java 中，堆被划分成两个不同的区域：新生代 ( Young )、老年代 ( Old )。新生代 ( Young ) 又被划分为三个区域：Eden、From Survivor、To Survivor。这样划分的目的是为了使 JVM 能够更好的管理堆内存中的对象，包括内存的分配以及回收。
+
+&nbsp;&nbsp;&nbsp;&nbsp;堆的内存模型大致为：
+
+![framework](http://scottmaxiao.github.io/img/JVM/jvm01.png)
+
+&nbsp;&nbsp;&nbsp;&nbsp;默认的，新生代 ( Young ) 与老年代 ( Old ) 的比例的值为 1:2 ，即：新生代 ( Young ) = 1/3 的堆空间大小。
+
+&nbsp;&nbsp;&nbsp;&nbsp;老年代 ( Old ) = 2/3 的堆空间大小。其中，新生代 ( Young ) 被细分为 Eden 和 两个 Survivor 区域，这两个 Survivor 区域分别被命名为 from 和 to，以示区分。
+
+&nbsp;&nbsp;&nbsp;&nbsp;默认的，Edem : from : to = 8 : 1 : 1 ，即： Eden = 8/10 的新生代空间大小，from = to = 1/10 的新生代空间大小。
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JVM 每次只会使用 Eden 和其中的一块 Survivor 区域来为对象服务，所以无论什么时候，总是有一块 Survivor 区域是空闲着的。
+
+因此，新生代实际可用的内存空间为 9/10 ( 即90% )的新生代空间。
+
+###内存参数
+
+**-Xms和-Xmx**
+
+-Xms:初始堆大小，默认为物理内存的1/64(<1GB)。
+
+-Xmx:最大堆大小，默认为物理内存的1/4(<1GB)。
+
+&nbsp;&nbsp;&nbsp;&nbsp;-Xms设置与-Xmx相同,避免每次垃圾回收完成后JVM重新分配内存。这两个参数的数值单位是Byte，但同时它们也支持使用速记符号，比如“k”或者“K”代表“kilo”，“m”或者“M”代表“mega”，“g”或者“G”代表“giga”。 -Xms和-Xmx实际上是-XX:InitialHeapSize和-XX:MaxHeapSize的缩写。我们也可以直接使用这两个参数，它们所起得效果是一样的。
+
+<pre><code>
+-Xmx128m -Xms256m
+</code></pre>
+
+
+**-XX:PermSize和-XX:MaxPermSize**
+
+-XX:PermSize:初始永久代大小,默认为物理内存的1/64。
+
+-XX:MaxPermSize:最大永久代大小，默认为物理内存的1/4。
+
+<pre><code>
+-XX:PermSize=512M -XX:MaxPermSize=512M
+</code></pre>
+
+**-Xss**
+
+&nbsp;&nbsp;&nbsp;&nbsp;设置每个线程的堆栈大小。JDK5.0以后每个线程堆栈大小为1M，以前每个线程堆栈大小为256K。更具应用的线程所需内存大小进行调整。在相同物理内存下，减小这个值能生成更多的线程。但是操作系统对一个进程内的线程数还是有限制的，不能无限生成，经验值在3000~5000左右。
+
+<pre><code>
+-Xss128k
+</code></pre>
+
+**-Xmn**
+
+&nbsp;&nbsp;&nbsp;&nbsp;新生代大小(jdk1.5以前版本使用-XX:MaxNewSize)。通常为 Xmx 的 1/3 或 1/4。新生代 = Eden + 2 个 Survivor 空间。实际可用空间为 = Eden + 1 个 Survivor，即 90% 。所以增大年轻代后，将会减小年老代大小。此值对系统性能影响较大，Sun官方推荐配置为整个堆的3/8。
+ 
+<pre><code>
+-Xmn64m
+</code></pre>
+
+**-XX:NewRatio**
+
+&nbsp;&nbsp;&nbsp;&nbsp;设置年轻代（包括Eden和两个Survivor区）与年老代的比值（除去持久代）。设置为4，则年轻代与年老代所占比值为1：4，年轻代占整个堆栈的1/5。
+
+<pre><code>
+-XX:NewRatio=4
+</code></pre>
+
+**-XX:SurvivorRatio**
+
+&nbsp;&nbsp;&nbsp;&nbsp;设置年轻代中Eden区与Survivor区的大小比值。设置为4，则两个Survivor区与一个Eden区的比值为2:4，一个Survivor区占整个年轻代的1/6。
+
+<pre><code>
+-XX:SurvivorRatio=4
+</code></pre>
+
+**-XX:MaxTenuringThreshold**
+
+&nbsp;&nbsp;&nbsp;&nbsp;设置垃圾最大年龄。如果设置为0的话，则年轻代对象不经过Survivor区，直接进入年老代。对于年老代比较多的应用，可以提高效率。如果将此值设置为一个较大值，则年轻代对象会在Survivor区进行多次复制，这样可以增加对象再年轻代的存活时间，增加在年轻代即被回收的概论。
+
+<pre><code>
+-XX:MaxTenuringThreshold=0
+</code></pre>
+
+###通用参数
+
+**-XX:+HeapDumpOnOutOfMemoryError和 -XX:HeapDumpPath**
+
+-XX:+HeapDumpOnOutOfMemoryError：JVM会在遇到OutOfMemoryError时拍摄一个“堆转储快照”，并将其保存在一个文件中。
+
+-XX:HeapDumpPath：指定“堆转储快照”的存储路径。
+
+
+<pre><code>
+-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/Users/maxiao/temp/javaDump
+</code></pre>
+
+**-XX:OnOutOfMemoryError**
+
+&nbsp;&nbsp;&nbsp;&nbsp;当内存溢发生时，我们甚至可以可以执行一些指令，比如发个E-mail通知管理员或者执行一些清理工作。通过-XX:OnOutOfMemoryError 这个参数我们可以做到这一点，这个参数可以接受一串指令和它们的参数。在这里，我们将不会深入它的细节，但我们提供了它的一个例子。在下面的例子中，当内存溢出错误发生的时候，我们会将堆内存快照写到/tmp/heapdump.hprof 文件并且在JVM的运行目录执行脚本cleanup.sh
+
+<pre><code>
+java -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/heapdump.hprof -XX:OnOutOfMemoryError ="sh ~/cleanup.sh" MyApp
+</code></pre>
+
+
+###内存溢出的解决办法 
+
+- 内存泄露：指程序中动态分配内存给一些临时对象，但是对象不会被GC所回收，它始终占用内存。即被分配的对象可达但已无用。
+ 
+- 内存溢出：指程序运行过程中无法申请到足够的内存而导致的一种错误。内存溢出通常发生于OLD段或Perm段垃圾回收后，仍然无内存空间容纳新的Java对象的情况。
+
+
+**OutOfMemoryError： PermGen space**
+
+&nbsp;&nbsp;&nbsp;&nbsp;在jvm规范中，方法区主要存放的是类信息、常量、静态变量等。所以如果程序加载的类过多，或者使用反射、gclib等这种动态代理生成类的技术，就可能导致该区发生内存溢出。
+       
+**OutOfMemoryError：  Java heap space**
+
+&nbsp;&nbsp;&nbsp;&nbsp;发生这种问题的原因是java虚拟机创建的对象太多，在进行垃圾回收之间，虚拟机分配的到堆内存空间已经用满了，与Heap space有关。解决这类问题有两种思路：
+
+1.  检查程序，看是否有死循环或不必要地重复创建大量对象。找到原因后，修改程序和算法。
+
+
+2. 增加Java虚拟机中Xms（初始堆大小）和Xmx（最大堆大小）参数的大小。如：-Xms256m -Xmx1024m
+
+**OutOfMemoryError：java.lang.StackOverflowError**
+
+&nbsp;&nbsp;&nbsp;&nbsp;线程栈时线程独有的一块内存结构，所以线程栈发生问题必定是某个线程运行时产生的错误。一般线程栈溢出是由于递归太深或方法调用层级过多导致的。
+
+
+
+###参考资料
+
+[JVM实用参数系列]
+<http://ifeve.com/useful-jvm-flags/>
+
+[聊聊JVM的年轻代]
+<http://ifeve.com/jvm-yong-generation/>
+
+[Java深入 - Java 内存分配和回收机制]
+<http://blog.csdn.net/initphp/article/details/30487407>
+
+[JVM调优总结 -Xms -Xmx -Xmn -Xss]
+<http://unixboy.iteye.com/blog/174173>
+
+[ 《Java虚拟机原理图解》 1.1、class文件基本组织结构]
+<http://blog.csdn.net/luanlouis/article/details/39892027>
+
+[JVM系列三:JVM参数设置、分析]
+<http://www.cnblogs.com/redcreen/archive/2011/05/04/2037057.html>
+
+[Java 6 JVM参数选项大全（中文版）]
+<http://www.blogjava.net/bitbit/archive/2009/11/30/304247.html>
+
+[java内存溢出和内存泄露]
+<http://wade6.iteye.com/blog/1842907>
+
+[Java的内存机制]
+<http://www.cnblogs.com/xwdreamer/archive/2012/04/01/2428857.html>
+
+[Java 堆内存]
+<http://www.blogjava.net/fancydeepin/archive/2013/09/29/jvm_heep.html>
+
+[Java 内存分配全面浅析]
+<http://blog.csdn.net/shimiso/article/details/8595564>
+
+[触摸java常量池]
+<http://www.cnblogs.com/iyangyuan/p/4631696.html>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="jvm">jvm-内存管理</h2>
+
+<p>本文章中涉及的jvm参数都是基于JDK1.6版本的虚拟机(Java HotSpot(TM) 64-Bit Server VM)。</p>
+
+<h3 id="">基础概念</h3>
+
+<p><strong>数据类型</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Java虚拟机中，数据类型可以分为两类：基本类型和引用类型。基本类型的变量保存原始值，即：他代表的值就是数值本身；而引用类型的变量保存引用值。“引用值”代表了某个对象的引用，而不是对象本身，对象本身存放在这个引用值所表示的地址的位置。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;基本类型包括：byte、short、int、long、char、float、double、Boolean、returnAddress</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;引用类型包括：类类型、接口类型、数组</p>
+
+<p><img src="http://scottmaxiao.github.io/img/JVM/jvm02.png" alt="framework" title=""></p>
+
+<h3 id="jvm">JVM内存的结构</h3>
+
+<p><img src="http://scottmaxiao.github.io/img/JVM/jvm03.png" alt="framework" title=""></p>
+
+<p><strong>程序计数器（Program Counter Register）</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;这是一块比较小的内存，不在Ram上，而是直接划分在CPU上的，程序员无法直接操作它，它的作用是：JVM在解释字节码文件（.class）时，存储当前线程所执行的字节码的行号，只是一种概念模型，各种JVM所采用的方式不同，字节码解释器工作时，就是通过改变程序计数器的值来选取下一条要执行的指令，分支、循环、跳转、等基础功能都是依赖此技术区完成的。还有一种情况，就是我们常说的Java多线程方面的，多线程就是通过现程轮流切换而达到的，同一时刻，一个内核只能执行一个指令，所以，对于每一个程序来说，必须有一个计数器来记录程序的执行进度，这样，当现程恢复执行的时候，才能从正确的地方开始，所以，每个线程都必须有一个独立的程序计数器，这类计数器为线程私有的内存。如果一个线程正在执行一个Java方法，则计数器记录的是字节码的指令的地址，如果执行的一个Native方法，则计数器的记录为空，此内存区是唯一一个在Java规范中没有任何OutOfMemoryError情况的区域。</p>
+
+<p><strong>JVM虚拟机栈（JVM Stacks）</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;JVM虚拟机栈就是我们常说的堆栈的栈（我们常常把内存粗略分为堆和栈），和程序计数器一样，也是线程私有的，生命周期和线程一样，每个方法被执行的时候会产生一个栈帧，用于存储局部变量表、动态链接、操作数、方法出口等信息。方法的执行过程就是栈帧在JVM中出栈和入栈的过程。局部变量表中存放的是各种基本数据类型，如boolean、byte、char、等8种，及引用类型（存放的是指向各个对象的内存地址），因此，它有一个特点：内存空间可以在编译期间就确定，运行期不在改变。这个内存区域会有两种可能的Java异常：StackOverFlowError和OutOfMemoryError。</p>
+
+<p><strong>本地方法栈（Native Method Stacks）</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;从名字即可看出，本地方法栈就是用来处理Java中的本地方法的，Java类的祖先类Object中有众多Native方法，如hashCode()、wait()等，他们的执行很多时候是借助于操作系统，但是JVM需要对他们做一些规范，来处理他们的执行过程。此区域，可以有不同的实现方法，向我们常用的Sun的JVM就是本地方法栈和JVM虚拟机栈是同一个。</p>
+
+<p><strong>堆（Heap）</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;堆内存是内存中最重要的一块，也是最有必要进行深究的一部分。因为Java性能的优化，主要就是针对这部分内存的。所有的对象实例及数组都是在堆上面分配的（随着JIT技术的逐渐成熟，这句话视乎有些绝对，不过至少目前还基本是这样的），可通过-Xmx和-Xms来控制堆的大小。JIT技术的发展产生了新的技术，如栈上分配和标量替换，也许在不久的几年里，即时编译会诞生及成熟，那个时候，“所有的对象实例及数组都是在堆上面分配的”这句话就应该稍微改改了。堆内存是垃圾回收的主要区域，所以在下文垃圾回收板块会重点介绍，此处只做概念方面的解释。在32位系统上最大为2G，64位系统上无限制。可通过-Xms和-Xmx控制，-Xms为JVM启动时申请的最小Heap内存，-Xmx为JVM可申请的最大Heap内存。</p>
+
+<p><strong>方法区（Method Area）</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;方法区是所有线程共享的内存区域，用于存储已经被JVM加载的类信息、常量、静态变量等数据，一般来说，方法区属于持久代（关于持久代，会在GC部分详细介绍，除了持久代，还有新生代和旧生代），也难怪Java规范将方法区描述为堆的一个逻辑部分，但是它不是堆。方法区的垃圾回收比较棘手，就算是Sun的HotSpot VM在这方面也没有做得多么完美。此处引入方法区中一个重要的概念：运行时常量池。主要用于存放在编译过程中产生的字面量（字面量简单理解就是常量）和引用。一般情况，常量的内存分配在编译期间就能确定，但不一定全是，有一些可能就是运行时也可将常量放入常量池中，如String类中有个Native方法intern()&lt;关于intern()的详细说明，请看另一篇文章：http://blog.csdn.net/zhangerqing/article/details/8093919&gt;
+此处补充一个在JVM内存管理之外的一个内存区：直接内存。在JDK1.4中新加入类NIO类，引入了一种基于通道与缓冲区的I/O方式，它可以使用Native函数库直接分配堆外内存，即我们所说的直接内存，这样在某些场景中会提高程序的性能。</p>
+
+<p><strong>堆和栈</strong></p>
+
+<p>堆和栈是程序运行的关键，很有必要把他们的关系说清楚。</p>
+
+<ul>
+<li>栈是运行时的单位，而堆是存储的单位。</li>
+<li>栈解决程序的运行问题，即程序如何执行，或者说如何处理数据；堆解决的是数据存储的问题，即数据怎么放、放在哪儿。</li>
+</ul>
+
+<p>为什么要把堆和栈区分出来呢？栈中不是也可以存储数据吗？</p>
+
+<ul>
+<li><p>从软件设计的角度看，栈代表了处理逻辑，而堆代表了数据。这样分开，使得处理逻辑更为清晰。分而治之的思想。这种隔离、模块化的思想在软件设计的方方面面都有体现。</p></li>
+<li><p>堆与栈的分离，使得堆中的内容可以被多个栈共享（也可以理解为多个线程访问同一个对象）。这种共享的收益是很多的。一方面这种共享提供了一种有效的数据交互方式(如：共享内存)，另一方面，堆中的共享常量和缓存可以被所有栈访问，节省了空间。</p></li>
+<li><p>栈因为运行时的需要，比如保存系统运行的上下文，需要进行地址段的划分。由于栈只能向上增长，因此就会限制住栈存储内容的能力。而堆不同，堆中的对象是可以根据需要动态增长的，因此栈和堆的拆分，使得动态增长成为可能，相应栈中只需记录堆中的一个地址即可。</p></li>
+<li><p>面向对象就是堆和栈的完美结合。其实，面向对象方式的程序与以前结构化的程序在执行上没有任何区别。但是，面向对象的引入，使得对待问题的思考方式发生了改变，而更接近于自然方式的思考。当我们把对象拆开，你会发现，对象的属性其实就是数据，存放在堆中；而对象的行为（方法），就是运行逻辑，放在栈中。我们在编写对象的时候，其实即编写了数据结构，也编写的处理数据的逻辑。</p></li>
+</ul>
+
+<h3 id="">内存管理</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;jvm管理的内存大致包括三种不同类型的内存区域：方法区（Method Area）、Heap space(堆区域)、Java Stacks(Java栈）。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;其中方法区(又叫永久代，Permanent Generation space)主要存放Class（类）和Meta的信息，Class第一次被Load的时候被放入PermGen space区域，Class需要存储的内容主要包括方法和静态属性。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;堆内存：用来存放由 new 创建的对象和数组，在堆中分配的内存，由 Java 虚拟机的自动垃圾回收器来管理。注意创建出来的对象只包含属于各自的成员变量，并不包括成员方法。因为同一个类的对象拥有各自的成员变量，存储在各自的堆中，但是他们共享该类的方法，并不是每创建一个对象就把成员方法复制一次。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;栈内存：保存局部变量的值包括：1.保存基本数据类型的值；2.保存引用变量，即堆区对象的引用(指针)。也可以用来保存加载方法时的帧。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Java 中的堆是 JVM 所管理的最大的一块内存空间，主要用于存放各种类的实例对象。
+在 Java 中，堆被划分成两个不同的区域：新生代 ( Young )、老年代 ( Old )。新生代 ( Young ) 又被划分为三个区域：Eden、From Survivor、To Survivor。这样划分的目的是为了使 JVM 能够更好的管理堆内存中的对象，包括内存的分配以及回收。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;堆的内存模型大致为：</p>
+
+<p><img src="http://scottmaxiao.github.io/img/JVM/jvm01.png" alt="framework" title=""></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;默认的，新生代 ( Young ) 与老年代 ( Old ) 的比例的值为 1:2 ，即：新生代 ( Young ) = 1/3 的堆空间大小。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;老年代 ( Old ) = 2/3 的堆空间大小。其中，新生代 ( Young ) 被细分为 Eden 和 两个 Survivor 区域，这两个 Survivor 区域分别被命名为 from 和 to，以示区分。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;默认的，Edem : from : to = 8 : 1 : 1 ，即： Eden = 8/10 的新生代空间大小，from = to = 1/10 的新生代空间大小。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JVM 每次只会使用 Eden 和其中的一块 Survivor 区域来为对象服务，所以无论什么时候，总是有一块 Survivor 区域是空闲着的。</p>
+
+<p>因此，新生代实际可用的内存空间为 9/10 ( 即90% )的新生代空间。</p>
+
+<h3 id="">内存参数</h3>
+
+<p><strong>-Xms和-Xmx</strong></p>
+
+<p>-Xms:初始堆大小，默认为物理内存的1/64(&lt;1GB)。</p>
+
+<p>-Xmx:最大堆大小，默认为物理内存的1/4(&lt;1GB)。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;-Xms设置与-Xmx相同,避免每次垃圾回收完成后JVM重新分配内存。这两个参数的数值单位是Byte，但同时它们也支持使用速记符号，比如“k”或者“K”代表“kilo”，“m”或者“M”代表“mega”，“g”或者“G”代表“giga”。 -Xms和-Xmx实际上是-XX:InitialHeapSize和-XX:MaxHeapSize的缩写。我们也可以直接使用这两个参数，它们所起得效果是一样的。</p>
+
+<pre><code>
+-Xmx128m -Xms256m
+</code></pre>
+
+<p><strong>-XX:PermSize和-XX:MaxPermSize</strong></p>
+
+<p>-XX:PermSize:初始永久代大小,默认为物理内存的1/64。</p>
+
+<p>-XX:MaxPermSize:最大永久代大小，默认为物理内存的1/4。</p>
+
+<pre><code>
+-XX:PermSize=512M -XX:MaxPermSize=512M
+</code></pre>
+
+<p><strong>-Xss</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;设置每个线程的堆栈大小。JDK5.0以后每个线程堆栈大小为1M，以前每个线程堆栈大小为256K。更具应用的线程所需内存大小进行调整。在相同物理内存下，减小这个值能生成更多的线程。但是操作系统对一个进程内的线程数还是有限制的，不能无限生成，经验值在3000~5000左右。</p>
+
+<pre><code>
+-Xss128k
+</code></pre>
+
+<p><strong>-Xmn</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;新生代大小(jdk1.5以前版本使用-XX:MaxNewSize)。通常为 Xmx 的 1/3 或 1/4。新生代 = Eden + 2 个 Survivor 空间。实际可用空间为 = Eden + 1 个 Survivor，即 90% 。所以增大年轻代后，将会减小年老代大小。此值对系统性能影响较大，Sun官方推荐配置为整个堆的3/8。</p>
+
+<pre><code>
+-Xmn64m
+</code></pre>
+
+<p><strong>-XX:NewRatio</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;设置年轻代（包括Eden和两个Survivor区）与年老代的比值（除去持久代）。设置为4，则年轻代与年老代所占比值为1：4，年轻代占整个堆栈的1/5。</p>
+
+<pre><code>
+-XX:NewRatio=4
+</code></pre>
+
+<p><strong>-XX:SurvivorRatio</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;设置年轻代中Eden区与Survivor区的大小比值。设置为4，则两个Survivor区与一个Eden区的比值为2:4，一个Survivor区占整个年轻代的1/6。</p>
+
+<pre><code>
+-XX:SurvivorRatio=4
+</code></pre>
+
+<p><strong>-XX:MaxTenuringThreshold</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;设置垃圾最大年龄。如果设置为0的话，则年轻代对象不经过Survivor区，直接进入年老代。对于年老代比较多的应用，可以提高效率。如果将此值设置为一个较大值，则年轻代对象会在Survivor区进行多次复制，这样可以增加对象再年轻代的存活时间，增加在年轻代即被回收的概论。</p>
+
+<pre><code>
+-XX:MaxTenuringThreshold=0
+</code></pre>
+
+<h3 id="">通用参数</h3>
+
+<p><strong>-XX:+HeapDumpOnOutOfMemoryError和 -XX:HeapDumpPath</strong></p>
+
+<p>-XX:+HeapDumpOnOutOfMemoryError：JVM会在遇到OutOfMemoryError时拍摄一个“堆转储快照”，并将其保存在一个文件中。</p>
+
+<p>-XX:HeapDumpPath：指定“堆转储快照”的存储路径。</p>
+
+<pre><code>
+-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/Users/maxiao/temp/javaDump
+</code></pre>
+
+<p><strong>-XX:OnOutOfMemoryError</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;当内存溢发生时，我们甚至可以可以执行一些指令，比如发个E-mail通知管理员或者执行一些清理工作。通过-XX:OnOutOfMemoryError 这个参数我们可以做到这一点，这个参数可以接受一串指令和它们的参数。在这里，我们将不会深入它的细节，但我们提供了它的一个例子。在下面的例子中，当内存溢出错误发生的时候，我们会将堆内存快照写到/tmp/heapdump.hprof 文件并且在JVM的运行目录执行脚本cleanup.sh</p>
+
+<pre><code>
+java -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/heapdump.hprof -XX:OnOutOfMemoryError ="sh ~/cleanup.sh" MyApp
+</code></pre>
+
+<h3 id="">内存溢出的解决办法</h3>
+
+<ul>
+<li><p>内存泄露：指程序中动态分配内存给一些临时对象，但是对象不会被GC所回收，它始终占用内存。即被分配的对象可达但已无用。</p></li>
+<li><p>内存溢出：指程序运行过程中无法申请到足够的内存而导致的一种错误。内存溢出通常发生于OLD段或Perm段垃圾回收后，仍然无内存空间容纳新的Java对象的情况。</p></li>
+</ul>
+
+<p><strong>OutOfMemoryError： PermGen space</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在jvm规范中，方法区主要存放的是类信息、常量、静态变量等。所以如果程序加载的类过多，或者使用反射、gclib等这种动态代理生成类的技术，就可能导致该区发生内存溢出。</p>
+
+<p><strong>OutOfMemoryError：  Java heap space</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;发生这种问题的原因是java虚拟机创建的对象太多，在进行垃圾回收之间，虚拟机分配的到堆内存空间已经用满了，与Heap space有关。解决这类问题有两种思路：</p>
+
+<ol>
+<li><p>检查程序，看是否有死循环或不必要地重复创建大量对象。找到原因后，修改程序和算法。</p></li>
+<li><p>增加Java虚拟机中Xms（初始堆大小）和Xmx（最大堆大小）参数的大小。如：-Xms256m -Xmx1024m</p></li>
+</ol>
+
+<p><strong>OutOfMemoryError：java.lang.StackOverflowError</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;线程栈时线程独有的一块内存结构，所以线程栈发生问题必定是某个线程运行时产生的错误。一般线程栈溢出是由于递归太深或方法调用层级过多导致的。</p>
+
+<h3 id="">参考资料</h3>
+
+<p>[JVM实用参数系列]
+<a href="http://ifeve.com/useful-jvm-flags/">http://ifeve.com/useful-jvm-flags/</a></p>
+
+<p>[聊聊JVM的年轻代]
+<a href="http://ifeve.com/jvm-yong-generation/">http://ifeve.com/jvm-yong-generation/</a></p>
+
+<p>[Java深入 - Java 内存分配和回收机制]
+<a href="http://blog.csdn.net/initphp/article/details/30487407">http://blog.csdn.net/initphp/article/details/30487407</a></p>
+
+<p>[JVM调优总结 -Xms -Xmx -Xmn -Xss]
+<a href="http://unixboy.iteye.com/blog/174173">http://unixboy.iteye.com/blog/174173</a></p>
+
+<p>[ 《Java虚拟机原理图解》 1.1、class文件基本组织结构]
+<a href="http://blog.csdn.net/luanlouis/article/details/39892027">http://blog.csdn.net/luanlouis/article/details/39892027</a></p>
+
+<p>[JVM系列三:JVM参数设置、分析]
+<a href="http://www.cnblogs.com/redcreen/archive/2011/05/04/2037057.html">http://www.cnblogs.com/redcreen/archive/2011/05/04/2037057.html</a></p>
+
+<p>[Java 6 JVM参数选项大全（中文版）]
+<a href="http://www.blogjava.net/bitbit/archive/2009/11/30/304247.html">http://www.blogjava.net/bitbit/archive/2009/11/30/304247.html</a></p>
+
+<p>[java内存溢出和内存泄露]
+<a href="http://wade6.iteye.com/blog/1842907">http://wade6.iteye.com/blog/1842907</a></p>
+
+<p>[Java的内存机制]
+<a href="http://www.cnblogs.com/xwdreamer/archive/2012/04/01/2428857.html">http://www.cnblogs.com/xwdreamer/archive/2012/04/01/2428857.html</a></p>
+
+<p>[Java 堆内存]
+<a href="http://www.blogjava.net/fancydeepin/archive/2013/09/29/jvm_heep.html">http://www.blogjava.net/fancydeepin/archive/2013/09/29/jvm_heep.html</a></p>
+
+<p>[Java 内存分配全面浅析]
+<a href="http://blog.csdn.net/shimiso/article/details/8595564">http://blog.csdn.net/shimiso/article/details/8595564</a></p>
+
+<p>[触摸java常量池]
+<a href="http://www.cnblogs.com/iyangyuan/p/4631696.html">http://www.cnblogs.com/iyangyuan/p/4631696.html</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "jvm-内存管理.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

@@ -1,0 +1,587 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##jvm-JDK的命令行工具
+
+###jps(Java Virtual Machine Process Status Tool)
+
+&nbsp;&nbsp;&nbsp;&nbsp;jps虚拟机进程状态工具(JVM Process Status Tool),不仅名字像unix的ps命令，其功能与ps也很类似：列出正在运行的虚拟机进程，并显示虚拟机执行主类(main()所在的类)的名字，以及这些进程再本地虚拟机的唯一ID(LVMID,Local Virtual Machine Identifier)。而LVMID和操作下图的PID(Process Identifier)是一致的。如果同时启动了多个虚拟机进程，无法根据进程名称定位时，那就只能依赖jps命令显示主类的功能区分了。
+
+&nbsp;&nbsp;&nbsp;&nbsp;命令格式：
+
+    usage: jps [-help]
+       jps [-q] [-mlvV] [<hostid>]
+ 
+    Definitions:
+       <hostid>:      <hostname>[:<port>]
+
+    -q 仅输出LVMID，省略主类的名称；
+    -m 输出虚拟机进程启动时传递给主类main()函数的参数；
+    -l 输出主类的全名，如果进程执行的是jar包，则输出jar的路径；
+    -v 输出虚拟机进程启动时JVM参数；
+    -V 输出通过flag文件传递到JVM中的参数；
+    -Joption 传递参数到JVM,例如:-J-Xms48m；
+
+      hostid的格式是：<hostname>[:<port>]，port默认是1099，需要服务器启动jstatd服务，否则会提示
+      RMI Server JStatRemoteHost not available
+
+###jstatd(Java Statistics Monitoring Daemon)
+
+&nbsp;&nbsp;&nbsp;&nbsp;jstatd命令是一个RMI Server应用程序，提供了对JVM的创建和结束监视，也为远程监视工具提供了一个可以attach的接口。
+
+&nbsp;&nbsp;&nbsp;&nbsp;命令格式：
+
+    usage: jstatd [-nr] [-p port] [-n rminame]
+
+    -nr 当一个存在的RMI Registry没有找到时，不尝试创建一个内部的RMI Registry；
+    -p port 端口号，默认为1099；
+    -n rminame 默认为JStatRemoteHost；如果多个jstatd服务开始在同一台主机上，rminame唯一确定一个jstatd服务；
+    -J jvm选项；
+    
+    
+    
+    在服务器直接启动jstatd会报如下异常
+    Could not create remote object
+    access denied (java.util.PropertyPermission java.rmi.server.ignoreSubClasses write)
+    java.security.AccessControlException: access denied (java.util.PropertyPermission java.rmi.server.ignoreSubClasses write)
+    at java.security.AccessControlContext.checkPermission(AccessControlContext.java:323)
+    at java.security.AccessController.checkPermission(AccessController.java:546)
+    at java.lang.SecurityManager.checkPermission(SecurityManager.java:532)
+    at java.lang.System.setProperty(System.java:727)
+    at sun.tools.jstatd.Jstatd.main(Jstatd.java:122)
+
+这是因为没有给jstatd指定安全策略，需要创建安全策略文件，自定义命名为jstatd.all.policy，内容如下：
+
+    grant codebase "file:${java.home}/../lib/tools.jar" {
+        permission java.security.AllPermission;
+    };
+
+&nbsp;&nbsp;&nbsp;&nbsp;注：此处策略中的java.home，和JAVA_HOME不是一个概念，童鞋们不要搞错了，此处的java.home指的是JRE的路径，这个是Java的系统属性，不需要手工指定，通常是这个jdk下面的jre路径,即可以认为${java.home}和${JAVA_HOME}/jre是等价，如果想查看这个变量的值，可以任意找一个运行着的Java应用，找到它的PID，然后通过如下jinfo命令查看就可以查看到java.home的值：
+ 
+    jinfo ${PID}|grep java.home
+ 
+然后执行以下命令就可以启动jstatd服务
+ 
+     jstatd -J-Djava.security.policy=jstatd.all.policy  -J-Djava.rmi.server.logCalls=true
+ 
+
+###jinfo命令(Java Configuration Info)
+
+&nbsp;&nbsp;&nbsp;&nbsp;jinfo可以输出并修改运行时的java 进程的opts。用处比较简单，用于输出JAVA系统参数及命令行参数。
+
+&nbsp;&nbsp;&nbsp;&nbsp;命令格式：
+
+    Usage:
+    jinfo [option] <pid>
+        (to connect to running process)
+    jinfo [option] <executable <core>
+        (to connect to a core file)
+    jinfo [option] [server_id@]<remote server IP or hostname>
+        (to connect to remote debug server)
+ 
+    where <option> is one of:
+    -flag <name>         to print the value of the named VM flag
+    -flag [+|-]<name>    to enable or disable the named VM flag
+    -flag <name>=<value> to set the named VM flag to the given value
+    -flags               to print VM flags
+    -sysprops            to print Java system properties
+    <no option>          to print both of the above
+    -h | -help           to print this help message
+
+用法是jinfo -opt  pid 如：查看2788的MaxPerm大小可以用  jinfo -flag MaxPermSize 2788。
+
+    注意：如果是Ubuntu系统的话，需要执行下面的语句
+
+    echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
+    
+    不过重启电脑之后就又恢复成原来的样子了，一劳永逸的方法：
+    sudo vi /etc/sysctl.d/10-ptrace.conf 
+    kernel.yama.ptrace_scope = 0
+
+
+###jstat：虚拟机统计信息监视工具(JVM Statistics Monitoring Tool)
+
+&nbsp;&nbsp;&nbsp;&nbsp;Jstat主要用于监控虚拟机的各种运行状态信息，如类的装载、内存、垃圾回收、JIT编译器等，在没有GUI的服务器上，这款工具是首选的一款监控工具。其用法如下：
+
+    Usage: jstat -help|-options
+       jstat -<option> [-t] [-h<lines>] <vmid> [<interval> [<count>]]
+
+    Definitions:
+      <option>      An option reported by the -options option
+      <vmid>        Virtual Machine Identifier. A vmid takes the following form:
+                     <lvmid>[@<hostname>[:<port>]]
+                Where <lvmid> is the local vm identifier for the target
+                Java virtual machine, typically a process id; <hostname> is
+                the name of the host running the target Java virtual machine;
+                and <port> is the port number for the rmiregistry on the
+                target host. See the jvmstat documentation for a more complete
+                description of the Virtual Machine Identifier.
+     <lines>       Number of samples between header lines.
+     <interval>    Sampling interval. The following forms are allowed:
+                    <n>["ms"|"s"]
+                Where <n> is an integer and the suffix specifies the units as
+                milliseconds("ms") or seconds("s"). The default units are "ms".
+     <count>       Number of samples to take before terminating.
+     -J<flag>      Pass <flag> directly to the runtime system.
+
+
+例如，执行”jstat –gc 1000″ (或 1s)会每隔一秒展示GC监控数据。”jstat –gc 1000 10″会每隔1秒展现一次，且一共10次
+
+<pre><code>
+$> jstat -gc 4216 1000
+ S0C    S1C    S0U    S1U      EC       EU        OC         OU       PC     PU    YGC     YGCT    FGC    FGCT     GCT
+13056.0 13056.0  0.0   257.0  104960.0 83224.6   917504.0   62874.9   113888.0 113664.6     25    0.435   1      0.302    0.737
+13056.0 13056.0  0.0   257.0  104960.0 83224.6   917504.0   62874.9   113888.0 113664.6     25    0.435   1      0.302    0.737
+
+</code></pre>
+
+参数介绍
+<table>
+<tr><td>参数名称</td><td>描述</td></tr>
+<tr><td>gc</td><td>输出每个堆区域的当前可用空间以及已用空间（伊甸园，幸存者等等），GC执行的总次数，GC操作累计所花费的时间。</td></tr>
+<tr><td>gccapactiy</td><td>输出每个堆区域的最小空间限制（ms）/最大空间限制（mx），当前大小，每个区域之上执行GC的次数。（不输出当前已用空间以及GC执行时间）。</td></tr>
+<tr><td>gccause</td><td>输出-gcutil提供的信息以及最后一次执行GC的发生原因和当前所执行的GC的发生原因</td></tr>
+<tr><td>gcnew</td><td>输出新生代空间的GC性能数据</td></tr>
+<tr><td>gcnewcapacity</td><td>输出新生代空间的大小的统计数据。</td></tr>
+<tr><td>gcold</td><td>输出老年代空间的GC性能数据。</td></tr>
+<tr><td>gcoldcapacity</td><td>输出老年代空间的大小的统计数据。</td></tr>
+<tr><td>gcpermcapacity</td><td>输出持久带空间的大小的统计数据。</td></tr>
+<tr><td>gcutil</td><td>输出每个堆区域使用占比，以及GC执行的总次数和GC操作所花费的事件。</td></tr>
+</table>
+
+输出内容介绍
+<table>
+<tr><td>列</td><td>说明</td></tr>
+<tr><td>S0C</td><td>输出Survivor0空间的大小。单位KB。</td></tr>
+<tr><td>S1C</td><td>输出Survivor1空间的大小。单位KB。</td></tr>
+<tr><td>S0U</td><td>输出Survivor0已用空间的大小。单位KB。</td></tr>
+<tr><td>S1U</td><td>输出Survivor1已用空间的大小。单位KB。</td></tr>
+<tr><td>EC</td><td>输出Eden空间的大小。单位KB。</td></tr>
+<tr><td>EU</td><td>输出Eden已用空间的大小。单位KB。</td></tr>
+<tr><td>OC</td><td>输出老年代空间的大小。单位KB。</td></tr>
+<tr><td>OU</td><td>输出老年代已用空间的大小。单位KB。</td></tr>
+<tr><td>PC</td><td>输出持久代空间的大小。单位KB。</td></tr>
+<tr><td>PU</td><td>输出持久代已用空间的大小。单位KB。</td></tr>
+<tr><td>YGC</td><td>新生代空间GC时间发生的次数。</td></tr>
+<tr><td>YGCT</td><td>新生代GC处理花费的时间。</td></tr>
+<tr><td>FGC</td><td>full GC发生的次数。</td></tr>
+<tr><td>FGCT</td><td>full GC操作花费的时间</td></tr>
+<tr><td>GCT</td><td>GC操作花费的总时间。</td></tr>
+<tr><td>NGCMN</td><td>新生代最小空间容量，单位KB。</td></tr>
+<tr><td>NGCMX</td><td>新生代最大空间容量，单位KB。</td></tr>
+<tr><td>NGC</td><td>新生代当前空间容量，单位KB。</td></tr>
+<tr><td>OGCMN</td><td>老年代最小空间容量，单位KB。</td></tr>
+<tr><td>OGCMX</td><td>老年代最大空间容量，单位KB。</td></tr>
+<tr><td>OGC</td><td>老年代当前空间容量制，单位KB。</td></tr>
+<tr><td>PGCMN</td><td>持久代最小空间容量，单位KB。</td></tr>
+<tr><td>PGCMX</td><td>持久代最大空间容量，单位KB。</td></tr>
+<tr><td>PGC</td><td>持久代当前空间容量，单位KB。</td></tr>
+<tr><td>PC</td><td>持久代当前空间大小，单位KB</td></tr>
+<tr><td>PU</td><td>持久代当前已用空间大小，单位KB</td></tr>
+<tr><td>LGCC</td><td>最后一次GC发生的原因</td></tr>
+<tr><td>GCC</td><td>当前GC发生的原因</td></tr>
+<tr><td>TT</td><td>老年化阈值。被移动到老年代之前，在新生代空存活的次数。</td></tr>
+<tr><td>MTT</td><td>最大老年化阈值。被移动到老年代之前，在新生代空存活的次数。</td></tr>
+<tr><td>DSS</td><td>幸存者区所需空间大小，单位KB。</td></tr>
+</table>
+
+
+###(Java) VisualVM  + Visual GC插件
+
+&nbsp;&nbsp;&nbsp;&nbsp;Java Visual VM是由Oracle JDK提供的图形化的汇总和监控工具。除了JDK中自带的版本，你还可以直接从官网下载[Visual VM](http://visualvm.java.net/download.html)。出于便利性的考虑，JDK中包含的版本被命名为Java VisualVM (jvisualvm),而官网提供的版本被命名为Visual VM (visualvm)。两者的功能基本相同，只有一些细小的差别，例如安装组件的时候。
+
+![framework](http://scottmaxiao.github.io/img/JVM/jvm12.png)
+
+通过Visual GC，你可以更直观的看到执行jstatd 所得到的信息。
+
+![framework](http://scottmaxiao.github.io/img/JVM/jvm13.png)
+
+
+启动后的JVisualVM会自动检测本地的java应用
+![framework](http://scottmaxiao.github.io/img/JVM/jvm14.png)
+
+
+**远程监控linux服务器**
+
+&nbsp;&nbsp;&nbsp;&nbsp; 首先在服务器上启动jstatd
+
+&nbsp;&nbsp;&nbsp;&nbsp; 其次使用hostname -i命令查看，如果显示的是127.0.0.1或者与本机实际IP不一致的话，需要把/etc/hosts文件中相应的地址改为本机实际IP
+
+&nbsp;&nbsp;&nbsp;&nbsp; 打开JVisualVM，添加需要监控的远程服务器ip地址，并设置监听的端口为被检测机器启动jstatd的端口 
+![framework](http://scottmaxiao.github.io/img/JVM/jvm15.png)
+
+![framework](http://scottmaxiao.github.io/img/JVM/jvm16.png)
+
+&nbsp;&nbsp;&nbsp;&nbsp;连接成功后应该会显示Jstatd及其PID
+
+![framework](http://scottmaxiao.github.io/img/JVM/jvm17.png)
+
+&nbsp;&nbsp;&nbsp;&nbsp;发现在监控远程服务器时，没有监控到cpu数据，这时需要在服务器端建立 JMX ，建立 JMX 提示要求端口号。
+
+&nbsp;&nbsp;&nbsp;&nbsp;修改远程服务器tomcat的catalina.sh的参数，如下：
+<pre><code>
+JAVA_OPTS="-Dcom.sun.management.jmxremote.port=8999 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+</code></pre>
+
+&nbsp;&nbsp;&nbsp;&nbsp;重启被检测远程机器的tomcat，并打开mac上的JVisualVM，添加JMX
+![framework](http://scottmaxiao.github.io/img/JVM/jvm18.png)
+
+
+![framework](http://scottmaxiao.github.io/img/JVM/jvm19.png)
+
+###参考
+[成为JavaGC专家（2）—如何监控Java垃圾回收机制]
+<http://www.importnew.com/2057.html>
+
+[《深入理解Java虚拟机》学习笔记之工具]
+<http://www.oseye.net/user/kevin/blog/315>
+
+[jps命令(Java Virtual Machine Process Status Tool)]
+<http://blog.csdn.net/fenglibing/article/details/6411932>
+
+[ Mac下JVisualVM基本使用]
+<http://blog.csdn.net/hjqqingqing/article/details/14170129>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="jvmjdk">jvm-JDK的命令行工具</h2>
+
+<h3 id="jpsjavavirtualmachineprocessstatustool">jps(Java Virtual Machine Process Status Tool)</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;jps虚拟机进程状态工具(JVM Process Status Tool),不仅名字像unix的ps命令，其功能与ps也很类似：列出正在运行的虚拟机进程，并显示虚拟机执行主类(main()所在的类)的名字，以及这些进程再本地虚拟机的唯一ID(LVMID,Local Virtual Machine Identifier)。而LVMID和操作下图的PID(Process Identifier)是一致的。如果同时启动了多个虚拟机进程，无法根据进程名称定位时，那就只能依赖jps命令显示主类的功能区分了。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;命令格式：</p>
+
+<pre><code>usage: jps [-help]
+   jps [-q] [-mlvV] [&lt;hostid&gt;]
+
+Definitions:
+   &lt;hostid&gt;:      &lt;hostname&gt;[:&lt;port&gt;]
+
+-q 仅输出LVMID，省略主类的名称；
+-m 输出虚拟机进程启动时传递给主类main()函数的参数；
+-l 输出主类的全名，如果进程执行的是jar包，则输出jar的路径；
+-v 输出虚拟机进程启动时JVM参数；
+-V 输出通过flag文件传递到JVM中的参数；
+-Joption 传递参数到JVM,例如:-J-Xms48m；
+
+  hostid的格式是：&lt;hostname&gt;[:&lt;port&gt;]，port默认是1099，需要服务器启动jstatd服务，否则会提示
+  RMI Server JStatRemoteHost not available
+</code></pre>
+
+<h3 id="jstatdjavastatisticsmonitoringdaemon">jstatd(Java Statistics Monitoring Daemon)</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;jstatd命令是一个RMI Server应用程序，提供了对JVM的创建和结束监视，也为远程监视工具提供了一个可以attach的接口。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;命令格式：</p>
+
+<pre><code>usage: jstatd [-nr] [-p port] [-n rminame]
+
+-nr 当一个存在的RMI Registry没有找到时，不尝试创建一个内部的RMI Registry；
+-p port 端口号，默认为1099；
+-n rminame 默认为JStatRemoteHost；如果多个jstatd服务开始在同一台主机上，rminame唯一确定一个jstatd服务；
+-J jvm选项；
+
+
+
+在服务器直接启动jstatd会报如下异常
+Could not create remote object
+access denied (java.util.PropertyPermission java.rmi.server.ignoreSubClasses write)
+java.security.AccessControlException: access denied (java.util.PropertyPermission java.rmi.server.ignoreSubClasses write)
+at java.security.AccessControlContext.checkPermission(AccessControlContext.java:323)
+at java.security.AccessController.checkPermission(AccessController.java:546)
+at java.lang.SecurityManager.checkPermission(SecurityManager.java:532)
+at java.lang.System.setProperty(System.java:727)
+at sun.tools.jstatd.Jstatd.main(Jstatd.java:122)
+</code></pre>
+
+<p>这是因为没有给jstatd指定安全策略，需要创建安全策略文件，自定义命名为jstatd.all.policy，内容如下：</p>
+
+<pre><code>grant codebase "file:${java.home}/../lib/tools.jar" {
+    permission java.security.AllPermission;
+};
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;注：此处策略中的java.home，和JAVA<em>HOME不是一个概念，童鞋们不要搞错了，此处的java.home指的是JRE的路径，这个是Java的系统属性，不需要手工指定，通常是这个jdk下面的jre路径,即可以认为${java.home}和${JAVA</em>HOME}/jre是等价，如果想查看这个变量的值，可以任意找一个运行着的Java应用，找到它的PID，然后通过如下jinfo命令查看就可以查看到java.home的值：</p>
+
+<pre><code>jinfo ${PID}|grep java.home
+</code></pre>
+
+<p>然后执行以下命令就可以启动jstatd服务</p>
+
+<pre><code> jstatd -J-Djava.security.policy=jstatd.all.policy  -J-Djava.rmi.server.logCalls=true
+</code></pre>
+
+<h3 id="jinfojavaconfigurationinfo">jinfo命令(Java Configuration Info)</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;jinfo可以输出并修改运行时的java 进程的opts。用处比较简单，用于输出JAVA系统参数及命令行参数。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;命令格式：</p>
+
+<pre><code>Usage:
+jinfo [option] &lt;pid&gt;
+    (to connect to running process)
+jinfo [option] &lt;executable &lt;core&gt;
+    (to connect to a core file)
+jinfo [option] [server_id@]&lt;remote server IP or hostname&gt;
+    (to connect to remote debug server)
+
+where &lt;option&gt; is one of:
+-flag &lt;name&gt;         to print the value of the named VM flag
+-flag [+|-]&lt;name&gt;    to enable or disable the named VM flag
+-flag &lt;name&gt;=&lt;value&gt; to set the named VM flag to the given value
+-flags               to print VM flags
+-sysprops            to print Java system properties
+&lt;no option&gt;          to print both of the above
+-h | -help           to print this help message
+</code></pre>
+
+<p>用法是jinfo -opt  pid 如：查看2788的MaxPerm大小可以用  jinfo -flag MaxPermSize 2788。</p>
+
+<pre><code>注意：如果是Ubuntu系统的话，需要执行下面的语句
+
+echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
+
+不过重启电脑之后就又恢复成原来的样子了，一劳永逸的方法：
+sudo vi /etc/sysctl.d/10-ptrace.conf 
+kernel.yama.ptrace_scope = 0
+</code></pre>
+
+<h3 id="jstatjvmstatisticsmonitoringtool">jstat：虚拟机统计信息监视工具(JVM Statistics Monitoring Tool)</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Jstat主要用于监控虚拟机的各种运行状态信息，如类的装载、内存、垃圾回收、JIT编译器等，在没有GUI的服务器上，这款工具是首选的一款监控工具。其用法如下：</p>
+
+<pre><code>Usage: jstat -help|-options
+   jstat -&lt;option&gt; [-t] [-h&lt;lines&gt;] &lt;vmid&gt; [&lt;interval&gt; [&lt;count&gt;]]
+
+Definitions:
+  &lt;option&gt;      An option reported by the -options option
+  &lt;vmid&gt;        Virtual Machine Identifier. A vmid takes the following form:
+                 &lt;lvmid&gt;[@&lt;hostname&gt;[:&lt;port&gt;]]
+            Where &lt;lvmid&gt; is the local vm identifier for the target
+            Java virtual machine, typically a process id; &lt;hostname&gt; is
+            the name of the host running the target Java virtual machine;
+            and &lt;port&gt; is the port number for the rmiregistry on the
+            target host. See the jvmstat documentation for a more complete
+            description of the Virtual Machine Identifier.
+ &lt;lines&gt;       Number of samples between header lines.
+ &lt;interval&gt;    Sampling interval. The following forms are allowed:
+                &lt;n&gt;["ms"|"s"]
+            Where &lt;n&gt; is an integer and the suffix specifies the units as
+            milliseconds("ms") or seconds("s"). The default units are "ms".
+ &lt;count&gt;       Number of samples to take before terminating.
+ -J&lt;flag&gt;      Pass &lt;flag&gt; directly to the runtime system.
+</code></pre>
+
+<p>例如，执行”jstat –gc 1000″ (或 1s)会每隔一秒展示GC监控数据。”jstat –gc 1000 10″会每隔1秒展现一次，且一共10次</p>
+
+<pre><code>
+$&gt; jstat -gc 4216 1000
+ S0C    S1C    S0U    S1U      EC       EU        OC         OU       PC     PU    YGC     YGCT    FGC    FGCT     GCT
+13056.0 13056.0  0.0   257.0  104960.0 83224.6   917504.0   62874.9   113888.0 113664.6     25    0.435   1      0.302    0.737
+13056.0 13056.0  0.0   257.0  104960.0 83224.6   917504.0   62874.9   113888.0 113664.6     25    0.435   1      0.302    0.737
+
+</code></pre>
+
+<p>参数介绍</p>
+
+<table>
+<tbody><tr><td>参数名称</td><td>描述</td></tr>
+<tr><td>gc</td><td>输出每个堆区域的当前可用空间以及已用空间（伊甸园，幸存者等等），GC执行的总次数，GC操作累计所花费的时间。</td></tr>
+<tr><td>gccapactiy</td><td>输出每个堆区域的最小空间限制（ms）/最大空间限制（mx），当前大小，每个区域之上执行GC的次数。（不输出当前已用空间以及GC执行时间）。</td></tr>
+<tr><td>gccause</td><td>输出-gcutil提供的信息以及最后一次执行GC的发生原因和当前所执行的GC的发生原因</td></tr>
+<tr><td>gcnew</td><td>输出新生代空间的GC性能数据</td></tr>
+<tr><td>gcnewcapacity</td><td>输出新生代空间的大小的统计数据。</td></tr>
+<tr><td>gcold</td><td>输出老年代空间的GC性能数据。</td></tr>
+<tr><td>gcoldcapacity</td><td>输出老年代空间的大小的统计数据。</td></tr>
+<tr><td>gcpermcapacity</td><td>输出持久带空间的大小的统计数据。</td></tr>
+<tr><td>gcutil</td><td>输出每个堆区域使用占比，以及GC执行的总次数和GC操作所花费的事件。</td></tr>
+</tbody></table>
+
+<p>输出内容介绍</p>
+
+<table>
+<tbody><tr><td>列</td><td>说明</td></tr>
+<tr><td>S0C</td><td>输出Survivor0空间的大小。单位KB。</td></tr>
+<tr><td>S1C</td><td>输出Survivor1空间的大小。单位KB。</td></tr>
+<tr><td>S0U</td><td>输出Survivor0已用空间的大小。单位KB。</td></tr>
+<tr><td>S1U</td><td>输出Survivor1已用空间的大小。单位KB。</td></tr>
+<tr><td>EC</td><td>输出Eden空间的大小。单位KB。</td></tr>
+<tr><td>EU</td><td>输出Eden已用空间的大小。单位KB。</td></tr>
+<tr><td>OC</td><td>输出老年代空间的大小。单位KB。</td></tr>
+<tr><td>OU</td><td>输出老年代已用空间的大小。单位KB。</td></tr>
+<tr><td>PC</td><td>输出持久代空间的大小。单位KB。</td></tr>
+<tr><td>PU</td><td>输出持久代已用空间的大小。单位KB。</td></tr>
+<tr><td>YGC</td><td>新生代空间GC时间发生的次数。</td></tr>
+<tr><td>YGCT</td><td>新生代GC处理花费的时间。</td></tr>
+<tr><td>FGC</td><td>full GC发生的次数。</td></tr>
+<tr><td>FGCT</td><td>full GC操作花费的时间</td></tr>
+<tr><td>GCT</td><td>GC操作花费的总时间。</td></tr>
+<tr><td>NGCMN</td><td>新生代最小空间容量，单位KB。</td></tr>
+<tr><td>NGCMX</td><td>新生代最大空间容量，单位KB。</td></tr>
+<tr><td>NGC</td><td>新生代当前空间容量，单位KB。</td></tr>
+<tr><td>OGCMN</td><td>老年代最小空间容量，单位KB。</td></tr>
+<tr><td>OGCMX</td><td>老年代最大空间容量，单位KB。</td></tr>
+<tr><td>OGC</td><td>老年代当前空间容量制，单位KB。</td></tr>
+<tr><td>PGCMN</td><td>持久代最小空间容量，单位KB。</td></tr>
+<tr><td>PGCMX</td><td>持久代最大空间容量，单位KB。</td></tr>
+<tr><td>PGC</td><td>持久代当前空间容量，单位KB。</td></tr>
+<tr><td>PC</td><td>持久代当前空间大小，单位KB</td></tr>
+<tr><td>PU</td><td>持久代当前已用空间大小，单位KB</td></tr>
+<tr><td>LGCC</td><td>最后一次GC发生的原因</td></tr>
+<tr><td>GCC</td><td>当前GC发生的原因</td></tr>
+<tr><td>TT</td><td>老年化阈值。被移动到老年代之前，在新生代空存活的次数。</td></tr>
+<tr><td>MTT</td><td>最大老年化阈值。被移动到老年代之前，在新生代空存活的次数。</td></tr>
+<tr><td>DSS</td><td>幸存者区所需空间大小，单位KB。</td></tr>
+</tbody></table>
+
+<h3 id="javavisualvmvisualgc">(Java) VisualVM  + Visual GC插件</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Java Visual VM是由Oracle JDK提供的图形化的汇总和监控工具。除了JDK中自带的版本，你还可以直接从官网下载<a href="http://visualvm.java.net/download.html">Visual VM</a>。出于便利性的考虑，JDK中包含的版本被命名为Java VisualVM (jvisualvm),而官网提供的版本被命名为Visual VM (visualvm)。两者的功能基本相同，只有一些细小的差别，例如安装组件的时候。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/JVM/jvm12.png" alt="framework" title=""></p>
+
+<p>通过Visual GC，你可以更直观的看到执行jstatd 所得到的信息。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/JVM/jvm13.png" alt="framework" title=""></p>
+
+<p>启动后的JVisualVM会自动检测本地的java应用
+<img src="http://scottmaxiao.github.io/img/JVM/jvm14.png" alt="framework" title=""></p>
+
+<p><strong>远程监控linux服务器</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp; 首先在服务器上启动jstatd</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp; 其次使用hostname -i命令查看，如果显示的是127.0.0.1或者与本机实际IP不一致的话，需要把/etc/hosts文件中相应的地址改为本机实际IP</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp; 打开JVisualVM，添加需要监控的远程服务器ip地址，并设置监听的端口为被检测机器启动jstatd的端口 
+<img src="http://scottmaxiao.github.io/img/JVM/jvm15.png" alt="framework" title=""></p>
+
+<p><img src="http://scottmaxiao.github.io/img/JVM/jvm16.png" alt="framework" title=""></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;连接成功后应该会显示Jstatd及其PID</p>
+
+<p><img src="http://scottmaxiao.github.io/img/JVM/jvm17.png" alt="framework" title=""></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;发现在监控远程服务器时，没有监控到cpu数据，这时需要在服务器端建立 JMX ，建立 JMX 提示要求端口号。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;修改远程服务器tomcat的catalina.sh的参数，如下：</p>
+
+<pre><code>
+JAVA_OPTS="-Dcom.sun.management.jmxremote.port=8999 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;重启被检测远程机器的tomcat，并打开mac上的JVisualVM，添加JMX
+<img src="http://scottmaxiao.github.io/img/JVM/jvm18.png" alt="framework" title=""></p>
+
+<p><img src="http://scottmaxiao.github.io/img/JVM/jvm19.png" alt="framework" title=""></p>
+
+<h3 id="">参考</h3>
+
+<p>[成为JavaGC专家（2）—如何监控Java垃圾回收机制]
+<a href="http://www.importnew.com/2057.html">http://www.importnew.com/2057.html</a></p>
+
+<p>[《深入理解Java虚拟机》学习笔记之工具]
+<a href="http://www.oseye.net/user/kevin/blog/315">http://www.oseye.net/user/kevin/blog/315</a></p>
+
+<p>[jps命令(Java Virtual Machine Process Status Tool)]
+<a href="http://blog.csdn.net/fenglibing/article/details/6411932">http://blog.csdn.net/fenglibing/article/details/6411932</a></p>
+
+<p>[ Mac下JVisualVM基本使用]
+<a href="http://blog.csdn.net/hjqqingqing/article/details/14170129">http://blog.csdn.net/hjqqingqing/article/details/14170129</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "jvm-JDK的命令行工具.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

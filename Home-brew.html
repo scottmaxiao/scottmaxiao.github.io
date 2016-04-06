@@ -1,0 +1,273 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+###Homebrew
+
+&nbsp;&nbsp;&nbsp;&nbsp;Homebrew是OS X上强大的包管理器，为系统软件提供了非常方便的安装方式，独特式的解决了包的依赖问题，并不再需要烦人的sudo，一键式编译，无参数困扰。
+
+###安装
+&nbsp;&nbsp;&nbsp;&nbsp;打开Mac的命令行，执行下边代码。
+
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+###卸载
+
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
+
+
+
+###如何使用
+
+    Example usage:
+      brew [info | home | options ] [FORMULA...]
+      brew install FORMULA...
+      brew uninstall FORMULA...
+      brew search [foo]
+      brew list [FORMULA...]
+      brew update
+      brew upgrade [FORMULA...]
+      brew pin/unpin [FORMULA...]
+
+    Troubleshooting:
+      brew doctor
+      brew install -vd FORMULA
+      brew [--env | config]
+
+    Brewing:
+      brew create [URL [--no-fetch]]
+      brew edit [FORMULA...]
+      https://github.com/Homebrew/homebrew/blob/master/share/doc/homebrew/Formula-Cookbook.md
+
+    Further help:
+      man brew
+      brew home
+
+###安装路径及文件夹
+
+&nbsp;&nbsp;&nbsp;&nbsp;Homebrew将本地的/usr/local初始化为git的工作树，并将目录所有者变更为当前所操作的用户，以后的操作将不需要sudo。
+
+    -bin          用于存放所安装程序的启动链接（相当于快捷方式）
+    -Cellar       所以brew安装的程序，都将以[程序名/版本号]存放于本目录下
+    -etc          brew安装程序的配置文件默认存放路径
+    -Library      Homebrew 系统自身文件夹
+
+###指定版本安装
+
+<pre><code>
+➜    brew tap homebrew/versions
+
+==> Tapping homebrew/versions
+Cloning into '/usr/local/Library/Taps/homebrew/homebrew-versions'...
+remote: Counting objects: 270, done.
+remote: Compressing objects: 100% (252/252), done.
+remote: Total 270 (delta 36), reused 75 (delta 18), pack-reused 0
+Receiving objects: 100% (270/270), 311.21 KiB | 46.00 KiB/s, done.
+Resolving deltas: 100% (36/36), done.
+Checking connectivity... done.
+Tapped 266 formulae (291 files, 1M)
+
+➜    brew search rabbitmq
+
+homebrew/versions/rabbitmq30                      rabbitmq                                          rabbitmq-c
+Caskroom/cask/rabbitmq
+
+➜    brew install homebrew/versions/rabbitmq30
+==> Installing rabbitmq30 from homebrew/versions
+
+</pre></code>
+
+###参考资料
+
+[Homebrew官网]
+
+<http://brew.sh/index_zh-cn.html>
+
+[Mac上的包管理器Homebrew的介绍及安装和使用实践]
+
+<http://blog.csdn.net/meegomeego/article/details/12908337>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h3 id="homebrew">Homebrew</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Homebrew是OS X上强大的包管理器，为系统软件提供了非常方便的安装方式，独特式的解决了包的依赖问题，并不再需要烦人的sudo，一键式编译，无参数困扰。</p>
+
+<h3 id="">安装</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;打开Mac的命令行，执行下边代码。</p>
+
+<pre><code>/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+</code></pre>
+
+<h3 id="">卸载</h3>
+
+<pre><code>ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
+</code></pre>
+
+<h3 id="">如何使用</h3>
+
+<pre><code>Example usage:
+  brew [info | home | options ] [FORMULA...]
+  brew install FORMULA...
+  brew uninstall FORMULA...
+  brew search [foo]
+  brew list [FORMULA...]
+  brew update
+  brew upgrade [FORMULA...]
+  brew pin/unpin [FORMULA...]
+
+Troubleshooting:
+  brew doctor
+  brew install -vd FORMULA
+  brew [--env | config]
+
+Brewing:
+  brew create [URL [--no-fetch]]
+  brew edit [FORMULA...]
+  https://github.com/Homebrew/homebrew/blob/master/share/doc/homebrew/Formula-Cookbook.md
+
+Further help:
+  man brew
+  brew home
+</code></pre>
+
+<h3 id="">安装路径及文件夹</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Homebrew将本地的/usr/local初始化为git的工作树，并将目录所有者变更为当前所操作的用户，以后的操作将不需要sudo。</p>
+
+<pre><code>-bin          用于存放所安装程序的启动链接（相当于快捷方式）
+-Cellar       所以brew安装的程序，都将以[程序名/版本号]存放于本目录下
+-etc          brew安装程序的配置文件默认存放路径
+-Library      Homebrew 系统自身文件夹
+</code></pre>
+
+<h3 id="">指定版本安装</h3>
+
+<p></p><pre><code>
+➜    brew tap homebrew/versions<p></p>
+
+<p>==&gt; Tapping homebrew/versions
+Cloning into '/usr/local/Library/Taps/homebrew/homebrew-versions'...
+remote: Counting objects: 270, done.
+remote: Compressing objects: 100% (252/252), done.
+remote: Total 270 (delta 36), reused 75 (delta 18), pack-reused 0
+Receiving objects: 100% (270/270), 311.21 KiB | 46.00 KiB/s, done.
+Resolving deltas: 100% (36/36), done.
+Checking connectivity... done.
+Tapped 266 formulae (291 files, 1M)</p>
+
+<p>➜    brew search rabbitmq</p>
+
+<p>homebrew/versions/rabbitmq30                      rabbitmq                                          rabbitmq-c
+Caskroom/cask/rabbitmq</p>
+
+<p>➜    brew install homebrew/versions/rabbitmq30
+==&gt; Installing rabbitmq30 from homebrew/versions</p>
+
+<p></p></code></pre><p></p>
+
+<h3 id="">参考资料</h3>
+
+<p>[Homebrew官网]</p>
+
+<p><a href="http://brew.sh/index_zh-cn.html">http://brew.sh/index_zh-cn.html</a></p>
+
+<p>[Mac上的包管理器Homebrew的介绍及安装和使用实践]</p>
+
+<p><a href="http://blog.csdn.net/meegomeego/article/details/12908337">http://blog.csdn.net/meegomeego/article/details/12908337</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "Home-brew.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

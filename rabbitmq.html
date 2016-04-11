@@ -1,0 +1,550 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##rabbitmq
+
+###介绍
+&nbsp;&nbsp;&nbsp;&nbsp;AMQP，即Advanced Message Queuing Protocol，高级消息队列协议，是应用层协议的一个开放标准，为面向消息的中间件设计。消息中间件主要用于组件之间的解耦，消息的发送者无需知道消息使用者的存在，反之亦然。AMQP的主要特征是面向消息、队列、路由（包括点对点和发布/订阅）、可靠性、安全。
+
+&nbsp;&nbsp;&nbsp;&nbsp;RabbitMQ是一个开源的AMQP实现，服务器端用Erlang语言编写，支持多种客户端，如：Python、Ruby、.NET、Java、JMS、C、PHP、ActionScript、XMPP、STOMP等，支持AJAX。用于在分布式系统中存储转发消息，在易用性、扩展性、高可用性等方面表现不俗。
+
+###概念
+
+![MQ](http://scottmaxiao.github.io/img/MQ/mq01.png)
+
+- Broker：简单来说就是消息队列服务器实体。
+- Exchange：消息交换机，它指定消息按什么规则，路由到哪个队列。
+- Queue：消息队列载体，每个消息都会被投入到一个或多个队列。
+- Binding：绑定，它的作用就是把exchange和queue按照路由规则绑定起来。
+- Routing Key：路由关键字，exchange根据这个关键字进行消息投递。
+- vhost：虚拟主机，一个broker里可以开设多个vhost，用作不同用户的权限分离。
+- producer：消息生产者，就是投递消息的程序。
+- consumer：消息消费者，就是接受消息的程序。
+- channel：消息通道，在客户端的每个连接里，可建立多个channel，每个channel代表一个会话任务。
+
+
+###使用场景
+
+####单发送单接收模式
+
+&nbsp;&nbsp;&nbsp;&nbsp;RabbitMQ中的消息都只能存储在Queue中，生产者（下图中的P）生产消息并最终投递到Queue中，消费者（下图中的C）可以从Queue中获取消息并消费。
+
+![MQ](http://scottmaxiao.github.io/img/MQ/mq02.png)
+
+####单发送多接收模式（work Queues）
+
+&nbsp;&nbsp;&nbsp;&nbsp;多个消费者可以订阅同一个Quque，这时Quque中的消息会被平均分摊给多个消费者进行处理，而不是每个消费者都收到所有消息并处理。
+
+![MQ](http://scottmaxiao.github.io/img/MQ/mq03.png)
+
+**Message acknowlegment：（消息回执）**
+
+&nbsp;&nbsp;&nbsp;&nbsp;在实际应用中，可能会发生消费者收到Quque中的消息，但没有处理完成就宕机的情况，这种情况下，就可能导致信息丢失，为了避免这种情况发生，我们可以要求消费者在消费完消息后发送一个回执给RabbitMQ,RabbitMQ收到消息回执（Message acknowledge）后，才将该消息从Quque中移除。
+
+&nbsp;&nbsp;&nbsp;&nbsp;如果RabbitMQ没有收到回执，并检测到消费者的RabbitMQ链接断开，则RabbitMQ 会将该消息发送给其他消费者（如果存在多个消费者的情况下）进行处理，这里不存在timeout的概念，一个消费者处理消费时间不管多么长也不会导致该消息被发送给其他消费者，除非它的RabbitMQ连接断开；
+
+```
+boolean autoAck = false;//autoAck自动确认关闭:false
+channel.basicConsume(TASK_QUEUE_NAME, autoAck, consumer01);
+```
+
+```
+QueueingConsumer consumer = new QueueingConsumer(channel); 
+while (true) { 
+//nextDelivery是一个阻塞方法（内部实现其实是阻塞队列的take方法）  
+QueueingConsumer.Delivery delivery = consumer.nextDelivery(); 
+String message = new String(delivery.getBody());  
+channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false); 
+}
+
+```
+
+```
+final Consumer consumer = new DefaultConsumer(channel) {
+		      @Override
+public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+		        String message = new String(body, "UTF-8");
+
+		        System.out.println(" ["+workerName+"] Received '" + message + "'");
+		        try {
+		          doWork(message,workerName);
+		        } finally {
+		          channel.basicAck(envelope.getDeliveryTag(), false);
+		        }
+		      }
+		    };
+```		    	    
+
+
+**Message durability：（消息持久化）**
+
+&nbsp;&nbsp;&nbsp;&nbsp;如果我们希望即使在RabbitMQ在重启的情况下，也不会丢失消息，那么我们将Quque与Message都设置成可持久化的（durability），这样就可以保证绝大部分情况下我们的RabbitMQ消息不会丢失。但依然解决不了小概率的丢失事件的发生(比如 RabbitMQ服务器已经接收到生产者的消息，但是，还没有来的及持久化该消息时，RabbitMQ服务器就断电了或者宕机了)，如果我们需要对这种小概率事件也要管理起来的话，那么我们需要用到事务。
+
+```
+Quque持久化
+
+boolean durable = true;
+channel.queueDeclare(TASK_QUEUE_NAME, durable, false, false, null);
+```
+
+
+```
+Message持久化
+
+channel.basicPublish("", TASK_QUEUE_NAME,
+    MessageProperties.PERSISTENT_TEXT_PLAIN,
+    message.getBytes("UTF-8"));
+
+```
+
+**Prefetch count （预取数目）**
+
+&nbsp;&nbsp;&nbsp;&nbsp;前面我们提到了如果有多个消费者同时订阅同一个Quque中的消息，Quque中的消息会被平摊给多个消费者。这时如果每个消息的处理时间不同，就有可能导致某些消费者一直很忙，而另一些消费者很快处理完手头上工作，并一直空闲的情况下。我们可以通过设置prefetch count=1，则Quque每次给每个消费者发送一条消息；消费者处理完这条消息后Quque会再给消费者发送一条消息。
+
+<http://www.rabbitmq.com/consumer-prefetch.html>
+
+####发布订阅模式(Publish/Subscibe)
+
+&nbsp;&nbsp;&nbsp;&nbsp;发布订阅模式就是生产者将消息发送到Exchange（交换器，下图中X），Exchange将消息路由到一个或者多个Quque中或者丢弃。
+
+![MQ](http://scottmaxiao.github.io/img/MQ/mq04.png)
+
+**fanout （分列）**
+
+&nbsp;&nbsp;&nbsp;&nbsp;fanout类型的Exchange路由规则非常简单，它会把所有发送到该Exchange的消息路由到所有与它绑定的Queue中。
+
+![MQ](http://scottmaxiao.github.io/img/MQ/mq05.png)
+
+**direct （重定向）**
+
+&nbsp;&nbsp;&nbsp;&nbsp;direct类型的Exchange路由规则也很简单，它会把消息路由到那些binding key与routing key完全匹配的Queue中。
+
+![MQ](http://scottmaxiao.github.io/img/MQ/mq06.png)
+
+**topic（主题）**
+
+&nbsp;&nbsp;&nbsp;&nbsp;前面讲到direct类型的Exchange路由规则是完全匹配binding key与routing key，但这种严格的匹配方式在很多情况下不能满足实际业务需求。topic类型的Exchange在匹配规则上进行了扩展，它与direct类型的Exchage相似，也是将消息路由到binding key与routing key相匹配的Queue中，但这里的匹配规则有些不同，它约定：
+
+- routing key为一个句点号“. ”分隔的字符串（我们将被句点号“. ”分隔开的每一段独立的字符串称为一个单词），如“stock.usd.nyse”、“nyse.vmw”、“quick.orange.rabbit”
+- binding key与routing key一样也是句点号“. ”分隔的字符串
+- binding key中可以存在两种特殊字符“\*”与“#”，用于做模糊匹配，其中“\*”用于匹配一个单词，“#”用于匹配多个单词（可以是零个）】
+
+![MQ](http://scottmaxiao.github.io/img/MQ/mq07.png)
+
+####RPC模式（远程过程调用）
+
+&nbsp;&nbsp;&nbsp;&nbsp;MQ本身是基于异步的消息处理，前面的示例中所有的生产者（P）将消息发送到RabbitMQ后不会知道消费者（C）处理成功或者失败（甚至连有没有消费者来处理这条消息都不知道）。
+
+&nbsp;&nbsp;&nbsp;&nbsp;但实际的应用场景中，我们很可能需要一些同步处理，需要同步等待服务端将我的消息处理完成后再进行下一步处理。这相当于RPC（Remote Procedure Call，远程过程调用）。在RabbitMQ中也支持RPC。
+
+![MQ](http://scottmaxiao.github.io/img/MQ/mq08.png)
+
+
+具体样例代码参考:
+
+<http://www.rabbitmq.com/getstarted.html>
+
+###安装
+
+安装参考<http://www.rabbitmq.com/download.html>
+
+一般情况下，RabbitMQ的默认配置就足够了。如果希望特殊设置的话，有两个途径：
+
+- 一个是环境变量的配置文件 rabbitmq-env.conf ；
+- 一个是配置信息的配置文件 rabbitmq.config；
+
+注意，这两个文件默认是没有的，如果需要必须自己创建。
+
+**rabbitmq-env.conf**
+
+&nbsp;&nbsp;&nbsp;&nbsp;这个文件的位置是确定和不能改变的，位于：/etc/rabbitmq目录下（这个目录需要自己创建）。
+文件的内容包括了RabbitMQ的一些环境变量，常用的有：
+
+```
+
+#RABBITMQ_NODE_PORT=    //端口号
+#HOSTNAME=
+RABBITMQ_NODENAME=mq
+RABBITMQ_CONFIG_FILE=        //配置文件的路径
+RABBITMQ_MNESIA_BASE=/rabbitmq/data        //需要使用的MNESIA数据库的路径
+RABBITMQ_LOG_BASE=/rabbitmq/log        //log的路径
+RABBITMQ_PLUGINS_DIR=/rabbitmq/plugins    //插件的路径
+
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;具体的列表见：http://www.rabbitmq.com/configure.html#define-environment-variables
+
+
+**rabbitmq.config**
+
+&nbsp;&nbsp;&nbsp;&nbsp;这是一个标准的erlang配置文件。它必须符合erlang配置文件的标准。
+它既有默认的目录，也可以在rabbitmq-env.conf文件中配置。
+
+文件的内容详见：http://www.rabbitmq.com/configure.html#config-items
+
+
+###扩展
+
+**mandatory和immediate**
+
+&nbsp;&nbsp;&nbsp;&nbsp;mandatory和immediate是AMQP协议中basic.pulish方法中的两个标志位，它们都有当消息传递过程中不可达目的地时将消息返回给生产者的功能。具体区别在于：
+
+- mandatory标志位
+
+&nbsp;&nbsp;&nbsp;&nbsp;当mandatory标志位设置为true时，如果exchange根据自身类型和消息routeKey无法找到一个符合条件的queue，那么会调用basic.return方法将消息返还给生产者；当mandatory设为false时，出现上述情形broker会直接将消息扔掉。
+
+- immediate标志位
+
+&nbsp;&nbsp;&nbsp;&nbsp;当immediate标志位设置为true时，如果exchange在将消息route到queue(s)时发现对应的queue上没有消费者，那么这条消息不会放入队列中。当与消息routeKey关联的所有queue(一个或多个)都没有消费者时，该消息会通过basic.return方法返还给生产者。 
+
+
+###SSL
+
+支持TLS/SSL,参考<http://www.rabbitmq.com/ssl.html>
+
+如遇到问题，参考<http://www.rabbitmq.com/troubleshooting-ssl.html>排除。
+
+
+###集群搭建
+
+
+待续。。。
+
+
+###Spring AMQP
+
+待续。。。
+
+
+###参考资料
+
+[rabbitmq主页]
+
+<http://www.rabbitmq.com/install-homebrew.html>
+
+[RabbitMQ的几种典型使用场景]
+
+<http://www.cnblogs.com/luxiaoxun/p/3918054.html>
+
+[RabbitMQ基础概念详细介绍(转)]
+<http://blog.csdn.net/whycold/article/details/41119807>
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="rabbitmq">rabbitmq</h2>
+
+<h3 id="">介绍</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;AMQP，即Advanced Message Queuing Protocol，高级消息队列协议，是应用层协议的一个开放标准，为面向消息的中间件设计。消息中间件主要用于组件之间的解耦，消息的发送者无需知道消息使用者的存在，反之亦然。AMQP的主要特征是面向消息、队列、路由（包括点对点和发布/订阅）、可靠性、安全。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;RabbitMQ是一个开源的AMQP实现，服务器端用Erlang语言编写，支持多种客户端，如：Python、Ruby、.NET、Java、JMS、C、PHP、ActionScript、XMPP、STOMP等，支持AJAX。用于在分布式系统中存储转发消息，在易用性、扩展性、高可用性等方面表现不俗。</p>
+
+<h3 id="">概念</h3>
+
+<p><img src="http://scottmaxiao.github.io/img/MQ/mq01.png" alt="MQ" title=""></p>
+
+<ul>
+<li>Broker：简单来说就是消息队列服务器实体。</li>
+<li>Exchange：消息交换机，它指定消息按什么规则，路由到哪个队列。</li>
+<li>Queue：消息队列载体，每个消息都会被投入到一个或多个队列。</li>
+<li>Binding：绑定，它的作用就是把exchange和queue按照路由规则绑定起来。</li>
+<li>Routing Key：路由关键字，exchange根据这个关键字进行消息投递。</li>
+<li>vhost：虚拟主机，一个broker里可以开设多个vhost，用作不同用户的权限分离。</li>
+<li>producer：消息生产者，就是投递消息的程序。</li>
+<li>consumer：消息消费者，就是接受消息的程序。</li>
+<li>channel：消息通道，在客户端的每个连接里，可建立多个channel，每个channel代表一个会话任务。</li>
+</ul>
+
+<h3 id="">使用场景</h3>
+
+<h4 id="">单发送单接收模式</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;RabbitMQ中的消息都只能存储在Queue中，生产者（下图中的P）生产消息并最终投递到Queue中，消费者（下图中的C）可以从Queue中获取消息并消费。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/MQ/mq02.png" alt="MQ" title=""></p>
+
+<h4 id="workqueues">单发送多接收模式（work Queues）</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;多个消费者可以订阅同一个Quque，这时Quque中的消息会被平均分摊给多个消费者进行处理，而不是每个消费者都收到所有消息并处理。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/MQ/mq03.png" alt="MQ" title=""></p>
+
+<p><strong>Message acknowlegment：（消息回执）</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在实际应用中，可能会发生消费者收到Quque中的消息，但没有处理完成就宕机的情况，这种情况下，就可能导致信息丢失，为了避免这种情况发生，我们可以要求消费者在消费完消息后发送一个回执给RabbitMQ,RabbitMQ收到消息回执（Message acknowledge）后，才将该消息从Quque中移除。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;如果RabbitMQ没有收到回执，并检测到消费者的RabbitMQ链接断开，则RabbitMQ 会将该消息发送给其他消费者（如果存在多个消费者的情况下）进行处理，这里不存在timeout的概念，一个消费者处理消费时间不管多么长也不会导致该消息被发送给其他消费者，除非它的RabbitMQ连接断开；</p>
+
+<pre><code>boolean autoAck = false;//autoAck自动确认关闭:false
+channel.basicConsume(TASK_QUEUE_NAME, autoAck, consumer01);
+</code></pre>
+
+<pre><code>QueueingConsumer consumer = new QueueingConsumer(channel); 
+while (true) { 
+//nextDelivery是一个阻塞方法（内部实现其实是阻塞队列的take方法）  
+QueueingConsumer.Delivery delivery = consumer.nextDelivery(); 
+String message = new String(delivery.getBody());  
+channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false); 
+}
+</code></pre>
+
+<pre><code>final Consumer consumer = new DefaultConsumer(channel) {
+              @Override
+public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                String message = new String(body, "UTF-8");
+
+                System.out.println(" ["+workerName+"] Received '" + message + "'");
+                try {
+                  doWork(message,workerName);
+                } finally {
+                  channel.basicAck(envelope.getDeliveryTag(), false);
+                }
+              }
+            };
+</code></pre>
+
+<pre><code>                
+</code></pre>
+
+<p><strong>Message durability：（消息持久化）</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;如果我们希望即使在RabbitMQ在重启的情况下，也不会丢失消息，那么我们将Quque与Message都设置成可持久化的（durability），这样就可以保证绝大部分情况下我们的RabbitMQ消息不会丢失。但依然解决不了小概率的丢失事件的发生(比如 RabbitMQ服务器已经接收到生产者的消息，但是，还没有来的及持久化该消息时，RabbitMQ服务器就断电了或者宕机了)，如果我们需要对这种小概率事件也要管理起来的话，那么我们需要用到事务。</p>
+
+<pre><code>Quque持久化
+
+boolean durable = true;
+channel.queueDeclare(TASK_QUEUE_NAME, durable, false, false, null);
+</code></pre>
+
+<pre><code>Message持久化
+
+channel.basicPublish("", TASK_QUEUE_NAME,
+    MessageProperties.PERSISTENT_TEXT_PLAIN,
+    message.getBytes("UTF-8"));
+</code></pre>
+
+<p><strong>Prefetch count （预取数目）</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;前面我们提到了如果有多个消费者同时订阅同一个Quque中的消息，Quque中的消息会被平摊给多个消费者。这时如果每个消息的处理时间不同，就有可能导致某些消费者一直很忙，而另一些消费者很快处理完手头上工作，并一直空闲的情况下。我们可以通过设置prefetch count=1，则Quque每次给每个消费者发送一条消息；消费者处理完这条消息后Quque会再给消费者发送一条消息。</p>
+
+<p><a href="http://www.rabbitmq.com/consumer-prefetch.html">http://www.rabbitmq.com/consumer-prefetch.html</a></p>
+
+<h4 id="publishsubscibe">发布订阅模式(Publish/Subscibe)</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;发布订阅模式就是生产者将消息发送到Exchange（交换器，下图中X），Exchange将消息路由到一个或者多个Quque中或者丢弃。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/MQ/mq04.png" alt="MQ" title=""></p>
+
+<p><strong>fanout （分列）</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;fanout类型的Exchange路由规则非常简单，它会把所有发送到该Exchange的消息路由到所有与它绑定的Queue中。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/MQ/mq05.png" alt="MQ" title=""></p>
+
+<p><strong>direct （重定向）</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;direct类型的Exchange路由规则也很简单，它会把消息路由到那些binding key与routing key完全匹配的Queue中。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/MQ/mq06.png" alt="MQ" title=""></p>
+
+<p><strong>topic（主题）</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;前面讲到direct类型的Exchange路由规则是完全匹配binding key与routing key，但这种严格的匹配方式在很多情况下不能满足实际业务需求。topic类型的Exchange在匹配规则上进行了扩展，它与direct类型的Exchage相似，也是将消息路由到binding key与routing key相匹配的Queue中，但这里的匹配规则有些不同，它约定：</p>
+
+<ul>
+<li>routing key为一个句点号“. ”分隔的字符串（我们将被句点号“. ”分隔开的每一段独立的字符串称为一个单词），如“stock.usd.nyse”、“nyse.vmw”、“quick.orange.rabbit”</li>
+<li>binding key与routing key一样也是句点号“. ”分隔的字符串</li>
+<li>binding key中可以存在两种特殊字符“*”与“#”，用于做模糊匹配，其中“*”用于匹配一个单词，“#”用于匹配多个单词（可以是零个）】</li>
+</ul>
+
+<p><img src="http://scottmaxiao.github.io/img/MQ/mq07.png" alt="MQ" title=""></p>
+
+<h4 id="rpc">RPC模式（远程过程调用）</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;MQ本身是基于异步的消息处理，前面的示例中所有的生产者（P）将消息发送到RabbitMQ后不会知道消费者（C）处理成功或者失败（甚至连有没有消费者来处理这条消息都不知道）。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;但实际的应用场景中，我们很可能需要一些同步处理，需要同步等待服务端将我的消息处理完成后再进行下一步处理。这相当于RPC（Remote Procedure Call，远程过程调用）。在RabbitMQ中也支持RPC。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/MQ/mq08.png" alt="MQ" title=""></p>
+
+<p>具体样例代码参考:</p>
+
+<p><a href="http://www.rabbitmq.com/getstarted.html">http://www.rabbitmq.com/getstarted.html</a></p>
+
+<h3 id="">安装</h3>
+
+<p>安装参考<a href="http://www.rabbitmq.com/download.html">http://www.rabbitmq.com/download.html</a></p>
+
+<p>一般情况下，RabbitMQ的默认配置就足够了。如果希望特殊设置的话，有两个途径：</p>
+
+<ul>
+<li>一个是环境变量的配置文件 rabbitmq-env.conf ；</li>
+<li>一个是配置信息的配置文件 rabbitmq.config；</li>
+</ul>
+
+<p>注意，这两个文件默认是没有的，如果需要必须自己创建。</p>
+
+<p><strong>rabbitmq-env.conf</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;这个文件的位置是确定和不能改变的，位于：/etc/rabbitmq目录下（这个目录需要自己创建）。
+文件的内容包括了RabbitMQ的一些环境变量，常用的有：</p>
+
+<pre><code>#RABBITMQ_NODE_PORT=    //端口号
+#HOSTNAME=
+RABBITMQ_NODENAME=mq
+RABBITMQ_CONFIG_FILE=        //配置文件的路径
+RABBITMQ_MNESIA_BASE=/rabbitmq/data        //需要使用的MNESIA数据库的路径
+RABBITMQ_LOG_BASE=/rabbitmq/log        //log的路径
+RABBITMQ_PLUGINS_DIR=/rabbitmq/plugins    //插件的路径
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;具体的列表见：http://www.rabbitmq.com/configure.html#define-environment-variables</p>
+
+<p><strong>rabbitmq.config</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;这是一个标准的erlang配置文件。它必须符合erlang配置文件的标准。
+它既有默认的目录，也可以在rabbitmq-env.conf文件中配置。</p>
+
+<p>文件的内容详见：http://www.rabbitmq.com/configure.html#config-items</p>
+
+<h3 id="">扩展</h3>
+
+<p><strong>mandatory和immediate</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;mandatory和immediate是AMQP协议中basic.pulish方法中的两个标志位，它们都有当消息传递过程中不可达目的地时将消息返回给生产者的功能。具体区别在于：</p>
+
+<ul>
+<li>mandatory标志位</li>
+</ul>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;当mandatory标志位设置为true时，如果exchange根据自身类型和消息routeKey无法找到一个符合条件的queue，那么会调用basic.return方法将消息返还给生产者；当mandatory设为false时，出现上述情形broker会直接将消息扔掉。</p>
+
+<ul>
+<li>immediate标志位</li>
+</ul>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;当immediate标志位设置为true时，如果exchange在将消息route到queue(s)时发现对应的queue上没有消费者，那么这条消息不会放入队列中。当与消息routeKey关联的所有queue(一个或多个)都没有消费者时，该消息会通过basic.return方法返还给生产者。 </p>
+
+<h3 id="ssl">SSL</h3>
+
+<p>支持TLS/SSL,参考<a href="http://www.rabbitmq.com/ssl.html">http://www.rabbitmq.com/ssl.html</a></p>
+
+<p>如遇到问题，参考<a href="http://www.rabbitmq.com/troubleshooting-ssl.html">http://www.rabbitmq.com/troubleshooting-ssl.html</a>排除。</p>
+
+<h3 id="">集群搭建</h3>
+
+<p>待续。。。</p>
+
+<h3 id="springamqp">Spring AMQP</h3>
+
+<p>待续。。。</p>
+
+<h3 id="">参考资料</h3>
+
+<p>[rabbitmq主页]</p>
+
+<p><a href="http://www.rabbitmq.com/install-homebrew.html">http://www.rabbitmq.com/install-homebrew.html</a></p>
+
+<p>[RabbitMQ的几种典型使用场景]</p>
+
+<p><a href="http://www.cnblogs.com/luxiaoxun/p/3918054.html">http://www.cnblogs.com/luxiaoxun/p/3918054.html</a></p>
+
+<p>[RabbitMQ基础概念详细介绍(转)]
+<a href="http://blog.csdn.net/whycold/article/details/41119807">http://blog.csdn.net/whycold/article/details/41119807</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "rabbitmq.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

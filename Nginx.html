@@ -1,0 +1,892 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##Nginx
+
+###介绍
+
+&nbsp;&nbsp;&nbsp;&nbsp;Nginx ("engine x") 是一个高性能的HTTP和反向代理服务器，也是一个IMAP/POP3/SMTP服务器。Nginx是由Igor Sysoev为俄罗斯访问量第二的Rambler.ru站点开发的，第一个公开版本0.1.0发布于2004年10月4日。其将源代码以类BSD许可证的形式发布，因它的稳定性、丰富的功能集、示例配置文件和低系统资源的消耗而闻名。2011年6月1日，nginx 1.0.4发布。
+
+&nbsp;&nbsp;&nbsp;&nbsp;Nginx是一款轻量级的Web 服务器/反向代理服务器及电子邮件（IMAP/POP3）代理服务器，并在一个BSD-like 协议下发行。由俄罗斯的程序设计师Igor Sysoev所开发，供俄国大型的入口网站及搜索引擎Rambler（俄文：Рамблер）使用。其特点是占有内存少，并发能力强，事实上nginx的并发能力确实在同类型的网页服务器中表现较好，中国大陆使用nginx网站用户有：百度、新浪、网易、腾讯等。
+
+&nbsp;&nbsp;&nbsp;&nbsp;以上文字摘抄"百度百科"。
+
+###安装
+
+&nbsp;&nbsp;&nbsp;&nbsp;我的系统是mac osx el capitan，使用HomeBrew安装Nginx程序。命令如下：
+
+```
+brew install nginx
+
+```
+
+安装成功后，'/usr/local/etc'下会出现nginx目录，该目录下存放nginx的配置文件。
+
+注意：上面这种安装只能使用ningx提供的核心模块功能，如果需要使用第三方插件的话，曾需要下面的安装方式。
+
+```
+brew tap homebrew/nginx
+
+brew info nginx-full
+
+##定制第三方插件
+brew install nginx-full --with-echo-module --with-lua-module --with-set-misc-module
+
+##删除旧的nginx
+brew unlink nginx
+brew link nginx-full
+
+```
+
+
+###基本命令
+
+```
+nginx              启动nginx
+nginx -v           查看版本
+nginx -V           查看nginx安装信息，包括版本和configure参数等等。
+nginx -s reload    重新加载配置文件
+nginx -s stop      stop是快速停止nginx，可能并不保存相关信息
+nginx -s quit      quit是完整有序的停止nginx，并保存相关信息
+nginx -t           测试nginx配置文件是否正确
+
+```
+
+
+###基本配置
+
+&nbsp;&nbsp;&nbsp;&nbsp;下面给出最基本配置的介绍(/usr/local/etc/nginx/nginx.conf)
+
+<pre><code>
+#启动work进程,通常设置成和cpu的数量相等
+worker_processes  1; 
+
+#工作模式及连接数上限
+events {
+	#每个worker进程允许的连接数
+    worker_connections  1024;
+}
+
+#设定http服务器，利用它的反向代理功能提供负载均衡支持
+http {
+	##设定mime类型,类型由mime.type文件定义,位于/usr/local/etc/nginx
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    #sendfile 指令指定 nginx 是否调用 sendfile 函数（zero copy 方式）来输出文件，对于普通应用，
+    #必须设为 on,如果用来进行下载等应用磁盘IO重负载应用，可设置为 off，以平衡磁盘与网络I/O处理速度，降低系统的uptime.
+    sendfile        on;
+
+	#连接超时时间
+    keepalive_timeout  65;
+    
+    #关闭版本显示
+    server_tokens off;     
+
+    server {
+    	#侦听端口
+        listen       8080;
+        
+        #虚拟站点
+        server_name  localhost;
+        
+		#默认请求
+        location / {
+        	#定义服务器的默认网站根目录位置
+            root   html;
+            #定义首页索引文件的名称
+            index  index.html index.htm;
+        }
+
+
+		# 定义错误提示页面
+        #error_page  404              /404.html;
+
+        # redirect server error pages to the static page /50x.html
+        #
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+
+    }
+	#读取servers目录下的所有配置文件
+    include servers/*;
+    }
+
+</code></pre>
+
+
+###虚拟站点配置
+
+&nbsp;&nbsp;&nbsp;&nbsp;一般不会编辑nginx.conf文件，而是在servers目录下新建配置文件(通过Homebrew安装nginx的情况)。
+
+<pre><code>
+#配置虚拟主机必须有该字段
+server {
+	#监听ip和端口
+   listen       8083;
+   
+   #虚拟主机的域名，可以写多个域名
+   server_name  www.maxiao-mac.com, www.maxiao.com;
+   
+   #站点根目录
+   root /usr/local/var/www/maxiao-mac;
+
+
+    location /gap41{
+    	#反向代理设置
+    	proxy_pass http://127.0.0.1:9999;
+    }
+}
+
+</code></pre>
+
+**location配置详解**
+
+名词解释：
+
+- 普通location：以=或^~为前缀或者没有任何前缀的 /uri/
+- 正则location：以~或~*为前缀的 /uri/ 
+- 严格精确匹配：/uri/与要之匹配的/uri/一样
+- 最大前缀匹配：/uri/与之匹配的/uri/最大的相同部分
+
+<pre><code>
+location [=|~|~*|^~|@] /uri/ { ... }  
+
+不带前缀(普通location)：最大前缀匹配或者严格精确匹配
+=(普通location)：等于匹配(严格精确匹配)
+^~(普通location)：^表示“非”，~表示“正则”，意思是：不要继续匹配正则，(最大前缀匹配或者严格精确匹配)
+~(正则location)：区分大小写匹配
+~*(正则location)：不区分大小写匹配
+@(指定匹配)：指定使用location名称
+
+</code></pre>
+
+参考：[nginx location配置详解(正则,优先级,root,语法,重定向)](http://54rd.net/html/2015/webserver_0107/13.html)
+
+
+####扩展应用###
+
+待续
+
+###静态文件处理
+
+**方式一静态文件分离**
+
+&nbsp;&nbsp;&nbsp;&nbsp;适用于静态文件和Nginx在同一台服务器中，静态文件请求由Nginx直接读取，动态文件则由反向代理获取。
+
+<pre><code>
+访问链接为http://www.maxiao.com:8083/gap41/images/icon/disable.bmp
+#静态文件分离配置方式一, ^字符表示开始位置
+    location ~ ^/gap41/(images|img)/ {
+        root /usr/local/var/www/maxiao-mac;
+        #设置浏览器端缓存时限，过期30天。
+        expires 30d;
+    }
+
+
+访问链接为http://www.maxiao.com:8083/gap41/img/photo.jpg
+#静态文件分离配置方式二, $字符表示结尾位置
+    location ~ .(htm|html|gif|jpg|jpeg|png|css|js|swf|doc|ppt|xls|pdf)$ {  
+        root /usr/local/var/www/maxiao-mac;
+        #设置浏览器端缓存时限，过期30天。
+        expires 30d;
+    }  
+
+</code></pre>
+
+注意:以上配置中root标识的路径下必须有反向代理标识(gap41)的文件夹。
+
+**方式二静态文件缓存配置**
+
+&nbsp;&nbsp;&nbsp;&nbsp;适用于图片服务器与动态服务器不在一个机器上的情况,nginx从缓存目录中读取静态文件。
+
+<pre><code>
+http{
+	#连接后端服务器超时时间
+ 	proxy_connect_timeout    5;  
+ 	
+ 	#后端服务器响应请求超时时间
+ 	proxy_read_timeout       60;  
+ 	
+ 	#后端服务器发送数据超时时间
+ 	proxy_send_timeout       5;  	
+ 	
+ 	#缓存区大小,默认来说,该缓冲区大小等于指令 proxy_buffers所设置的;但是,你可以把它设置得更小.
+ 	proxy_buffer_size        16k;  
+ 	
+ 	#设置缓冲区的大小和数量
+ 	proxy_buffers            4 64k;  
+ 	
+ 	#系统繁忙时可申请的proxy_buffers大小
+ 	proxy_busy_buffers_size 128k;  
+ 	
+ 	#proxy缓存临时文件的大小
+ 	proxy_temp_file_write_size 128k;  
+ 	
+ 	#指定临时文件目录
+    proxy_temp_path /usr/local/var/www/maxiao-mac/proxy_temp_dir; 
+    
+    #设置缓存目录为二级目录，共享内存区大小，非活动时间，最大容量，临时目录要跟缓存目录在同一个分区。
+    proxy_cache_path /usr/local/var/www/maxiao-mac/proxy_cache_dir levels=1:2 keys_zone=content:50m inactive=1d max_size=1g;
+}
+
+
+location ~ .(xml|htm|html|gif|jpg|jpeg|png|ico|rar|css|js|zip|txt|flv|swf|doc|ppt|xls|pdf)$ {  
+
+#设置缓存共享内存,根keys_zone后的内容对应
+ proxy_cache content;   
+ 
+ #哪些状态缓存多长时间
+ proxy_cache_valid  200 304 301 302 10d; 
+ 
+ #其他的缓存多长时间    
+ proxy_cache_valid  any 1d;     
+  
+ #以域名、URI、参数组合成Web缓存的Key值，Nginx根据Key值哈希，存储缓存内容到二级缓存目录内
+ proxy_cache_key $host$uri$is_args$args;     
+
+ proxy_pass http://dev.itari.com.cn;
+
+ } 
+</code></pre>
+
+###负载均衡
+
+&nbsp;&nbsp;&nbsp;&nbsp;nginx可以作为代理服务器，支持负载均衡功能，一般都需要向上游服务器的集群转发请求，这里的负载均衡是指选择一种策略。
+
+**第一种轮询方式**
+<pre><code>
+upstream gap41tomcat {
+	server 192.168.59.103:48080;
+	server 192.168.59.103:49080;
+}
+
+server {
+   listen       127.0.0.1:8083;
+   
+    location /gap41{
+         #反向代理设置
+         proxy_pass http://gap41tomcat;
+    }
+   
+}
+</code></pre>
+
+该方式会尽量把请求平均地分布到每一台上游服务器上。
+
+
+**第二种权重方式**
+
+<pre><code>
+upstream gap41tomcat {
+	server 192.168.59.103:48080 weight=5;
+	server 192.168.59.103:49080 max_fails=3 fail_timeout=30s;
+}
+
+</code></pre>
+
+- weight=number：设置向这台上游服务器转发的权重，默认为1。
+- max_fails=number：该选项与fail_timeout配合使用，指在fail_timeout时间段内，如果向当前的上游服务器转发失败次数超过number，则认为在当前的fail_timeout时间段内这台上游服务器不可用。max_fails默认为1，如果设置为0，则表示不检查失败次数。
+- fail_timeout=time：fail_timeout表示该时间段内转发失败多少次后就认为上游服务器暂时不可用，用于优化反向代理功能。它与向上游服务器建立连接的超时时间，读取上游服务器的响应超时时间等完全无关。fail_timeout默认为10秒。
+
+
+**第三种ip绑定方式**
+
+&nbsp;&nbsp;&nbsp;&nbsp;在有些场景下，我们可能会希望来自某一个用户的请求始终落在固定的一台上游服务器中，ip_hash可以用于解决上面的问题，它首先根据客户端的ip地址计算出一个key，将key按照upstream集群里的上游服务器数据进行取模，然后以取模后的结果把请求转发到相应的上游服务器 中。这样就确保了用一个客户端的请求只会转发到指定的上游服务器中。
+
+&nbsp;&nbsp;&nbsp;&nbsp;ip_hash与weight(权重)配置不可同时使用。如果upstream集群中有一台上游服务器暂时不可用，不能直接删除该配置，而是要down参数标识，确保转发策略的一贯性。例如下面例子：
+
+<pre><code>
+upstream gap41tomcat {
+	ip_hash;
+	server 192.168.59.103:48080;
+	server 192.168.59.103:49080;
+}
+
+</code></pre>
+
+&nbsp;&nbsp;&nbsp;&nbsp;但是因为仅仅能用ip这个因子来分配后端，因此ip_hash是有缺陷的，不能在一些情况下使用：
+
+&nbsp;&nbsp;&nbsp;&nbsp;1/ nginx不是最前端的服务器。ip_hash要求nginx一定是最前端的服务器，否则nginx得不到正确ip，就不能根据ip作hash。譬如使用的是squid为最前端，那么nginx取ip时只能得到squid的服务器ip地址，用这个地址来作分流是肯定错乱的。
+
+&nbsp;&nbsp;&nbsp;&nbsp;2/ nginx的后端还有其它方式的负载均衡。假如nginx后端又有其它负载均衡，将请求又通过另外的方式分流了，那么某个客户端的请求肯定不能定位到同一台session应用服务器上。这么算起来，nginx后端只能直接指向应用服务器，或者再搭一个squid，然后指向应用服务器。最好的办法是用location作一次分流，将需要session的部分请求通过ip_hash分流，剩下的走其它后端去。
+
+
+参考:
+
+[nginx负载均衡配置策略详解(upstream,ip_hash)](http://54rd.net/html/2015/webserver_0213/56.html)
+
+[Nginx负载均衡](http://www.cnblogs.com/xiaogangqq123/archive/2011/03/04/1971002.html)
+
+###SSH配置
+
+待续
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;
+
+
+##一些可用的全局变量
+
+```
+$arg_PARAMETER #这个变量包含GET请求中，如果有变量PARAMETER时的值。
+$args #这个变量等于请求行中(GET请求)的参数，例如foo=123&bar=blahblah;
+$binary_remote_addr #二进制的客户地址。
+$body_bytes_sent #响应时送出的body字节数数量。即使连接中断，这个数据也是精确的。
+$content_length #请求头中的Content-length字段。
+$content_type #请求头中的Content-Type字段。
+$cookie_COOKIE #cookie COOKIE变量的值
+$document_root #当前请求在root指令中指定的值。
+$document_uri #与$uri相同。
+$host #请求主机头字段，否则为服务器名称。
+$hostname #Set to the machine’s hostname as returned by gethostname
+$http_HEADER
+$is_args #如果有$args参数，这个变量等于”?”，否则等于”"，空值。
+$http_user_agent #客户端agent信息
+$http_cookie #客户端cookie信息
+$limit_rate #这个变量可以限制连接速率。
+$query_string #与$args相同。
+$request_body_file #客户端请求主体信息的临时文件名。
+$request_method #客户端请求的动作，通常为GET或POST。
+$remote_addr #客户端的IP地址。
+$remote_port #客户端的端口。
+$remote_user #已经经过Auth Basic Module验证的用户名。
+$request_completion #如果请求结束，设置为OK. 当请求未结束或如果该请求不是请求链串的最后一个时，为空(Empty)。
+$request_method #GET或POST
+$request_filename #当前请求的文件路径，由root或alias指令与URI请求生成。
+$request_uri #包含请求参数的原始URI，不包含主机名，如：”/foo/bar.php?arg=baz”。不能修改。
+$scheme #HTTP方法（如http，https）。
+$server_protocol #请求使用的协议，通常是HTTP/1.0或HTTP/1.1。
+$server_addr #服务器地址，在完成一次系统调用后可以确定这个值。
+$server_name #服务器名称。
+$server_port #请求到达服务器的端口号。
+$uri #不带请求参数的当前URI，$uri不包含主机名，如”/foo/bar.html”。该值有可能和$request_uri 不一致。$request_uri是浏览器发过来的值。该值是rewrite后的值。例如做了internal redirects后。
+
+```
+
+
+###参考
+
+[Nginx官网]
+
+<http://nginx.org>
+
+[nginx教程从入门到精通（ttlsa出品）]
+
+<https://www.ttlsa.com/nginx/nginx-tutorial-from-entry-to-the-master-ttlsa/>
+
+[Nginx开发从入门到精通]
+
+<http://tengine.taobao.org/book/index.html>
+
+[Nginx配置文件详细说明]
+
+<http://www.cnblogs.com/xiaogangqq123/archive/2011/03/02/1969006.html>
+
+[Nginx配置文件nginx.conf中文详解]
+
+<http://www.ha97.com/5194.html>
+
+[Nginx的负载均衡 - 整体架构]
+
+<http://blog.csdn.net/zhangskd/article/details/50187407>
+
+[nginx 重写 rewrite 基础及实例]
+
+<http://www.cnblogs.com/buffer/p/3204718.html>
+
+[nginx 配置expires ]
+
+<http://blog.chinaunix.net/uid-24625974-id-2893727.html>
+
+
+http://blog.csdn.net/gameboyx/article/details/10893985
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="nginx">Nginx</h2>
+
+<h3 id="">介绍</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Nginx ("engine x") 是一个高性能的HTTP和反向代理服务器，也是一个IMAP/POP3/SMTP服务器。Nginx是由Igor Sysoev为俄罗斯访问量第二的Rambler.ru站点开发的，第一个公开版本0.1.0发布于2004年10月4日。其将源代码以类BSD许可证的形式发布，因它的稳定性、丰富的功能集、示例配置文件和低系统资源的消耗而闻名。2011年6月1日，nginx 1.0.4发布。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Nginx是一款轻量级的Web 服务器/反向代理服务器及电子邮件（IMAP/POP3）代理服务器，并在一个BSD-like 协议下发行。由俄罗斯的程序设计师Igor Sysoev所开发，供俄国大型的入口网站及搜索引擎Rambler（俄文：Рамблер）使用。其特点是占有内存少，并发能力强，事实上nginx的并发能力确实在同类型的网页服务器中表现较好，中国大陆使用nginx网站用户有：百度、新浪、网易、腾讯等。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;以上文字摘抄"百度百科"。</p>
+
+<h3 id="">安装</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;我的系统是mac osx el capitan，使用HomeBrew安装Nginx程序。命令如下：</p>
+
+<pre><code>brew install nginx
+</code></pre>
+
+<p>安装成功后，'/usr/local/etc'下会出现nginx目录，该目录下存放nginx的配置文件。</p>
+
+<p>注意：上面这种安装只能使用ningx提供的核心模块功能，如果需要使用第三方插件的话，曾需要下面的安装方式。</p>
+
+<pre><code>brew tap homebrew/nginx
+
+brew info nginx-full
+
+##定制第三方插件
+brew install nginx-full --with-echo-module --with-lua-module --with-set-misc-module
+
+##删除旧的nginx
+brew unlink nginx
+brew link nginx-full
+</code></pre>
+
+<h3 id="">基本命令</h3>
+
+<pre><code>nginx              启动nginx
+nginx -v           查看版本
+nginx -V           查看nginx安装信息，包括版本和configure参数等等。
+nginx -s reload    重新加载配置文件
+nginx -s stop      stop是快速停止nginx，可能并不保存相关信息
+nginx -s quit      quit是完整有序的停止nginx，并保存相关信息
+nginx -t           测试nginx配置文件是否正确
+</code></pre>
+
+<h3 id="">基本配置</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;下面给出最基本配置的介绍(/usr/local/etc/nginx/nginx.conf)</p>
+
+<pre><code>
+#启动work进程,通常设置成和cpu的数量相等
+worker_processes  1; 
+
+#工作模式及连接数上限
+events {
+    #每个worker进程允许的连接数
+    worker_connections  1024;
+}
+
+#设定http服务器，利用它的反向代理功能提供负载均衡支持
+http {
+    ##设定mime类型,类型由mime.type文件定义,位于/usr/local/etc/nginx
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    #sendfile 指令指定 nginx 是否调用 sendfile 函数（zero copy 方式）来输出文件，对于普通应用，
+    #必须设为 on,如果用来进行下载等应用磁盘IO重负载应用，可设置为 off，以平衡磁盘与网络I/O处理速度，降低系统的uptime.
+    sendfile        on;
+
+    #连接超时时间
+    keepalive_timeout  65;
+
+    #关闭版本显示
+    server_tokens off;     
+
+    server {
+        #侦听端口
+        listen       8080;
+
+        #虚拟站点
+        server_name  localhost;
+
+        #默认请求
+        location / {
+            #定义服务器的默认网站根目录位置
+            root   html;
+            #定义首页索引文件的名称
+            index  index.html index.htm;
+        }
+
+
+        # 定义错误提示页面
+        #error_page  404              /404.html;
+
+        # redirect server error pages to the static page /50x.html
+        #
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+
+    }
+    #读取servers目录下的所有配置文件
+    include servers/*;
+    }
+
+</code></pre>
+
+<h3 id="">虚拟站点配置</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;一般不会编辑nginx.conf文件，而是在servers目录下新建配置文件(通过Homebrew安装nginx的情况)。</p>
+
+<pre><code>
+#配置虚拟主机必须有该字段
+server {
+    #监听ip和端口
+   listen       8083;
+
+   #虚拟主机的域名，可以写多个域名
+   server_name  www.maxiao-mac.com, www.maxiao.com;
+
+   #站点根目录
+   root /usr/local/var/www/maxiao-mac;
+
+
+    location /gap41{
+        #反向代理设置
+        proxy_pass http://127.0.0.1:9999;
+    }
+}
+
+</code></pre>
+
+<p><strong>location配置详解</strong></p>
+
+<p>名词解释：</p>
+
+<ul>
+<li>普通location：以=或^~为前缀或者没有任何前缀的 /uri/</li>
+<li>正则location：以~或~*为前缀的 /uri/ </li>
+<li>严格精确匹配：/uri/与要之匹配的/uri/一样</li>
+<li>最大前缀匹配：/uri/与之匹配的/uri/最大的相同部分</li>
+</ul>
+
+<pre><code>
+location [=|~|~*|^~|@] /uri/ { ... }  
+
+不带前缀(普通location)：最大前缀匹配或者严格精确匹配
+=(普通location)：等于匹配(严格精确匹配)
+^~(普通location)：^表示“非”，~表示“正则”，意思是：不要继续匹配正则，(最大前缀匹配或者严格精确匹配)
+~(正则location)：区分大小写匹配
+~*(正则location)：不区分大小写匹配
+@(指定匹配)：指定使用location名称
+
+</code></pre>
+
+<p>参考：<a href="http://54rd.net/html/2015/webserver_0107/13.html">nginx location配置详解(正则,优先级,root,语法,重定向)</a></p>
+
+<h4 id="">扩展应用</h4>
+
+<p>待续</p>
+
+<h3 id="">静态文件处理</h3>
+
+<p><strong>方式一静态文件分离</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;适用于静态文件和Nginx在同一台服务器中，静态文件请求由Nginx直接读取，动态文件则由反向代理获取。</p>
+
+<pre><code>
+访问链接为http://www.maxiao.com:8083/gap41/images/icon/disable.bmp
+#静态文件分离配置方式一, ^字符表示开始位置
+    location ~ ^/gap41/(images|img)/ {
+        root /usr/local/var/www/maxiao-mac;
+        #设置浏览器端缓存时限，过期30天。
+        expires 30d;
+    }
+
+
+访问链接为http://www.maxiao.com:8083/gap41/img/photo.jpg
+#静态文件分离配置方式二, $字符表示结尾位置
+    location ~ .(htm|html|gif|jpg|jpeg|png|css|js|swf|doc|ppt|xls|pdf)$ {  
+        root /usr/local/var/www/maxiao-mac;
+        #设置浏览器端缓存时限，过期30天。
+        expires 30d;
+    }  
+
+</code></pre>
+
+<p>注意:以上配置中root标识的路径下必须有反向代理标识(gap41)的文件夹。</p>
+
+<p><strong>方式二静态文件缓存配置</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;适用于图片服务器与动态服务器不在一个机器上的情况,nginx从缓存目录中读取静态文件。</p>
+
+<pre><code>
+http{
+    #连接后端服务器超时时间
+     proxy_connect_timeout    5;  
+
+     #后端服务器响应请求超时时间
+     proxy_read_timeout       60;  
+
+     #后端服务器发送数据超时时间
+     proxy_send_timeout       5;     
+
+     #缓存区大小,默认来说,该缓冲区大小等于指令 proxy_buffers所设置的;但是,你可以把它设置得更小.
+     proxy_buffer_size        16k;  
+
+     #设置缓冲区的大小和数量
+     proxy_buffers            4 64k;  
+
+     #系统繁忙时可申请的proxy_buffers大小
+     proxy_busy_buffers_size 128k;  
+
+     #proxy缓存临时文件的大小
+     proxy_temp_file_write_size 128k;  
+
+     #指定临时文件目录
+    proxy_temp_path /usr/local/var/www/maxiao-mac/proxy_temp_dir; 
+
+    #设置缓存目录为二级目录，共享内存区大小，非活动时间，最大容量，临时目录要跟缓存目录在同一个分区。
+    proxy_cache_path /usr/local/var/www/maxiao-mac/proxy_cache_dir levels=1:2 keys_zone=content:50m inactive=1d max_size=1g;
+}
+
+
+location ~ .(xml|htm|html|gif|jpg|jpeg|png|ico|rar|css|js|zip|txt|flv|swf|doc|ppt|xls|pdf)$ {  
+
+#设置缓存共享内存,根keys_zone后的内容对应
+ proxy_cache content;   
+
+ #哪些状态缓存多长时间
+ proxy_cache_valid  200 304 301 302 10d; 
+
+ #其他的缓存多长时间    
+ proxy_cache_valid  any 1d;     
+
+ #以域名、URI、参数组合成Web缓存的Key值，Nginx根据Key值哈希，存储缓存内容到二级缓存目录内
+ proxy_cache_key $host$uri$is_args$args;     
+
+ proxy_pass http://dev.itari.com.cn;
+
+ } 
+</code></pre>
+
+<h3 id="">负载均衡</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;nginx可以作为代理服务器，支持负载均衡功能，一般都需要向上游服务器的集群转发请求，这里的负载均衡是指选择一种策略。</p>
+
+<p><strong>第一种轮询方式</strong></p>
+
+<pre><code>
+upstream gap41tomcat {
+    server 192.168.59.103:48080;
+    server 192.168.59.103:49080;
+}
+
+server {
+   listen       127.0.0.1:8083;
+
+    location /gap41{
+         #反向代理设置
+         proxy_pass http://gap41tomcat;
+    }
+
+}
+</code></pre>
+
+<p>该方式会尽量把请求平均地分布到每一台上游服务器上。</p>
+
+<p><strong>第二种权重方式</strong></p>
+
+<pre><code>
+upstream gap41tomcat {
+    server 192.168.59.103:48080 weight=5;
+    server 192.168.59.103:49080 max_fails=3 fail_timeout=30s;
+}
+
+</code></pre>
+
+<ul>
+<li>weight=number：设置向这台上游服务器转发的权重，默认为1。</li>
+<li>max<em>fails=number：该选项与fail</em>timeout配合使用，指在fail<em>timeout时间段内，如果向当前的上游服务器转发失败次数超过number，则认为在当前的fail</em>timeout时间段内这台上游服务器不可用。max_fails默认为1，如果设置为0，则表示不检查失败次数。</li>
+<li>fail<em>timeout=time：fail</em>timeout表示该时间段内转发失败多少次后就认为上游服务器暂时不可用，用于优化反向代理功能。它与向上游服务器建立连接的超时时间，读取上游服务器的响应超时时间等完全无关。fail_timeout默认为10秒。</li>
+</ul>
+
+<p><strong>第三种ip绑定方式</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在有些场景下，我们可能会希望来自某一个用户的请求始终落在固定的一台上游服务器中，ip_hash可以用于解决上面的问题，它首先根据客户端的ip地址计算出一个key，将key按照upstream集群里的上游服务器数据进行取模，然后以取模后的结果把请求转发到相应的上游服务器 中。这样就确保了用一个客户端的请求只会转发到指定的上游服务器中。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;ip_hash与weight(权重)配置不可同时使用。如果upstream集群中有一台上游服务器暂时不可用，不能直接删除该配置，而是要down参数标识，确保转发策略的一贯性。例如下面例子：</p>
+
+<pre><code>
+upstream gap41tomcat {
+    ip_hash;
+    server 192.168.59.103:48080;
+    server 192.168.59.103:49080;
+}
+
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;但是因为仅仅能用ip这个因子来分配后端，因此ip_hash是有缺陷的，不能在一些情况下使用：</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;1/ nginx不是最前端的服务器。ip_hash要求nginx一定是最前端的服务器，否则nginx得不到正确ip，就不能根据ip作hash。譬如使用的是squid为最前端，那么nginx取ip时只能得到squid的服务器ip地址，用这个地址来作分流是肯定错乱的。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;2/ nginx的后端还有其它方式的负载均衡。假如nginx后端又有其它负载均衡，将请求又通过另外的方式分流了，那么某个客户端的请求肯定不能定位到同一台session应用服务器上。这么算起来，nginx后端只能直接指向应用服务器，或者再搭一个squid，然后指向应用服务器。最好的办法是用location作一次分流，将需要session的部分请求通过ip_hash分流，剩下的走其它后端去。</p>
+
+<p>参考:</p>
+
+<p><a href="http://54rd.net/html/2015/webserver_0213/56.html">nginx负载均衡配置策略详解(upstream,ip_hash)</a></p>
+
+<p><a href="http://www.cnblogs.com/xiaogangqq123/archive/2011/03/04/1971002.html">Nginx负载均衡</a></p>
+
+<h3 id="ssh">SSH配置</h3>
+
+<p>待续</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
+
+<h2 id="">一些可用的全局变量</h2>
+
+<pre><code>$arg_PARAMETER #这个变量包含GET请求中，如果有变量PARAMETER时的值。
+$args #这个变量等于请求行中(GET请求)的参数，例如foo=123&amp;bar=blahblah;
+$binary_remote_addr #二进制的客户地址。
+$body_bytes_sent #响应时送出的body字节数数量。即使连接中断，这个数据也是精确的。
+$content_length #请求头中的Content-length字段。
+$content_type #请求头中的Content-Type字段。
+$cookie_COOKIE #cookie COOKIE变量的值
+$document_root #当前请求在root指令中指定的值。
+$document_uri #与$uri相同。
+$host #请求主机头字段，否则为服务器名称。
+$hostname #Set to the machine’s hostname as returned by gethostname
+$http_HEADER
+$is_args #如果有$args参数，这个变量等于”?”，否则等于”"，空值。
+$http_user_agent #客户端agent信息
+$http_cookie #客户端cookie信息
+$limit_rate #这个变量可以限制连接速率。
+$query_string #与$args相同。
+$request_body_file #客户端请求主体信息的临时文件名。
+$request_method #客户端请求的动作，通常为GET或POST。
+$remote_addr #客户端的IP地址。
+$remote_port #客户端的端口。
+$remote_user #已经经过Auth Basic Module验证的用户名。
+$request_completion #如果请求结束，设置为OK. 当请求未结束或如果该请求不是请求链串的最后一个时，为空(Empty)。
+$request_method #GET或POST
+$request_filename #当前请求的文件路径，由root或alias指令与URI请求生成。
+$request_uri #包含请求参数的原始URI，不包含主机名，如：”/foo/bar.php?arg=baz”。不能修改。
+$scheme #HTTP方法（如http，https）。
+$server_protocol #请求使用的协议，通常是HTTP/1.0或HTTP/1.1。
+$server_addr #服务器地址，在完成一次系统调用后可以确定这个值。
+$server_name #服务器名称。
+$server_port #请求到达服务器的端口号。
+$uri #不带请求参数的当前URI，$uri不包含主机名，如”/foo/bar.html”。该值有可能和$request_uri 不一致。$request_uri是浏览器发过来的值。该值是rewrite后的值。例如做了internal redirects后。
+</code></pre>
+
+<h3 id="">参考</h3>
+
+<p>[Nginx官网]</p>
+
+<p><a href="http://nginx.org">http://nginx.org</a></p>
+
+<p>[nginx教程从入门到精通（ttlsa出品）]</p>
+
+<p><a href="https://www.ttlsa.com/nginx/nginx-tutorial-from-entry-to-the-master-ttlsa/">https://www.ttlsa.com/nginx/nginx-tutorial-from-entry-to-the-master-ttlsa/</a></p>
+
+<p>[Nginx开发从入门到精通]</p>
+
+<p><a href="http://tengine.taobao.org/book/index.html">http://tengine.taobao.org/book/index.html</a></p>
+
+<p>[Nginx配置文件详细说明]</p>
+
+<p><a href="http://www.cnblogs.com/xiaogangqq123/archive/2011/03/02/1969006.html">http://www.cnblogs.com/xiaogangqq123/archive/2011/03/02/1969006.html</a></p>
+
+<p>[Nginx配置文件nginx.conf中文详解]</p>
+
+<p><a href="http://www.ha97.com/5194.html">http://www.ha97.com/5194.html</a></p>
+
+<p>[Nginx的负载均衡 - 整体架构]</p>
+
+<p><a href="http://blog.csdn.net/zhangskd/article/details/50187407">http://blog.csdn.net/zhangskd/article/details/50187407</a></p>
+
+<p>[nginx 重写 rewrite 基础及实例]</p>
+
+<p><a href="http://www.cnblogs.com/buffer/p/3204718.html">http://www.cnblogs.com/buffer/p/3204718.html</a></p>
+
+<p>[nginx 配置expires ]</p>
+
+<p><a href="http://blog.chinaunix.net/uid-24625974-id-2893727.html">http://blog.chinaunix.net/uid-24625974-id-2893727.html</a></p>
+
+<p>http://blog.csdn.net/gameboyx/article/details/10893985</p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "Nginx.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

@@ -312,8 +312,8 @@ upstream gap41tomcat {
 </code></pre>
 
 - weight=number：设置向这台上游服务器转发的权重，默认为1。
-- max_fails=number：该选项与fail_timeout配合使用，指在fail_timeout时间段内，如果向当前的上游服务器转发失败次数超过number，则认为在当前的fail_timeout时间段内这台上游服务器不可用。max_fails默认为1，如果设置为0，则表示不检查失败次数。
-- fail_timeout=time：fail_timeout表示该时间段内转发失败多少次后就认为上游服务器暂时不可用，用于优化反向代理功能。它与向上游服务器建立连接的超时时间，读取上游服务器的响应超时时间等完全无关。fail_timeout默认为10秒。
+- max\_fails=number：该选项与fail_timeout配合使用，指在fail_timeout时间段内，如果向当前的上游服务器转发失败次数超过number，则认为在当前的fail_timeout时间段内这台上游服务器不可用。max_fails默认为1，如果设置为0，则表示不检查失败次数。
+- fail\_timeout=time：fail_timeout表示该时间段内转发失败多少次后就认为上游服务器暂时不可用，用于优化反向代理功能。它与向上游服务器建立连接的超时时间，读取上游服务器的响应超时时间等完全无关。fail_timeout默认为10秒。
 
 
 **第三种ip绑定方式**
@@ -711,8 +711,8 @@ upstream gap41tomcat {
 
 <ul>
 <li>weight=number：设置向这台上游服务器转发的权重，默认为1。</li>
-<li>max<em>fails=number：该选项与fail</em>timeout配合使用，指在fail<em>timeout时间段内，如果向当前的上游服务器转发失败次数超过number，则认为在当前的fail</em>timeout时间段内这台上游服务器不可用。max_fails默认为1，如果设置为0，则表示不检查失败次数。</li>
-<li>fail<em>timeout=time：fail</em>timeout表示该时间段内转发失败多少次后就认为上游服务器暂时不可用，用于优化反向代理功能。它与向上游服务器建立连接的超时时间，读取上游服务器的响应超时时间等完全无关。fail_timeout默认为10秒。</li>
+<li>max_fails=number：该选项与fail<em>timeout配合使用，指在fail</em>timeout时间段内，如果向当前的上游服务器转发失败次数超过number，则认为在当前的fail<em>timeout时间段内这台上游服务器不可用。max</em>fails默认为1，如果设置为0，则表示不检查失败次数。</li>
+<li>fail_timeout=time：fail<em>timeout表示该时间段内转发失败多少次后就认为上游服务器暂时不可用，用于优化反向代理功能。它与向上游服务器建立连接的超时时间，读取上游服务器的响应超时时间等完全无关。fail</em>timeout默认为10秒。</li>
 </ul>
 
 <p><strong>第三种ip绑定方式</strong></p>

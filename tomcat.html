@@ -1,0 +1,314 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##Tomcat
+
+###介绍
+
+&nbsp;&nbsp;&nbsp;&nbsp;Tomcat 服务器是一个免费的开放源代码的Web 应用服务器，属于轻量级应用服务器，是开发和调试JSP 程序的首选。Tomcat也具有处理HTML页面的功能，另外它还是一个Servlet和JSP容器，独立的Servlet容器是Tomcat的默认模式。不过，Tomcat处理静态HTML的能力不如Apache服务器。目前Tomcat最新版本为9.0。
+
+&nbsp;&nbsp;&nbsp;&nbsp;以上文字摘自百度百科。
+
+###项目部署
+
+&nbsp;&nbsp;&nbsp;&nbsp;部署方式一共三种:
+
+**方式一直接拷贝**
+
+&nbsp;&nbsp;&nbsp;&nbsp;直接将项目WebRoot拷贝到webapps下，然后用http://localhost:8080/WebRoot来访问。
+
+**方式二修改配置**
+
+&nbsp;&nbsp;&nbsp;&nbsp;通过修改Tomcat 6.0 / conf / server.xml 来设置默认站点。在<host></host>标签内添加<context/>标签。
+
+```
+
+具体如下：
+   <Context docBase="F:/WebRoot" reloadable="true" debug="0" path=""/>
+   其中reloadable="false"的话，表示当应用程序的内容发生更改之后，服务器不会自动加载，这个属性开发阶段通常设为"true"以方便开发，在发布阶段设为"false"以提高访问速度。
+   
+   docBase为项目路径，可以使用绝对路径，也可以使用相对路径，相对路径是相对于（webapps）。
+   如使用绝对路径D:/WebRoot
+   使用相对路径 /WebRoot
+   
+   path属性表示访问时的根目录，如path="project1"，那么，访问地址为：http://localhost:8080/project1
+   
+   debug属性与这个Engine关联的Logger记录的调试信息的详细程度。数字越大，输出越详细。如果没有指定，缺省为0。 
+   也就是程序异常时写入日志文件里的详细程度。
+   
+```
+
+**方式三文件映射**
+
+```
+在$CATALINA_HOME/conf/Catalina/localhost中添加一个xml文件，如project1.xml，内容如下：
+   <Context docBase="D:/WebRoot" reloadable="true" />大家可能发现和第二种方式差不多，但是缺少了path属性，这种方式服务器会使用***.xml的名字作为path属性的值。访问地址如下：http://localhost:8080/project1
+
+```
+
+参考:[Tomcat项目部署]<http://blog.csdn.net/zhangskd/article/details/6365720>
+
+###调优
+
+**设置jvm参数**
+
+&nbsp;&nbsp;&nbsp;&nbsp;修改catalina.sh文件，增加下面的配置
+
+```
+
+JAVA_OPTS="$JAVA_OPTS -Xms1024m -Xmx1024m -XX:PermSize=64M -XX:MaxNewSize=128M -XX:MaxPermSize=256M”
+```
+
+- -Xms：初始堆大小，默认为物理内存的1/64(<1GB)；默认(MinHeapFreeRatio参数可以调整)空余堆内存小于40%时，JVM就会增大堆直到-Xmx的最大限制
+
+- -Xmx：最大堆大小，默认(MaxHeapFreeRatio参数可以调整)空余堆内存大于70%时，JVM会减少堆直到 -Xms的最小限制
+
+- -Xmn：新生代的内存空间大小，注意：此处的大小是（eden+ 2 survivor space)。与jmap -heap中显示的New gen是不同的。整个堆大小=新生代大小 + 老生代大小 + 永久代大小。 
+在保证堆大小不变的情况下，增大新生代后,将会减小老生代大小。此值对系统性能影响较大,Sun官方推荐配置为整个堆的3/8。
+
+- -XX:NewSize	设置年轻代大小(for 1.3/1.4)	 	 
+- -XX:MaxNewSize	年轻代最大值(for 1.3/1.4)
+
+- -XX:PermSize：设置永久代(perm gen)初始值。默认值为物理内存的1/64。
+
+- -XX:MaxPermSize：设置持久代最大值。物理内存的1/4。
+
+参考：<http://www.cnblogs.com/redcreen/archive/2011/05/04/2037057.html>
+
+**Connector配置**
+
+&nbsp;&nbsp;&nbsp;&nbsp;修改catalina.sh文件，增加下面的配置
+
+```
+    <!-- Define a non-SSL HTTP/1.1 Connector on port 8080 -->
+    <Connector port="9999" maxHttpHeaderSize="8192"
+               maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
+               URIEncoding="UTF-8"
+               enableLookups="false" redirectPort="8443" acceptCount="100"
+               connectionTimeout="20000" disableUploadTimeout="true" />
+
+```
+
+- maxHttpHeaderSize:http请求头信息的最大程度，超过此长度的部分不予处理。一般8K。
+
+- minSpareThreads:Tomcat初始化时创建的线程数。默认值4。如果当前没有空闲线程，且没有超过maxThreads，一次性创建的空闲线程数量。Tomcat初始化时创建的线程数量也由此值设置。 
+
+- maxSpareThreads:一旦创建的线程超过这个值，Tomcat就会关闭不再需要的socket线程。默认值50。线程数可以大致上用 “同时在线人数\*每秒用户操作次数\*系统平均操作时间” 来计算。 
+
+- maxThreads：tomcat起动的最大线程数，即同时处理的任务个数，默认值为200
+
+- acceptCount：当tomcat起动的线程数达到最大时，接受排队的请求个数，默认值为100
+
+- URIEncoding:指定Tomcat容器的URL编码格式。 
+
+- disableUploadTimeout:上传时是否使用超时机制 
+
+- enableLookups:是否反查域名，默认值为true。为了提高处理能力，应设置为false。
+
+- connectionTimeout：网络连接超时，默认值20000，单位：毫秒。设置为0表示永不超时，这样设置有隐患的。通常可设置为30000毫秒。 
+
+
+
+
+参考：
+
+[tomcat的maxThreads、acceptCount（最大线程数、最大排队数）]<http://blog.csdn.net/jackpk/article/details/32137483>
+
+[Tomcat调优——Connector优化]<http://ajita.iteye.com/blog/1994974>
+
+
+
+
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="tomcat">Tomcat</h2>
+
+<h3 id="">介绍</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Tomcat 服务器是一个免费的开放源代码的Web 应用服务器，属于轻量级应用服务器，是开发和调试JSP 程序的首选。Tomcat也具有处理HTML页面的功能，另外它还是一个Servlet和JSP容器，独立的Servlet容器是Tomcat的默认模式。不过，Tomcat处理静态HTML的能力不如Apache服务器。目前Tomcat最新版本为9.0。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;以上文字摘自百度百科。</p>
+
+<h3 id="">项目部署</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;部署方式一共三种:</p>
+
+<p><strong>方式一直接拷贝</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;直接将项目WebRoot拷贝到webapps下，然后用http://localhost:8080/WebRoot来访问。</p>
+
+<p><strong>方式二修改配置</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;通过修改Tomcat 6.0 / conf / server.xml 来设置默认站点。在<host></host>标签内添加<context></context>标签。</p>
+
+<pre><code>具体如下：
+   &lt;Context docBase="F:/WebRoot" reloadable="true" debug="0" path=""/&gt;
+   其中reloadable="false"的话，表示当应用程序的内容发生更改之后，服务器不会自动加载，这个属性开发阶段通常设为"true"以方便开发，在发布阶段设为"false"以提高访问速度。
+
+   docBase为项目路径，可以使用绝对路径，也可以使用相对路径，相对路径是相对于（webapps）。
+   如使用绝对路径D:/WebRoot
+   使用相对路径 /WebRoot
+
+   path属性表示访问时的根目录，如path="project1"，那么，访问地址为：http://localhost:8080/project1
+
+   debug属性与这个Engine关联的Logger记录的调试信息的详细程度。数字越大，输出越详细。如果没有指定，缺省为0。 
+   也就是程序异常时写入日志文件里的详细程度。
+</code></pre>
+
+<p><strong>方式三文件映射</strong></p>
+
+<pre><code>在$CATALINA_HOME/conf/Catalina/localhost中添加一个xml文件，如project1.xml，内容如下：
+   &lt;Context docBase="D:/WebRoot" reloadable="true" /&gt;大家可能发现和第二种方式差不多，但是缺少了path属性，这种方式服务器会使用***.xml的名字作为path属性的值。访问地址如下：http://localhost:8080/project1
+</code></pre>
+
+<p>参考:[Tomcat项目部署]<a href="http://blog.csdn.net/zhangskd/article/details/6365720">http://blog.csdn.net/zhangskd/article/details/6365720</a></p>
+
+<h3 id="">调优</h3>
+
+<p><strong>设置jvm参数</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;修改catalina.sh文件，增加下面的配置</p>
+
+<pre><code>JAVA_OPTS="$JAVA_OPTS -Xms1024m -Xmx1024m -XX:PermSize=64M -XX:MaxNewSize=128M -XX:MaxPermSize=256M”
+</code></pre>
+
+<ul>
+<li><p>-Xms：初始堆大小，默认为物理内存的1/64(&lt;1GB)；默认(MinHeapFreeRatio参数可以调整)空余堆内存小于40%时，JVM就会增大堆直到-Xmx的最大限制</p></li>
+<li><p>-Xmx：最大堆大小，默认(MaxHeapFreeRatio参数可以调整)空余堆内存大于70%时，JVM会减少堆直到 -Xms的最小限制</p></li>
+<li><p>-Xmn：新生代的内存空间大小，注意：此处的大小是（eden+ 2 survivor space)。与jmap -heap中显示的New gen是不同的。整个堆大小=新生代大小 + 老生代大小 + 永久代大小。 
+在保证堆大小不变的情况下，增大新生代后,将会减小老生代大小。此值对系统性能影响较大,Sun官方推荐配置为整个堆的3/8。</p></li>
+<li><p>-XX:NewSize    设置年轻代大小(for 1.3/1.4)         </p></li>
+<li><p>-XX:MaxNewSize    年轻代最大值(for 1.3/1.4)</p></li>
+<li><p>-XX:PermSize：设置永久代(perm gen)初始值。默认值为物理内存的1/64。</p></li>
+<li><p>-XX:MaxPermSize：设置持久代最大值。物理内存的1/4。</p></li>
+</ul>
+
+<p>参考：<a href="http://www.cnblogs.com/redcreen/archive/2011/05/04/2037057.html">http://www.cnblogs.com/redcreen/archive/2011/05/04/2037057.html</a></p>
+
+<p><strong>Connector配置</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;修改catalina.sh文件，增加下面的配置</p>
+
+<pre><code>    &lt;!-- Define a non-SSL HTTP/1.1 Connector on port 8080 --&gt;
+    &lt;Connector port="9999" maxHttpHeaderSize="8192"
+               maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
+               URIEncoding="UTF-8"
+               enableLookups="false" redirectPort="8443" acceptCount="100"
+               connectionTimeout="20000" disableUploadTimeout="true" /&gt;
+</code></pre>
+
+<ul>
+<li><p>maxHttpHeaderSize:http请求头信息的最大程度，超过此长度的部分不予处理。一般8K。</p></li>
+<li><p>minSpareThreads:Tomcat初始化时创建的线程数。默认值4。如果当前没有空闲线程，且没有超过maxThreads，一次性创建的空闲线程数量。Tomcat初始化时创建的线程数量也由此值设置。 </p></li>
+<li><p>maxSpareThreads:一旦创建的线程超过这个值，Tomcat就会关闭不再需要的socket线程。默认值50。线程数可以大致上用 “同时在线人数*每秒用户操作次数*系统平均操作时间” 来计算。 </p></li>
+<li><p>maxThreads：tomcat起动的最大线程数，即同时处理的任务个数，默认值为200</p></li>
+<li><p>acceptCount：当tomcat起动的线程数达到最大时，接受排队的请求个数，默认值为100</p></li>
+<li><p>URIEncoding:指定Tomcat容器的URL编码格式。 </p></li>
+<li><p>disableUploadTimeout:上传时是否使用超时机制 </p></li>
+<li><p>enableLookups:是否反查域名，默认值为true。为了提高处理能力，应设置为false。</p></li>
+<li><p>connectionTimeout：网络连接超时，默认值20000，单位：毫秒。设置为0表示永不超时，这样设置有隐患的。通常可设置为30000毫秒。 </p></li>
+</ul>
+
+<p>参考：</p>
+
+<p>[tomcat的maxThreads、acceptCount（最大线程数、最大排队数）]<a href="http://blog.csdn.net/jackpk/article/details/32137483">http://blog.csdn.net/jackpk/article/details/32137483</a></p>
+
+<p>[Tomcat调优——Connector优化]<a href="http://ajita.iteye.com/blog/1994974">http://ajita.iteye.com/blog/1994974</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "tomcat.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

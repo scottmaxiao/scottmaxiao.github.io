@@ -35,6 +35,8 @@
 
 &nbsp;&nbsp;&nbsp;&nbsp;以上文字摘抄"百度百科"。
 
+----
+
 ###安装
 
 &nbsp;&nbsp;&nbsp;&nbsp;我的系统是mac osx el capitan，使用HomeBrew安装Nginx程序。命令如下：
@@ -62,6 +64,8 @@ brew link nginx-full
 
 ```
 
+----
+
 
 ###基本命令
 
@@ -75,6 +79,8 @@ nginx -s quit      quit是完整有序的停止nginx，并保存相关信息
 nginx -t           测试nginx配置文件是否正确
 
 ```
+
+----
 
 
 ###基本配置
@@ -140,6 +146,7 @@ http {
 
 </code></pre>
 
+----
 
 ###虚拟站点配置
 
@@ -161,6 +168,15 @@ server {
     location /gap41{
     	#反向代理设置
     	proxy_pass http://127.0.0.1:9999;
+    	#关闭后端返回的header修改
+    	proxy_redirect          off;  
+    	
+    	#修改发送到后端的header的host
+       	proxy_set_header       Host            $host; 
+       	#设置真实ip
+        proxy_set_header        X-Real-IP       $remote_addr; 
+        
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 }
 
@@ -190,9 +206,93 @@ location [=|~|~*|^~|@] /uri/ { ... }
 参考：[nginx location配置详解(正则,优先级,root,语法,重定向)](http://54rd.net/html/2015/webserver_0107/13.html)
 
 
-####扩展应用###
+####if判断指令
 
-待续
+&nbsp;&nbsp;&nbsp;&nbsp;语法为if(condition){...}，对给定的条件condition进行判断。如果为真，大括号内的rewrite指令将被执行，if条件(conditon)可以是如下任何内容：
+
+&nbsp;&nbsp;&nbsp;&nbsp;当表达式只是一个变量时，如果值为空或任何以0开头的字符串都会当做false
+
+- 直接比较变量和内容时，使用=或!=
+- ~正则表达式匹配，~*不区分大小写的匹配，!~区分大小写的不匹配
+- -f和!-f用来判断是否存在文件
+- -d和!-d用来判断是否存在目录
+- -e和!-e用来判断是否存在文件或目录
+- -x和!-x用来判断文件是否可执行
+
+<pre><code>
+
+#是否存在文件
+if (-f$request_filename){  
+   
+}  
+  
+</code></pre>
+
+####rewrite
+
+<pre><code>
+rewrite 语法规则：
+变量名：
+    变量名可以使用"="或"!="运算符
+     ~  符号表示区分大小写字母匹配
+     ~* 符号表示不区分大小写字母匹配
+     !~ 和 !~ 与~  !~ 相反
+     -f 和 !-f   用来判断文件是否存在
+     -d 和 !-d   用来判断目录是否存在
+     -e 和 !-e   用来判断文件或目录是否存在
+     -x 和 !-x   用来判断文件是否可以执行
+     部分正则表达式可以在()内，也支持$1到$9位置参数
+     
+rewrite指令的最后一项参数为flag标记，支持flag标记有：
+1.last     相当于apache里面的[L]标记，表示rewrite。
+2.break本条规则匹配完成后，终止匹配，不再匹配后面的规则。
+3.redirect  返回302临时重定向，浏览器地址会显示跳转后的URL地址。
+4.permanent  返回301永久重定向， 浏览器地址会显示跳转后的URL地址。
+
+Last标记在本条rewrite规则执行完毕后，会对其所在server{......}标签重新发起请求，而break标记则在本条规则匹配完成后，终止匹配。
+ 
+一般在跟location中(location /{...})或直接在server标签中编写rewrite规则，推荐使用last标记；在非根location中(location /cms/{...})，则使用break。
+
+</code></pre> 
+
+下面给出几个例子：
+
+<pre><code>
+多目录转成参数 
+
+要求：abc.domian.com/sort/2 => abc.domian.com/index.php?act=sort&name=abc&id=2 
+
+规则配置：
+
+if ($host ~* (.*)\.domain\.com) { 
+
+    set $sub_name $1;
+
+    rewrite ^/sort\/(\d+)\/?$ /index.php?act=sort&cid=$sub_name&id=$1 last; 
+
+} 
+--------------------------------------------------------
+
+目录对换 
+
+要求：/123456/xxxx -> /xxxx?id=123456 
+
+规则配置：
+
+rewrite ^/(\d+)/(.+)/ /$2?id=$1 last; 
+
+--------------------------------------------------------
+
+要求:
+对形如/images/bla_500x400.jpg的文件请求，重写到/resizer/bla.jpg?width=500&height=400地址，并会继续尝试匹配location。
+
+规则配置:
+rewrite ^/images/(.*)_(\d+)x(\d+)\.(png|jpg|gif)$ /resizer/$1.$4?width=$2&height=$3  last;
+
+</code></pre>
+
+
+----
 
 ###静态文件处理
 
@@ -276,6 +376,8 @@ location ~ .(xml|htm|html|gif|jpg|jpeg|png|ico|rar|css|js|zip|txt|flv|swf|doc|pp
  } 
 </code></pre>
 
+----
+
 ###负载均衡
 
 &nbsp;&nbsp;&nbsp;&nbsp;nginx可以作为代理服务器，支持负载均衡功能，一般都需要向上游服务器的集群转发请求，这里的负载均衡是指选择一种策略。
@@ -344,13 +446,67 @@ upstream gap41tomcat {
 
 [Nginx负载均衡](http://www.cnblogs.com/xiaogangqq123/archive/2011/03/04/1971002.html)
 
+----
+
 ###SSH配置
 
-待续
+&nbsp;&nbsp;&nbsp;&nbsp;通过下面的命令生成私钥和证书。
 
+<pre><code>
+//创建服务器私钥
+openssl genrsa -des3 -out server.key 1024
 
-&nbsp;&nbsp;&nbsp;&nbsp;
+//创建签名请求的证书（CSR）
+openssl req -new -key server.key -out server.csr
 
+//在加载SSL支持的Nginx并使用上述私钥时除去必须的口令
+cp server.key server.key.org
+openssl rsa -in server.key.org -out server.key
+
+</code></pre>
+
+&nbsp;&nbsp;&nbsp;&nbsp;nginx配置
+
+<pre><code>
+server {
+        listen       1443;
+        server_name  www.maxiao-mac.com, www.maxiao.com;
+
+        ssl                  on;  
+
+        ssl_certificate      /usr/local/etc/nginx/ca/server.crt;
+        ssl_certificate_key  /usr/local/etc/nginx/ca/server.key;
+
+        ssl_session_cache    shared:SSL:1m;
+        ssl_session_timeout  5m;
+
+        ssl_ciphers  HIGH:!aNULL:!MD5;
+        ssl_prefer_server_ciphers  on;
+}
+
+</code></pre>
+
+参考:
+
+[nginx使用ssl模块配置HTTPS支持](https://www.centos.bz/2011/12/nginx-ssl-https-support/)
+
+[nginx实现ssl反向代理实战](http://www.cnblogs.com/yanghuahui/p/3641195.html)
+
+[nginx配置SSL实现服务器/客户端双向认证](http://blog.csdn.net/kunoy/article/details/8239653)
+
+----
+
+####扩展应用
+
+#####利用nginx concat模块合并js css
+
+参考:<https://www.centos.bz/2012/09/nginx-concat-module-merge-js-css/>
+
+#####使用nginx Limit Requests模块限制单个IP请求速率
+
+参考:<https://www.centos.bz/2012/08/nginx-limit-limit-requests/>
+
+----
 
 ##一些可用的全局变量
 
@@ -390,6 +546,7 @@ $uri #不带请求参数的当前URI，$uri不包含主机名，如”/foo/bar.h
 
 ```
 
+----
 
 ###参考
 
@@ -425,6 +582,9 @@ $uri #不带请求参数的当前URI，$uri不包含主机名，如”/foo/bar.h
 
 <http://blog.chinaunix.net/uid-24625974-id-2893727.html>
 
+[Nginx实战进阶篇一 Nginx反向代理及负载均衡实现过程部署]
+
+<http://dreamfire.blog.51cto.com/418026/1158301/>
 
 http://blog.csdn.net/gameboyx/article/details/10893985
 <!-- markdown end -->
@@ -440,6 +600,8 @@ http://blog.csdn.net/gameboyx/article/details/10893985
 <p>&nbsp;&nbsp;&nbsp;&nbsp;Nginx是一款轻量级的Web 服务器/反向代理服务器及电子邮件（IMAP/POP3）代理服务器，并在一个BSD-like 协议下发行。由俄罗斯的程序设计师Igor Sysoev所开发，供俄国大型的入口网站及搜索引擎Rambler（俄文：Рамблер）使用。其特点是占有内存少，并发能力强，事实上nginx的并发能力确实在同类型的网页服务器中表现较好，中国大陆使用nginx网站用户有：百度、新浪、网易、腾讯等。</p>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;以上文字摘抄"百度百科"。</p>
+
+<hr>
 
 <h3 id="">安装</h3>
 
@@ -464,6 +626,8 @@ brew unlink nginx
 brew link nginx-full
 </code></pre>
 
+<hr>
+
 <h3 id="">基本命令</h3>
 
 <pre><code>nginx              启动nginx
@@ -474,6 +638,8 @@ nginx -s stop      stop是快速停止nginx，可能并不保存相关信息
 nginx -s quit      quit是完整有序的停止nginx，并保存相关信息
 nginx -t           测试nginx配置文件是否正确
 </code></pre>
+
+<hr>
 
 <h3 id="">基本配置</h3>
 
@@ -538,6 +704,8 @@ http {
 
 </code></pre>
 
+<hr>
+
 <h3 id="">虚拟站点配置</h3>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;一般不会编辑nginx.conf文件，而是在servers目录下新建配置文件(通过Homebrew安装nginx的情况)。</p>
@@ -558,6 +726,15 @@ server {
     location /gap41{
         #反向代理设置
         proxy_pass http://127.0.0.1:9999;
+        #关闭后端返回的header修改
+        proxy_redirect          off;  
+
+        #修改发送到后端的header的host
+           proxy_set_header       Host            $host; 
+           #设置真实ip
+        proxy_set_header        X-Real-IP       $remote_addr; 
+
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 }
 
@@ -588,9 +765,94 @@ location [=|~|~*|^~|@] /uri/ { ... }
 
 <p>参考：<a href="http://54rd.net/html/2015/webserver_0107/13.html">nginx location配置详解(正则,优先级,root,语法,重定向)</a></p>
 
-<h4 id="">扩展应用</h4>
+<h4 id="if">if判断指令</h4>
 
-<p>待续</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;语法为if(condition){...}，对给定的条件condition进行判断。如果为真，大括号内的rewrite指令将被执行，if条件(conditon)可以是如下任何内容：</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;当表达式只是一个变量时，如果值为空或任何以0开头的字符串都会当做false</p>
+
+<ul>
+<li>直接比较变量和内容时，使用=或!=</li>
+<li>~正则表达式匹配，~*不区分大小写的匹配，!~区分大小写的不匹配</li>
+<li>-f和!-f用来判断是否存在文件</li>
+<li>-d和!-d用来判断是否存在目录</li>
+<li>-e和!-e用来判断是否存在文件或目录</li>
+<li>-x和!-x用来判断文件是否可执行</li>
+</ul>
+
+<pre><code>
+
+#是否存在文件
+if (-f$request_filename){  
+
+}  
+
+</code></pre>
+
+<h4 id="rewrite">rewrite</h4>
+
+<pre><code>
+rewrite 语法规则：
+变量名：
+    变量名可以使用"="或"!="运算符
+     ~  符号表示区分大小写字母匹配
+     ~* 符号表示不区分大小写字母匹配
+     !~ 和 !~ 与~  !~ 相反
+     -f 和 !-f   用来判断文件是否存在
+     -d 和 !-d   用来判断目录是否存在
+     -e 和 !-e   用来判断文件或目录是否存在
+     -x 和 !-x   用来判断文件是否可以执行
+     部分正则表达式可以在()内，也支持$1到$9位置参数
+
+rewrite指令的最后一项参数为flag标记，支持flag标记有：
+1.last     相当于apache里面的[L]标记，表示rewrite。
+2.break本条规则匹配完成后，终止匹配，不再匹配后面的规则。
+3.redirect  返回302临时重定向，浏览器地址会显示跳转后的URL地址。
+4.permanent  返回301永久重定向， 浏览器地址会显示跳转后的URL地址。
+
+Last标记在本条rewrite规则执行完毕后，会对其所在server{......}标签重新发起请求，而break标记则在本条规则匹配完成后，终止匹配。
+
+一般在跟location中(location /{...})或直接在server标签中编写rewrite规则，推荐使用last标记；在非根location中(location /cms/{...})，则使用break。
+
+</code></pre> 
+
+<p>下面给出几个例子：</p>
+
+<pre><code>
+多目录转成参数 
+
+要求：abc.domian.com/sort/2 =&gt; abc.domian.com/index.php?act=sort&amp;name=abc&amp;id=2 
+
+规则配置：
+
+if ($host ~* (.*)\.domain\.com) { 
+
+    set $sub_name $1;
+
+    rewrite ^/sort\/(\d+)\/?$ /index.php?act=sort&amp;cid=$sub_name&amp;id=$1 last; 
+
+} 
+--------------------------------------------------------
+
+目录对换 
+
+要求：/123456/xxxx -&gt; /xxxx?id=123456 
+
+规则配置：
+
+rewrite ^/(\d+)/(.+)/ /$2?id=$1 last; 
+
+--------------------------------------------------------
+
+要求:
+对形如/images/bla_500x400.jpg的文件请求，重写到/resizer/bla.jpg?width=500&amp;height=400地址，并会继续尝试匹配location。
+
+规则配置:
+rewrite ^/images/(.*)_(\d+)x(\d+)\.(png|jpg|gif)$ /resizer/$1.$4?width=$2&amp;height=$3  last;
+
+</code></pre>
+
+<hr>
 
 <h3 id="">静态文件处理</h3>
 
@@ -674,6 +936,8 @@ location ~ .(xml|htm|html|gif|jpg|jpeg|png|ico|rar|css|js|zip|txt|flv|swf|doc|pp
  } 
 </code></pre>
 
+<hr>
+
 <h3 id="">负载均衡</h3>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;nginx可以作为代理服务器，支持负载均衡功能，一般都需要向上游服务器的集群转发请求，这里的负载均衡是指选择一种策略。</p>
@@ -742,11 +1006,67 @@ upstream gap41tomcat {
 
 <p><a href="http://www.cnblogs.com/xiaogangqq123/archive/2011/03/04/1971002.html">Nginx负载均衡</a></p>
 
+<hr>
+
 <h3 id="ssh">SSH配置</h3>
 
-<p>待续</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;通过下面的命令生成私钥和证书。</p>
 
-<p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
+<pre><code>
+//创建服务器私钥
+openssl genrsa -des3 -out server.key 1024
+
+//创建签名请求的证书（CSR）
+openssl req -new -key server.key -out server.csr
+
+//在加载SSL支持的Nginx并使用上述私钥时除去必须的口令
+cp server.key server.key.org
+openssl rsa -in server.key.org -out server.key
+
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;nginx配置</p>
+
+<pre><code>
+server {
+        listen       1443;
+        server_name  www.maxiao-mac.com, www.maxiao.com;
+
+        ssl                  on;  
+
+        ssl_certificate      /usr/local/etc/nginx/ca/server.crt;
+        ssl_certificate_key  /usr/local/etc/nginx/ca/server.key;
+
+        ssl_session_cache    shared:SSL:1m;
+        ssl_session_timeout  5m;
+
+        ssl_ciphers  HIGH:!aNULL:!MD5;
+        ssl_prefer_server_ciphers  on;
+}
+
+</code></pre>
+
+<p>参考:</p>
+
+<p><a href="https://www.centos.bz/2011/12/nginx-ssl-https-support/">nginx使用ssl模块配置HTTPS支持</a></p>
+
+<p><a href="http://www.cnblogs.com/yanghuahui/p/3641195.html">nginx实现ssl反向代理实战</a></p>
+
+<p><a href="http://blog.csdn.net/kunoy/article/details/8239653">nginx配置SSL实现服务器/客户端双向认证</a></p>
+
+<hr>
+
+<h4 id="">扩展应用</h4>
+
+<h5 id="nginxconcatjscss">利用nginx concat模块合并js css</h5>
+
+<p>参考:<a href="https://www.centos.bz/2012/09/nginx-concat-module-merge-js-css/">https://www.centos.bz/2012/09/nginx-concat-module-merge-js-css/</a></p>
+
+<h5 id="nginxlimitrequestsip">使用nginx Limit Requests模块限制单个IP请求速率</h5>
+
+<p>参考:<a href="https://www.centos.bz/2012/08/nginx-limit-limit-requests/">https://www.centos.bz/2012/08/nginx-limit-limit-requests/</a></p>
+
+<hr>
 
 <h2 id="">一些可用的全局变量</h2>
 
@@ -784,6 +1104,8 @@ $server_port #请求到达服务器的端口号。
 $uri #不带请求参数的当前URI，$uri不包含主机名，如”/foo/bar.html”。该值有可能和$request_uri 不一致。$request_uri是浏览器发过来的值。该值是rewrite后的值。例如做了internal redirects后。
 </code></pre>
 
+<hr>
+
 <h3 id="">参考</h3>
 
 <p>[Nginx官网]</p>
@@ -817,6 +1139,10 @@ $uri #不带请求参数的当前URI，$uri不包含主机名，如”/foo/bar.h
 <p>[nginx 配置expires ]</p>
 
 <p><a href="http://blog.chinaunix.net/uid-24625974-id-2893727.html">http://blog.chinaunix.net/uid-24625974-id-2893727.html</a></p>
+
+<p>[Nginx实战进阶篇一 Nginx反向代理及负载均衡实现过程部署]</p>
+
+<p><a href="http://dreamfire.blog.51cto.com/418026/1158301/">http://dreamfire.blog.51cto.com/418026/1158301/</a></p>
 
 <p>http://blog.csdn.net/gameboyx/article/details/10893985</p>
 <!-- content end -->

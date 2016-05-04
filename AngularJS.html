@@ -1,0 +1,265 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##AngularJS入门
+
+###介绍
+
+&nbsp;&nbsp;&nbsp;&nbsp;AngularJS是目前最为活跃的Javascript框架之一，AngularJS的目标之一是简化开发过程，这使得AngularJS非常善于构建小型app原型，但AngularJS对于全功能的客户端应用程序同样强大，它结合了开发简便，特性广泛和出众的性能，使其被广泛使用。
+
+&nbsp;&nbsp;&nbsp;&nbsp;AngularJS 诞生于2009年，由Misko Hevery 等人创建，后为Google所收购。是一款优秀的前端JS框架，已经被用于Google的多款产品当中。AngularJS有着诸多特性，最为核心的是：MVVM、模块化、自动化双向数据绑定、语义化标签、依赖注入等等。
+
+###理念
+
+&nbsp;&nbsp;&nbsp;&nbsp;AngularJs是一个用于设计动态web应用的结构框架。
+
+&nbsp;&nbsp;&nbsp;&nbsp;首先，它是一个框架，不是类库(与jQuery的区别)，是像backbone一样提供一整套方案用于设计web应用。它不仅仅是一个javascript框架，因为它的核心其实是对HTML标签的增强。
+
+&nbsp;&nbsp;&nbsp;&nbsp;模块化与数据的绑定，在AngularJs中，对每个功能页面都可以声明为模块，通过AngularJs的ng-model属性与模块进行数据绑定，在每个模块中定义方法或者对数据赋值，达到页面展现和数据隔离的效果。在模块中除了可以使用AngularJs提供的指令外，也可以自定义指令增强模块功能。
+
+###简单样例
+
+<pre><code>
+&lt;div ng-app="myApp" ng-controller="myCtrl"&gt;
+
+名: &lt;input type="text" ng-model="firstName"&gt;&lt;br&gt;
+姓: &lt;input type="text" ng-model="lastName"&gt;&lt;br&gt;
+&lt;br&gt;
+姓名: {{firstName + " " + lastName}}
+
+&lt;/div&gt;
+
+&lt;div  ng-controller="customersCtrl"&gt;
+ 	&lt;ul&gt;
+  &lt;li ng-repeat="x in names"&gt;
+    {{ x }}
+  &lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+
+
+&lt;script&gt;
+var app = angular.module('myApp', []);
+app.controller('myCtrl', function($scope) {
+    $scope.firstName= "John";
+    $scope.lastName= "Doe";
+});
+
+app.controller('customersCtrl', function($scope, $http) {
+    $http.get("<%=request.getContextPath()%>/template/json")
+    .success(function(response) {
+    	$scope.names = response;
+    	});
+});
+
+&lt;/script&gt;
+
+</code></pre>
+
+
+
+
+###参考资料
+
+[AngularJS 教程]
+
+<http://www.runoob.com/angularjs/angularjs-tutorial.html>
+
+[AngularJS学习笔记目录]
+
+<http://www.cnblogs.com/xing901022/category/658522.html>
+
+[AngularJS 最常用的八种功能]
+
+<http://zhaoyanblog.com/archives/99.html>
+
+[走进AngularJs(一)angular基本概念的认识与实战]
+
+<http://www.cnblogs.com/lvdabao/p/AngularJs.html>
+
+[AngularJS开发人员最常犯的10个错误]
+
+<http://blog.jobbole.com/78946/>
+
+[同作为JavaScript MVC框架，Backbone和AngularJS各有什么优缺点？]
+
+<http://www.zhihu.com/question/21170137>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="angularjs">AngularJS入门</h2>
+
+<h3 id="">介绍</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;AngularJS是目前最为活跃的Javascript框架之一，AngularJS的目标之一是简化开发过程，这使得AngularJS非常善于构建小型app原型，但AngularJS对于全功能的客户端应用程序同样强大，它结合了开发简便，特性广泛和出众的性能，使其被广泛使用。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;AngularJS 诞生于2009年，由Misko Hevery 等人创建，后为Google所收购。是一款优秀的前端JS框架，已经被用于Google的多款产品当中。AngularJS有着诸多特性，最为核心的是：MVVM、模块化、自动化双向数据绑定、语义化标签、依赖注入等等。</p>
+
+<h3 id="">理念</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;AngularJs是一个用于设计动态web应用的结构框架。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;首先，它是一个框架，不是类库(与jQuery的区别)，是像backbone一样提供一整套方案用于设计web应用。它不仅仅是一个javascript框架，因为它的核心其实是对HTML标签的增强。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;模块化与数据的绑定，在AngularJs中，对每个功能页面都可以声明为模块，通过AngularJs的ng-model属性与模块进行数据绑定，在每个模块中定义方法或者对数据赋值，达到页面展现和数据隔离的效果。在模块中除了可以使用AngularJs提供的指令外，也可以自定义指令增强模块功能。</p>
+
+<h3 id="">简单样例</h3>
+
+<pre><code>
+&lt;div ng-app="myApp" ng-controller="myCtrl"&gt;
+
+名: &lt;input type="text" ng-model="firstName"&gt;&lt;br&gt;
+姓: &lt;input type="text" ng-model="lastName"&gt;&lt;br&gt;
+&lt;br&gt;
+姓名: {{firstName + " " + lastName}}
+
+&lt;/div&gt;
+
+&lt;div  ng-controller="customersCtrl"&gt;
+     &lt;ul&gt;
+  &lt;li ng-repeat="x in names"&gt;
+    {{ x }}
+  &lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+
+
+&lt;script&gt;
+var app = angular.module('myApp', []);
+app.controller('myCtrl', function($scope) {
+    $scope.firstName= "John";
+    $scope.lastName= "Doe";
+});
+
+app.controller('customersCtrl', function($scope, $http) {
+    $http.get("&lt;%=request.getContextPath()%&gt;/template/json")
+    .success(function(response) {
+        $scope.names = response;
+        });
+});
+
+&lt;/script&gt;
+
+</code></pre>
+
+<h3 id="">参考资料</h3>
+
+<p>[AngularJS 教程]</p>
+
+<p><a href="http://www.runoob.com/angularjs/angularjs-tutorial.html">http://www.runoob.com/angularjs/angularjs-tutorial.html</a></p>
+
+<p>[AngularJS学习笔记目录]</p>
+
+<p><a href="http://www.cnblogs.com/xing901022/category/658522.html">http://www.cnblogs.com/xing901022/category/658522.html</a></p>
+
+<p>[AngularJS 最常用的八种功能]</p>
+
+<p><a href="http://zhaoyanblog.com/archives/99.html">http://zhaoyanblog.com/archives/99.html</a></p>
+
+<p>[走进AngularJs(一)angular基本概念的认识与实战]</p>
+
+<p><a href="http://www.cnblogs.com/lvdabao/p/AngularJs.html">http://www.cnblogs.com/lvdabao/p/AngularJs.html</a></p>
+
+<p>[AngularJS开发人员最常犯的10个错误]</p>
+
+<p><a href="http://blog.jobbole.com/78946/">http://blog.jobbole.com/78946/</a></p>
+
+<p>[同作为JavaScript MVC框架，Backbone和AngularJS各有什么优缺点？]</p>
+
+<p><a href="http://www.zhihu.com/question/21170137">http://www.zhihu.com/question/21170137</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "AngularJS.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

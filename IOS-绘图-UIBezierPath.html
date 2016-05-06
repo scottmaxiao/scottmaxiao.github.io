@@ -1,0 +1,277 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-绘图-UIBezierPath
+
+###介绍
+
+&nbsp;&nbsp;&nbsp;&nbsp;UIBezierPath类在UIKit包中，此类是Core Graphics框架关于路径的封装。使用此类可以定义简单的形状，如椭圆、矩形或者有多个直线和曲线段组成的形状等。
+
+###画图步骤
+
+1. 创建一个UIBezierPath对象
+2. 调用moveToPoint设置初始线段的起点
+3. 添加线或者曲线去定义一个或者多个子路径
+4. 改变UIBezierPath对象跟绘图相关的属性。如，我们可以设置画笔的属性、填充样式等
+
+```
+UIBezierPath *bezierPath = [UIBezierPath bezierPath];
+//设置起点
+[bezierPath moveToPoint:CGPointMake(30.0, 20.0)];
+//设置终点
+[bezierPath addLineToPoint:CGPointMake( 100.0, 50)];
+// 设置边框颜色
+[self.cColor setStroke];
+//设置宽度
+bezierPath.lineWidth = 2.0;
+//绘制边框
+[bezierPath stroke];
+
+```
+###简单图形创建方法介绍
+
+```
+//适合创建任何图形
+UIBezierPath *bezierPath = [UIBezierPath bezierPath];
+
+//直角矩形
+UIBezierPath* bezierPath = [UIBezierPath bezierPathWithRect:CGRectMake(20, 60, 100, 50)];
+	
+//圆角矩形
+UIBezierPath* bezierPath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(20, 60, 100, 50) cornerRadius:6.0];
+
+//内切圆
+UIBezierPath* bezierPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(20, 120, 50, 50)];
+	
+//椭圆
+UIBezierPath* bezierPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(20, 120, 100, 50)];
+
+```
+
+###描边和填充
+
+```
+//创建path
+UIBezierPath *path = [UIBezierPath bezierPath];
+// 添加圆到path
+[path addArcWithCenter:self.center radius:100.0 startAngle:0.0 endAngle:M_PI*2 clockwise:YES];
+// 设置描边宽度（为了让描边看上去更清楚）
+[path setLineWidth:5.0];
+//设置颜色（颜色设置也可以放在最上面，只要在绘制前都可以）
+[[UIColor blueColor] setStroke];
+[[UIColor redColor] setFill];
+// 描边和填充
+[path stroke];
+[path fill];
+
+```
+&nbsp;&nbsp;&nbsp;&nbsp;UIBezierPath颜色的设置并没有包含在自己类中，而是通过UIColor直接设置的。 
+
+```
+//设置边框颜色
+[[UIColor blueColor] setStroke];
+//设置填充颜色
+[[UIColor redColor] setFill];
+//设置边框和填充颜色
+[[UIColor greenColor] set];
+```
+
+
+
+###参考
+
+[iOS UIBezierPath类 介绍]
+
+<http://justsee.iteye.com/blog/1972853>
+
+[iOS 简单的使用UIBezierPath绘制]
+
+<http://my.oschina.net/lanrenbar/blog/389379>
+
+[UIBezierPath精讲]
+
+<http://www.jianshu.com/p/734b34e82135>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosuibezierpath">IOS-绘图-UIBezierPath</h2>
+
+<h3 id="">介绍</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;UIBezierPath类在UIKit包中，此类是Core Graphics框架关于路径的封装。使用此类可以定义简单的形状，如椭圆、矩形或者有多个直线和曲线段组成的形状等。</p>
+
+<h3 id="">画图步骤</h3>
+
+<ol>
+<li>创建一个UIBezierPath对象</li>
+<li>调用moveToPoint设置初始线段的起点</li>
+<li>添加线或者曲线去定义一个或者多个子路径</li>
+<li>改变UIBezierPath对象跟绘图相关的属性。如，我们可以设置画笔的属性、填充样式等</li>
+</ol>
+
+<pre><code>UIBezierPath *bezierPath = [UIBezierPath bezierPath];
+//设置起点
+[bezierPath moveToPoint:CGPointMake(30.0, 20.0)];
+//设置终点
+[bezierPath addLineToPoint:CGPointMake( 100.0, 50)];
+// 设置边框颜色
+[self.cColor setStroke];
+//设置宽度
+bezierPath.lineWidth = 2.0;
+//绘制边框
+[bezierPath stroke];
+</code></pre>
+
+<h3 id="">简单图形创建方法介绍</h3>
+
+<pre><code>//适合创建任何图形
+UIBezierPath *bezierPath = [UIBezierPath bezierPath];
+
+//直角矩形
+UIBezierPath* bezierPath = [UIBezierPath bezierPathWithRect:CGRectMake(20, 60, 100, 50)];
+
+//圆角矩形
+UIBezierPath* bezierPath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(20, 60, 100, 50) cornerRadius:6.0];
+
+//内切圆
+UIBezierPath* bezierPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(20, 120, 50, 50)];
+
+//椭圆
+UIBezierPath* bezierPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(20, 120, 100, 50)];
+</code></pre>
+
+<h3 id="">描边和填充</h3>
+
+<pre><code>//创建path
+UIBezierPath *path = [UIBezierPath bezierPath];
+// 添加圆到path
+[path addArcWithCenter:self.center radius:100.0 startAngle:0.0 endAngle:M_PI*2 clockwise:YES];
+// 设置描边宽度（为了让描边看上去更清楚）
+[path setLineWidth:5.0];
+//设置颜色（颜色设置也可以放在最上面，只要在绘制前都可以）
+[[UIColor blueColor] setStroke];
+[[UIColor redColor] setFill];
+// 描边和填充
+[path stroke];
+[path fill];
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;UIBezierPath颜色的设置并没有包含在自己类中，而是通过UIColor直接设置的。 </p>
+
+<pre><code>//设置边框颜色
+[[UIColor blueColor] setStroke];
+//设置填充颜色
+[[UIColor redColor] setFill];
+//设置边框和填充颜色
+[[UIColor greenColor] set];
+</code></pre>
+
+<h3 id="">参考</h3>
+
+<p>[iOS UIBezierPath类 介绍]</p>
+
+<p><a href="http://justsee.iteye.com/blog/1972853">http://justsee.iteye.com/blog/1972853</a></p>
+
+<p>[iOS 简单的使用UIBezierPath绘制]</p>
+
+<p><a href="http://my.oschina.net/lanrenbar/blog/389379">http://my.oschina.net/lanrenbar/blog/389379</a></p>
+
+<p>[UIBezierPath精讲]</p>
+
+<p><a href="http://www.jianshu.com/p/734b34e82135">http://www.jianshu.com/p/734b34e82135</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-绘图-UIBezierPath.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

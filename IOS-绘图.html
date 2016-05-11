@@ -1,0 +1,350 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-绘图
+
+###介绍
+
+&nbsp;&nbsp;&nbsp;&nbsp;IOS框架分为下面几层
+
+![framework](http://scottmaxiao.github.io/img/drawing/ios_drawing02.png)
+
+&nbsp;&nbsp;&nbsp;&nbsp;每个框架对应IOS系统里的一层，每层建立在它下面层的上面。应该尽量使用上层的框架来代替下面的框架。更高层次的框架是对底层框架基于对象的抽象。我们知道的几个主要框架分别在对应的层当中。
+
+- Cocoa Touch：UIKit
+
+- Media：Core Graphics/Open GL ES/Core Animation
+
+- Core Services：Core Data/Foundation
+
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;在IOS框架中，绘图操作主要使用UIKit，Core Graphics，Open GL ES等框架。
+
+![framework](http://scottmaxiao.github.io/img/drawing/ios_drawing01)
+
+&nbsp;&nbsp;&nbsp;&nbsp;根据苹果的描述，UIKit是我们最容易也是最常接触到的框架。绝大多数图形界面都由UIKit完成。但是UIKit依赖于Core Graphics框架，也是基于Core Graphics框架实现的。如果想要完成某些更底层的功能或者追求极致的性能，那么依然推荐使用Core Graphics完成。
+
+**UIKit框架提供创建基于触摸用户界面的类**
+
+&nbsp;&nbsp;&nbsp;&nbsp;所有的iOS应用程序都基于UIKit，应用程序不能脱离这个框架。UIKit提供了在屏幕上绘制的机制，捕获事件，和创建通用用户界面元素。UIKit也通过管理显示在屏幕上的组件来组织复杂的项目。
+
+&nbsp;&nbsp;&nbsp;&nbsp;使用UIKit可以：
+
+- 构建和管理你的用户界面
+
+- 捕获触摸和基于移动的事件
+
+- 呈现文字和web内容
+
+- 优化你的多任务程序
+
+- 创建定制的用户界面元素
+
+&nbsp;&nbsp;&nbsp;&nbsp;[UIBezierPath](http://scottmaxiao.github.io/IOS-绘图-UIBezierPath.html)包装了Quartz的相关API，自己存在于UIKit中，因此不是基于C的API，而是基于Objective-C对象的。使用此类可以定义简单的形状，如椭圆、矩形或者有多个直线和曲线段组成的形状等。
+
+
+**Core Graphics框架帮助你创建图形**
+
+&nbsp;&nbsp;&nbsp;&nbsp;高质量的图形对于所有的iOS应用程序都是很重要的。在iOS中最简单且最快捷的创建图形的方式是使用UIKit框架提供的基于预渲染图形的视图和控件，然后让UIKit和iOS完成绘制。但是需要创建复杂的图形时，Core Graphics则提供了更底层的库来帮助。
+
+&nbsp;&nbsp;&nbsp;&nbsp;使用Core Graphics可以：
+
+- 创建基于路径的绘图
+
+- 抗锯齿渲染
+
+- 添加梯度、图片和颜色
+
+- Use coordinate-space transformations.
+
+- 创建、显示和分析PDF文档
+
+&nbsp;&nbsp;&nbsp;&nbsp;[Core Graphics](http://scottmaxiao.github.io/IOS-绘图-Core_Graphics.html)其实是一套基于C的API框架，使用了Quartz作为绘图引擎。这也就意味着Core Graphics不是面向对象的。
+
+
+**OpenGL ES 框架提供2D和3D绘图工具**
+
+&nbsp;&nbsp;&nbsp;&nbsp;OpenGL ES是跨平台的图形API，属于OpenGL的一个简化版本。OpenGL ES支持2D和3D绘图，Apple的OpenGL ES实现通过硬件提供了高速的全屏游戏式的应用程序。
+
+&nbsp;&nbsp;&nbsp;&nbsp;使用OpenGL ES可以：
+
+- 创建2D和3D图形
+
+- 创建更复杂的图形，比如数据虚拟化、模拟飞行，或者视频游戏
+
+- 访问底层图形设备
+
+###参考资料
+
+[iOS的主要框架]
+
+<http://www.jianshu.com/p/035bdc6d649b>
+
+[Core Graphics快速入门——从一行代码说起]
+
+<http://www.mamicode.com/info-detail-841887.html>
+
+[IOS绘图详解]
+
+<http://www.netfoucs.com/article/u012858744/66499.html>
+
+[iOS中的绘图教程品读后的顿悟篇(一)]
+
+<http://www.jianshu.com/p/fe0aab588b40>
+
+[高效绘图]
+
+<https://github.com/AttackOnDobby/iOS-Core-Animation-Advanced-Techniques/blob/master/13-%E9%AB%98%E6%95%88%E7%BB%98%E5%9B%BE/13-%E9%AB%98%E6%95%88%E7%BB%98%E5%9B%BE.md>
+
+
+[iOS开发系列--打造自己的“美图秀秀”]
+
+<http://www.cnblogs.com/kenshincui/p/3959951.html>
+
+[iOS绘图教程]
+
+<http://www.cnblogs.com/xdream86/archive/2012/12/12/2814552.html>
+
+[Core Graphics框架 利用Quartz 2D绘图]
+
+<http://www.cnblogs.com/pigpigDD/p/3986703.html>
+
+[ios绘图基础]
+
+<http://liuyanwei.jumppo.com/2015/07/25/ios-draw-base.html>
+
+[CoreGraphics简单绘图]
+
+<http://my.oschina.net/joanfen/blog/150411>
+
+[IOS绘图详解]
+
+<http://blog.csdn.net/liwei3gjob/article/details/8424553>
+
+[iOS 简单的使用UIBezierPath绘制]
+
+<http://my.oschina.net/lanrenbar/blog/389379>
+
+[iOS UIBezierPath类 介绍]
+
+<http://justsee.iteye.com/blog/1972853>
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="ios">IOS-绘图</h2>
+
+<h3 id="">介绍</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;IOS框架分为下面几层</p>
+
+<p><img src="http://scottmaxiao.github.io/img/drawing/ios_drawing02.png" alt="framework" title=""></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;每个框架对应IOS系统里的一层，每层建立在它下面层的上面。应该尽量使用上层的框架来代替下面的框架。更高层次的框架是对底层框架基于对象的抽象。我们知道的几个主要框架分别在对应的层当中。</p>
+
+<ul>
+<li><p>Cocoa Touch：UIKit</p></li>
+<li><p>Media：Core Graphics/Open GL ES/Core Animation</p></li>
+<li><p>Core Services：Core Data/Foundation</p></li>
+</ul>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在IOS框架中，绘图操作主要使用UIKit，Core Graphics，Open GL ES等框架。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/drawing/ios_drawing01" alt="framework" title=""></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;根据苹果的描述，UIKit是我们最容易也是最常接触到的框架。绝大多数图形界面都由UIKit完成。但是UIKit依赖于Core Graphics框架，也是基于Core Graphics框架实现的。如果想要完成某些更底层的功能或者追求极致的性能，那么依然推荐使用Core Graphics完成。</p>
+
+<p><strong>UIKit框架提供创建基于触摸用户界面的类</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;所有的iOS应用程序都基于UIKit，应用程序不能脱离这个框架。UIKit提供了在屏幕上绘制的机制，捕获事件，和创建通用用户界面元素。UIKit也通过管理显示在屏幕上的组件来组织复杂的项目。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;使用UIKit可以：</p>
+
+<ul>
+<li><p>构建和管理你的用户界面</p></li>
+<li><p>捕获触摸和基于移动的事件</p></li>
+<li><p>呈现文字和web内容</p></li>
+<li><p>优化你的多任务程序</p></li>
+<li><p>创建定制的用户界面元素</p></li>
+</ul>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://scottmaxiao.github.io/IOS-绘图-UIBezierPath.html">UIBezierPath</a>包装了Quartz的相关API，自己存在于UIKit中，因此不是基于C的API，而是基于Objective-C对象的。使用此类可以定义简单的形状，如椭圆、矩形或者有多个直线和曲线段组成的形状等。</p>
+
+<p><strong>Core Graphics框架帮助你创建图形</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;高质量的图形对于所有的iOS应用程序都是很重要的。在iOS中最简单且最快捷的创建图形的方式是使用UIKit框架提供的基于预渲染图形的视图和控件，然后让UIKit和iOS完成绘制。但是需要创建复杂的图形时，Core Graphics则提供了更底层的库来帮助。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;使用Core Graphics可以：</p>
+
+<ul>
+<li><p>创建基于路径的绘图</p></li>
+<li><p>抗锯齿渲染</p></li>
+<li><p>添加梯度、图片和颜色</p></li>
+<li><p>Use coordinate-space transformations.</p></li>
+<li><p>创建、显示和分析PDF文档</p></li>
+</ul>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://scottmaxiao.github.io/IOS-绘图-Core_Graphics.html">Core Graphics</a>其实是一套基于C的API框架，使用了Quartz作为绘图引擎。这也就意味着Core Graphics不是面向对象的。</p>
+
+<p><strong>OpenGL ES 框架提供2D和3D绘图工具</strong></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;OpenGL ES是跨平台的图形API，属于OpenGL的一个简化版本。OpenGL ES支持2D和3D绘图，Apple的OpenGL ES实现通过硬件提供了高速的全屏游戏式的应用程序。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;使用OpenGL ES可以：</p>
+
+<ul>
+<li><p>创建2D和3D图形</p></li>
+<li><p>创建更复杂的图形，比如数据虚拟化、模拟飞行，或者视频游戏</p></li>
+<li><p>访问底层图形设备</p></li>
+</ul>
+
+<h3 id="">参考资料</h3>
+
+<p>[iOS的主要框架]</p>
+
+<p><a href="http://www.jianshu.com/p/035bdc6d649b">http://www.jianshu.com/p/035bdc6d649b</a></p>
+
+<p>[Core Graphics快速入门——从一行代码说起]</p>
+
+<p><a href="http://www.mamicode.com/info-detail-841887.html">http://www.mamicode.com/info-detail-841887.html</a></p>
+
+<p>[IOS绘图详解]</p>
+
+<p><a href="http://www.netfoucs.com/article/u012858744/66499.html">http://www.netfoucs.com/article/u012858744/66499.html</a></p>
+
+<p>[iOS中的绘图教程品读后的顿悟篇(一)]</p>
+
+<p><a href="http://www.jianshu.com/p/fe0aab588b40">http://www.jianshu.com/p/fe0aab588b40</a></p>
+
+<p>[高效绘图]</p>
+
+<p><a href="https://github.com/AttackOnDobby/iOS-Core-Animation-Advanced-Techniques/blob/master/13-%E9%AB%98%E6%95%88%E7%BB%98%E5%9B%BE/13-%E9%AB%98%E6%95%88%E7%BB%98%E5%9B%BE.md">https://github.com/AttackOnDobby/iOS-Core-Animation-Advanced-Techniques/blob/master/13-%E9%AB%98%E6%95%88%E7%BB%98%E5%9B%BE/13-%E9%AB%98%E6%95%88%E7%BB%98%E5%9B%BE.md</a></p>
+
+<p>[iOS开发系列--打造自己的“美图秀秀”]</p>
+
+<p><a href="http://www.cnblogs.com/kenshincui/p/3959951.html">http://www.cnblogs.com/kenshincui/p/3959951.html</a></p>
+
+<p>[iOS绘图教程]</p>
+
+<p><a href="http://www.cnblogs.com/xdream86/archive/2012/12/12/2814552.html">http://www.cnblogs.com/xdream86/archive/2012/12/12/2814552.html</a></p>
+
+<p>[Core Graphics框架 利用Quartz 2D绘图]</p>
+
+<p><a href="http://www.cnblogs.com/pigpigDD/p/3986703.html">http://www.cnblogs.com/pigpigDD/p/3986703.html</a></p>
+
+<p>[ios绘图基础]</p>
+
+<p><a href="http://liuyanwei.jumppo.com/2015/07/25/ios-draw-base.html">http://liuyanwei.jumppo.com/2015/07/25/ios-draw-base.html</a></p>
+
+<p>[CoreGraphics简单绘图]</p>
+
+<p><a href="http://my.oschina.net/joanfen/blog/150411">http://my.oschina.net/joanfen/blog/150411</a></p>
+
+<p>[IOS绘图详解]</p>
+
+<p><a href="http://blog.csdn.net/liwei3gjob/article/details/8424553">http://blog.csdn.net/liwei3gjob/article/details/8424553</a></p>
+
+<p>[iOS 简单的使用UIBezierPath绘制]</p>
+
+<p><a href="http://my.oschina.net/lanrenbar/blog/389379">http://my.oschina.net/lanrenbar/blog/389379</a></p>
+
+<p>[iOS UIBezierPath类 介绍]</p>
+
+<p><a href="http://justsee.iteye.com/blog/1972853">http://justsee.iteye.com/blog/1972853</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-绘图.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

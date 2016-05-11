@@ -101,6 +101,35 @@ UIBezierPath *path = [UIBezierPath bezierPath];
 ```
 
 
+###使用图形上下文绘制
+
+&nbsp;&nbsp;&nbsp;&nbsp;我们绘制图形的时候，一般都是在继承UIView的子类中，重写drawRect方法。另外一种方式是在图形上下文中绘制。
+
+```
+//开始图像绘图
+UIGraphicsBeginImageContext(self.view.bounds.size);
+	
+UIBezierPath *bezierPath = [UIBezierPath bezierPath];
+//设置起点
+[bezierPath moveToPoint:CGPointMake(30.0, 20.0)];
+//设置终点
+[bezierPath addLineToPoint:CGPointMake( 100.0, 50)];
+// 设置边框颜色
+[[UIColor redColor] setStroke];
+//设置宽度
+bezierPath.lineWidth = 2.0f;
+//绘制边框
+[bezierPath stroke];
+	
+//从Context中获取图像，并显示在界面上
+UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
+UIGraphicsEndImageContext();
+UIImageView *imgView = [[UIImageView alloc] initWithImage:img];
+[self.view addSubview:imgView];
+
+```
+
+
 
 ###参考
 
@@ -115,6 +144,10 @@ UIBezierPath *path = [UIBezierPath bezierPath];
 [UIBezierPath精讲]
 
 <http://www.jianshu.com/p/734b34e82135>
+
+[iOS: 使用CGContextRef，CGPath和UIBezierPath来绘画]
+
+<https://www.mgenware.com/blog/?p=493>
 <!-- markdown end -->
 </div>
 <div class="entry" id="main">
@@ -191,6 +224,32 @@ UIBezierPath *path = [UIBezierPath bezierPath];
 [[UIColor greenColor] set];
 </code></pre>
 
+<h3 id="">使用图形上下文绘制</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;我们绘制图形的时候，一般都是在继承UIView的子类中，重写drawRect方法。另外一种方式是在图形上下文中绘制。</p>
+
+<pre><code>//开始图像绘图
+UIGraphicsBeginImageContext(self.view.bounds.size);
+
+UIBezierPath *bezierPath = [UIBezierPath bezierPath];
+//设置起点
+[bezierPath moveToPoint:CGPointMake(30.0, 20.0)];
+//设置终点
+[bezierPath addLineToPoint:CGPointMake( 100.0, 50)];
+// 设置边框颜色
+[[UIColor redColor] setStroke];
+//设置宽度
+bezierPath.lineWidth = 2.0f;
+//绘制边框
+[bezierPath stroke];
+
+//从Context中获取图像，并显示在界面上
+UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
+UIGraphicsEndImageContext();
+UIImageView *imgView = [[UIImageView alloc] initWithImage:img];
+[self.view addSubview:imgView];
+</code></pre>
+
 <h3 id="">参考</h3>
 
 <p>[iOS UIBezierPath类 介绍]</p>
@@ -204,6 +263,10 @@ UIBezierPath *path = [UIBezierPath bezierPath];
 <p>[UIBezierPath精讲]</p>
 
 <p><a href="http://www.jianshu.com/p/734b34e82135">http://www.jianshu.com/p/734b34e82135</a></p>
+
+<p>[iOS: 使用CGContextRef，CGPath和UIBezierPath来绘画]</p>
+
+<p><a href="https://www.mgenware.com/blog/?p=493">https://www.mgenware.com/blog/?p=493</a></p>
 <!-- content end -->
 </div>
 <br>

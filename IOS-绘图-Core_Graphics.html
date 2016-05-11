@@ -1,0 +1,474 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-绘图-Core Graphics框架
+
+###介绍
+
+&nbsp;&nbsp;&nbsp;&nbsp;Core Graphics是一套基于C的API， 支持向量图形，线、形状、图案、路径、剃度、位图图像和pdf 内容的绘制。使用了Quartz作为绘图引擎。这也就意味着Core Graphics不是面向对象的。
+ 
+&nbsp;&nbsp;&nbsp;&nbsp;Quartz 2D 是Core Graphics中的2D 绘制呈现引擎。Quartz是资源和设备无关的,提供路径绘制，anti-aliased呈现，剃度填充图案，图像，透明绘制和透明层、遮蔽和阴影、颜色管理，坐标转换，字体、offscreen呈现、pdf文档创建、显示和分析等功能。
+ 
+&nbsp;&nbsp;&nbsp;&nbsp;Quartz 2D能够与所有的图形和动画技术（如Core Animation, OpenGL ES, 和 UIKit 等）一起使用。
+
+&nbsp;&nbsp;&nbsp;&nbsp;Quartz 2D在UIKit中也有很好的封装和集成，我们日常开发时所用到的UIKit中的组件都是由Core Graphics进行绘制的。不仅如此，当我们引入UIKit框架时系统会自动引入Core Graphics框架，并且为了方便开发者使用在UIKit内部还对一些常用的绘图API进行了封装。
+
+
+###绘图步骤
+
+在iOS中绘图一般分为以下几个步骤：
+
+1.获取绘图上下文
+
+2.创建并设置路径
+
+3.将路径添加到上下文
+
+4.设置上下文状态
+
+5.绘制路径
+
+6.释放路径
+
+&nbsp;&nbsp;&nbsp;&nbsp;图形上下文CGContextRef代表图形输出设备（也就是绘制的位置），包含了绘制图形的一些设备信息，Quartz 2D中的所有对象最终都必须绘制到图形上下文。这样一来，我们在绘制图形时就不必关心具体的设备信息，统一了代码编写方式（在Quartz 2D中的绘图上下文可以是位图Bitmap、PDF、窗口Window、层Layer、打印对象Printer）。
+
+###绘制直线
+
+####使用CGPath绘制
+
+```
+	//1.获取图形上下文
+	CGContextRef ctx=UIGraphicsGetCurrentContext();
+ 
+	//2.绘图
+	//2.1创建一条直线绘图的路径
+	//注意：但凡通过Quartz2D中带有creat/copy/retain方法创建出来的值都必须要释放
+	CGMutablePathRef path=CGPathCreateMutable();
+	//2.2把绘图信息添加到路径里
+	CGPathMoveToPoint(path, NULL, 20, 20);
+	CGPathAddLineToPoint(path, NULL, 200, 300);
+	//2.3把路径添加到上下文中
+	//把绘制直线的绘图信息保存到图形上下文中
+	CGContextAddPath(ctx, path);
+	
+	//3.渲染
+	CGContextStrokePath(ctx);
+	
+	//4.释放前面创建的两条路径
+	//第一种方法
+	CGPathRelease(path);
+	//第二种方法
+	//    CFRelease(path);
+
+```
+
+
+####使用CGContextRef绘制
+
+```
+	//1.获取图形上下文
+	CGContextRef ctx=UIGraphicsGetCurrentContext();
+	//设置线条宽度
+	CGContextSetLineWidth(ctx, 6.0);
+	//设置顶点样式,（20,20）和（240,60）是顶点
+	CGContextSetLineCap(ctx, kCGLineCapSquare);
+	//设置连接点样式，(20,300)是连接点
+	CGContextSetLineJoin(ctx, kCGLineJoinBevel);
+	
+	//设置线条的颜色为红色
+	//CGContextSetRGBStrokeColor(ctx, 1.0, 0, 0.0, 1.0);
+	CGContextSetStrokeColorWithColor(ctx, [UIColor redColor].CGColor);
+	
+	//设置线条的颜色为蓝色
+//	CGContextSetRGBFillColor(ctx, 0, 0, 1.0, 1.0);
+	CGContextSetFillColorWithColor(ctx, [UIColor blueColor].CGColor);
+	
+	//2.绘图（画线）
+	//设置起点
+	CGContextMoveToPoint(ctx, 20, 20);
+	//设置终点
+	CGContextAddLineToPoint(ctx, 150, 70);
+	
+	//设置终点
+	CGContextAddLineToPoint(ctx, 100, 30);
+	
+	CGContextClosePath(ctx);
+	//渲染边框
+	//CGContextStrokePath(ctx);
+	//填充
+	//CGContextFillPath(ctx);
+	
+	CGContextDrawPath(ctx, kCGPathFillStroke);//最后一个参数是填充类型
+
+```
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;使用CGPath绘制的优势是更灵活，可以绘制多个图形。而CGContextRef绘制更简约，而且UIKit对绘图方法的封装更简便。(UIKit内部其实封装了一些以“UI”开头的方法帮助大家进行图形绘制。)
+
+####其他图形绘制
+
+#####绘制矩形
+
+```
+#pragma mark 绘制矩形
+-(void)drawRectWithContext:(CGContextRef)context{
+    //添加矩形对象
+    CGRect rect=CGRectMake(20, 50, 280.0, 50.0);
+    CGContextAddRect(context,rect);
+    //设置属性
+    [[UIColor blueColor]set];
+    //绘制
+    CGContextDrawPath(context, kCGPathFillStroke);
+}
+
+#pragma mark 绘制矩形（利用UIKit的封装方法）
+-(void)drawRectByUIKitWithContext:(CGContextRef)context{
+    CGRect rect= CGRectMake(20, 150, 280.0, 50.0);
+    CGRect rect2=CGRectMake(20, 250, 280.0, 50.0);
+    //设置属性
+    [[UIColor yellowColor]set];
+    //绘制矩形,相当于创建对象、添加对象到上下文、绘制三个步骤
+    UIRectFill(rect);//绘制矩形（只有填充）
+    
+    [[UIColor redColor]setStroke];
+    UIRectFrame(rect2);//绘制矩形(只有边框)
+}
+@end
+
+```
+
+#####绘制椭圆
+
+```
+#pragma mark 绘制椭圆
+-(void)drawEllipse:(CGContextRef)context{
+    //添加对象,绘制椭圆（圆形）的过程也是先创建一个矩形
+    CGRect rect=CGRectMake(50, 50, 220.0, 200.0);
+    CGContextAddEllipseInRect(context, rect);
+    //设置属性
+    [[UIColor purpleColor]set];
+    //绘制
+    CGContextDrawPath(context, kCGPathFillStroke);
+}
+@end 
+
+```
+
+###参考资料
+&nbsp;&nbsp;&nbsp;&nbsp;
+
+[Core Graphics快速入门——从一行代码说起]
+
+<http://www.mamicode.com/info-detail-841887.html>
+
+[iOS开发系列--打造自己的“美图秀秀”]
+
+<http://www.cnblogs.com/kenshincui/p/3959951.html>
+
+[IOS用CGContextRef画各种图形(文字、圆、直线、弧线、矩形、扇形、椭圆、三角形、圆角矩形、贝塞尔曲线、图片)]
+
+<http://blog.csdn.net/rhljiayou/article/details/9919713>
+
+[Core Graphics 框架笔记(一)]
+
+<http://www.jianshu.com/p/11640264775a>
+
+[ iOS 使用Quartz 2D画虚线]
+
+<http://blog.csdn.net/zhangao0086/article/details/7234859>
+
+[ios图形编程API之Core Graphics 与Quartz 2D API]
+
+<http://blog.tianya.cn/post-4948617-71164129-1.shtml>
+
+[iOS开发UI篇—Quartz2D简单使用（一）]
+
+<http://www.cnblogs.com/wendingding/p/3779155.html>
+
+[Core Graphics 框架学习笔记，以及demo]
+
+<http://blog.csdn.net/mangosnow/article/details/37054765>
+
+[CGContextAddArc用法]
+
+<http://shuixian361.iteye.com/blog/1947699>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="ioscoregraphics">IOS-绘图-Core Graphics框架</h2>
+
+<h3 id="">介绍</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Core Graphics是一套基于C的API， 支持向量图形，线、形状、图案、路径、剃度、位图图像和pdf 内容的绘制。使用了Quartz作为绘图引擎。这也就意味着Core Graphics不是面向对象的。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Quartz 2D 是Core Graphics中的2D 绘制呈现引擎。Quartz是资源和设备无关的,提供路径绘制，anti-aliased呈现，剃度填充图案，图像，透明绘制和透明层、遮蔽和阴影、颜色管理，坐标转换，字体、offscreen呈现、pdf文档创建、显示和分析等功能。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Quartz 2D能够与所有的图形和动画技术（如Core Animation, OpenGL ES, 和 UIKit 等）一起使用。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Quartz 2D在UIKit中也有很好的封装和集成，我们日常开发时所用到的UIKit中的组件都是由Core Graphics进行绘制的。不仅如此，当我们引入UIKit框架时系统会自动引入Core Graphics框架，并且为了方便开发者使用在UIKit内部还对一些常用的绘图API进行了封装。</p>
+
+<h3 id="">绘图步骤</h3>
+
+<p>在iOS中绘图一般分为以下几个步骤：</p>
+
+<p>1.获取绘图上下文</p>
+
+<p>2.创建并设置路径</p>
+
+<p>3.将路径添加到上下文</p>
+
+<p>4.设置上下文状态</p>
+
+<p>5.绘制路径</p>
+
+<p>6.释放路径</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;图形上下文CGContextRef代表图形输出设备（也就是绘制的位置），包含了绘制图形的一些设备信息，Quartz 2D中的所有对象最终都必须绘制到图形上下文。这样一来，我们在绘制图形时就不必关心具体的设备信息，统一了代码编写方式（在Quartz 2D中的绘图上下文可以是位图Bitmap、PDF、窗口Window、层Layer、打印对象Printer）。</p>
+
+<h3 id="">绘制直线</h3>
+
+<h4 id="cgpath">使用CGPath绘制</h4>
+
+<pre><code>    //1.获取图形上下文
+    CGContextRef ctx=UIGraphicsGetCurrentContext();
+
+    //2.绘图
+    //2.1创建一条直线绘图的路径
+    //注意：但凡通过Quartz2D中带有creat/copy/retain方法创建出来的值都必须要释放
+    CGMutablePathRef path=CGPathCreateMutable();
+    //2.2把绘图信息添加到路径里
+    CGPathMoveToPoint(path, NULL, 20, 20);
+    CGPathAddLineToPoint(path, NULL, 200, 300);
+    //2.3把路径添加到上下文中
+    //把绘制直线的绘图信息保存到图形上下文中
+    CGContextAddPath(ctx, path);
+
+    //3.渲染
+    CGContextStrokePath(ctx);
+
+    //4.释放前面创建的两条路径
+    //第一种方法
+    CGPathRelease(path);
+    //第二种方法
+    //    CFRelease(path);
+</code></pre>
+
+<h4 id="cgcontextref">使用CGContextRef绘制</h4>
+
+<pre><code>    //1.获取图形上下文
+    CGContextRef ctx=UIGraphicsGetCurrentContext();
+    //设置线条宽度
+    CGContextSetLineWidth(ctx, 6.0);
+    //设置顶点样式,（20,20）和（240,60）是顶点
+    CGContextSetLineCap(ctx, kCGLineCapSquare);
+    //设置连接点样式，(20,300)是连接点
+    CGContextSetLineJoin(ctx, kCGLineJoinBevel);
+
+    //设置线条的颜色为红色
+    //CGContextSetRGBStrokeColor(ctx, 1.0, 0, 0.0, 1.0);
+    CGContextSetStrokeColorWithColor(ctx, [UIColor redColor].CGColor);
+
+    //设置线条的颜色为蓝色
+//    CGContextSetRGBFillColor(ctx, 0, 0, 1.0, 1.0);
+    CGContextSetFillColorWithColor(ctx, [UIColor blueColor].CGColor);
+
+    //2.绘图（画线）
+    //设置起点
+    CGContextMoveToPoint(ctx, 20, 20);
+    //设置终点
+    CGContextAddLineToPoint(ctx, 150, 70);
+
+    //设置终点
+    CGContextAddLineToPoint(ctx, 100, 30);
+
+    CGContextClosePath(ctx);
+    //渲染边框
+    //CGContextStrokePath(ctx);
+    //填充
+    //CGContextFillPath(ctx);
+
+    CGContextDrawPath(ctx, kCGPathFillStroke);//最后一个参数是填充类型
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;使用CGPath绘制的优势是更灵活，可以绘制多个图形。而CGContextRef绘制更简约，而且UIKit对绘图方法的封装更简便。(UIKit内部其实封装了一些以“UI”开头的方法帮助大家进行图形绘制。)</p>
+
+<h4 id="">其他图形绘制</h4>
+
+<h5 id="">绘制矩形</h5>
+
+<pre><code>#pragma mark 绘制矩形
+-(void)drawRectWithContext:(CGContextRef)context{
+    //添加矩形对象
+    CGRect rect=CGRectMake(20, 50, 280.0, 50.0);
+    CGContextAddRect(context,rect);
+    //设置属性
+    [[UIColor blueColor]set];
+    //绘制
+    CGContextDrawPath(context, kCGPathFillStroke);
+}
+
+#pragma mark 绘制矩形（利用UIKit的封装方法）
+-(void)drawRectByUIKitWithContext:(CGContextRef)context{
+    CGRect rect= CGRectMake(20, 150, 280.0, 50.0);
+    CGRect rect2=CGRectMake(20, 250, 280.0, 50.0);
+    //设置属性
+    [[UIColor yellowColor]set];
+    //绘制矩形,相当于创建对象、添加对象到上下文、绘制三个步骤
+    UIRectFill(rect);//绘制矩形（只有填充）
+
+    [[UIColor redColor]setStroke];
+    UIRectFrame(rect2);//绘制矩形(只有边框)
+}
+@end
+</code></pre>
+
+<h5 id="">绘制椭圆</h5>
+
+<pre><code>#pragma mark 绘制椭圆
+-(void)drawEllipse:(CGContextRef)context{
+    //添加对象,绘制椭圆（圆形）的过程也是先创建一个矩形
+    CGRect rect=CGRectMake(50, 50, 220.0, 200.0);
+    CGContextAddEllipseInRect(context, rect);
+    //设置属性
+    [[UIColor purpleColor]set];
+    //绘制
+    CGContextDrawPath(context, kCGPathFillStroke);
+}
+@end 
+</code></pre>
+
+<h3 id="">参考资料</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
+
+<p>[Core Graphics快速入门——从一行代码说起]</p>
+
+<p><a href="http://www.mamicode.com/info-detail-841887.html">http://www.mamicode.com/info-detail-841887.html</a></p>
+
+<p>[iOS开发系列--打造自己的“美图秀秀”]</p>
+
+<p><a href="http://www.cnblogs.com/kenshincui/p/3959951.html">http://www.cnblogs.com/kenshincui/p/3959951.html</a></p>
+
+<p>[IOS用CGContextRef画各种图形(文字、圆、直线、弧线、矩形、扇形、椭圆、三角形、圆角矩形、贝塞尔曲线、图片)]</p>
+
+<p><a href="http://blog.csdn.net/rhljiayou/article/details/9919713">http://blog.csdn.net/rhljiayou/article/details/9919713</a></p>
+
+<p>[Core Graphics 框架笔记(一)]</p>
+
+<p><a href="http://www.jianshu.com/p/11640264775a">http://www.jianshu.com/p/11640264775a</a></p>
+
+<p>[ iOS 使用Quartz 2D画虚线]</p>
+
+<p><a href="http://blog.csdn.net/zhangao0086/article/details/7234859">http://blog.csdn.net/zhangao0086/article/details/7234859</a></p>
+
+<p>[ios图形编程API之Core Graphics 与Quartz 2D API]</p>
+
+<p><a href="http://blog.tianya.cn/post-4948617-71164129-1.shtml">http://blog.tianya.cn/post-4948617-71164129-1.shtml</a></p>
+
+<p>[iOS开发UI篇—Quartz2D简单使用（一）]</p>
+
+<p><a href="http://www.cnblogs.com/wendingding/p/3779155.html">http://www.cnblogs.com/wendingding/p/3779155.html</a></p>
+
+<p>[Core Graphics 框架学习笔记，以及demo]</p>
+
+<p><a href="http://blog.csdn.net/mangosnow/article/details/37054765">http://blog.csdn.net/mangosnow/article/details/37054765</a></p>
+
+<p>[CGContextAddArc用法]</p>
+
+<p><a href="http://shuixian361.iteye.com/blog/1947699">http://shuixian361.iteye.com/blog/1947699</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-绘图-Core_Graphics.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

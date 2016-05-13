@@ -1,0 +1,252 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##Java加密算法-MD5和SHA
+
+###介绍
+
+&nbsp;&nbsp;&nbsp;&nbsp;Hash函数又称杂凑函数，用于摘要算法，它是将不定长的明文信息经过复杂的运算得到一个定长的数值，这就是“签名”。摘要算法与一般的对称或非对称加密算法不同，它并不用于防止信息被窃取，而是用于证明原文的完整性和准确性，也就是说，数字签名主要是用于防止信息被篡改。
+
+&nbsp;&nbsp;&nbsp;&nbsp;SHA和MD系列算法是一种基于散列算法的单向加密算法，也就是说明文一经加密(散列)，密文就不可以再被恢复为明文。MD5 与SHA-1均是从MD4 发展而来,也是当前应用最为广泛的两种散列算法。
+
+&nbsp;&nbsp;&nbsp;&nbsp;MD5(RFC1321)诞生于1991年，全称是“Message-Digest Algorithm信息摘要算法)5”，由MIT的计算机安全实验室和RSA安全公司共同提出，之前已经有MD2、MD3和MD4几种算法。MD5克服了MD4的缺陷，生成128bit的摘要信息串，出现之后迅速成为主流算法，并在1992年被收录到RFC中。
+
+&nbsp;&nbsp;&nbsp;&nbsp;SHA诞生于1993年，全称是安全散列算法(Secure Hash Algorithm)，由美国国家安全局(NSA)设计，之后被美国标准与技术研究院(NIST)收录到美国的联邦信息处理标准(FIPS)中，成为美国国家标准，SHA(后来被称作SHA-0)于1995被SHA-1(RFC3174)替代。SHA-1生成长度为160bit的摘要信息串，虽然之后又出现了SHA-224、SHA-256、SHA-384和SHA-512等被统称为“SHA-2”的系列算法，但仍以SHA-1为主流。
+
+###样例代码
+
+```
+    public static final String KEY_SHA = "SHA";  
+    public static final String KEY_MD5 = "MD5";  
+    /** 
+     * MD5加密 
+     *  
+     * @param data 
+     * @return 
+     * @throws Exception 
+     */  
+    public static byte[] encryptMD5(byte[] data) throws Exception {  
+  
+        MessageDigest md5 = MessageDigest.getInstance(KEY_MD5);  
+        md5.update(data);  
+  
+        return md5.digest();  
+  
+    } 
+
+    /** 
+     * SHA加密 
+     *  
+     * @param data 
+     * @return 
+     * @throws Exception 
+     */  
+    public static byte[] encryptSHA(byte[] data) throws Exception {  
+  
+        MessageDigest sha = MessageDigest.getInstance(KEY_SHA);  
+        sha.update(data);  
+  
+        return sha.digest();  
+  
+    }  
+
+```
+
+###参考资料
+
+[MD5与SHA算法]
+
+<http://blog.csdn.net/liyangbing315/article/details/5682107>
+
+[md5与sha]
+
+<http://www.cnblogs.com/mydomain/archive/2012/10/21/2733093.html>
+
+[关于数字签名算法的选择（MD5,SHA-0,SHA-1,SHA-2） ]
+
+<http://blog.chinaunix.net/uid-20662820-id-4050694.html>
+
+[SHA1和MD5安全性探讨]
+
+<http://www.cnblogs.com/cjrboy/articles/1166626.html>
+
+[java中使用MD5进行计算摘要]
+
+<http://blog.csdn.net/hbcui1984/article/details/1326216>
+
+[Java 加密 MD5]
+
+<http://blog.csdn.net/uikoo9/article/details/27981739>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="javamd5sha">Java加密算法-MD5和SHA</h2>
+
+<h3 id="">介绍</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Hash函数又称杂凑函数，用于摘要算法，它是将不定长的明文信息经过复杂的运算得到一个定长的数值，这就是“签名”。摘要算法与一般的对称或非对称加密算法不同，它并不用于防止信息被窃取，而是用于证明原文的完整性和准确性，也就是说，数字签名主要是用于防止信息被篡改。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;SHA和MD系列算法是一种基于散列算法的单向加密算法，也就是说明文一经加密(散列)，密文就不可以再被恢复为明文。MD5 与SHA-1均是从MD4 发展而来,也是当前应用最为广泛的两种散列算法。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;MD5(RFC1321)诞生于1991年，全称是“Message-Digest Algorithm信息摘要算法)5”，由MIT的计算机安全实验室和RSA安全公司共同提出，之前已经有MD2、MD3和MD4几种算法。MD5克服了MD4的缺陷，生成128bit的摘要信息串，出现之后迅速成为主流算法，并在1992年被收录到RFC中。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;SHA诞生于1993年，全称是安全散列算法(Secure Hash Algorithm)，由美国国家安全局(NSA)设计，之后被美国标准与技术研究院(NIST)收录到美国的联邦信息处理标准(FIPS)中，成为美国国家标准，SHA(后来被称作SHA-0)于1995被SHA-1(RFC3174)替代。SHA-1生成长度为160bit的摘要信息串，虽然之后又出现了SHA-224、SHA-256、SHA-384和SHA-512等被统称为“SHA-2”的系列算法，但仍以SHA-1为主流。</p>
+
+<h3 id="">样例代码</h3>
+
+<pre><code>    public static final String KEY_SHA = "SHA";  
+    public static final String KEY_MD5 = "MD5";  
+    /** 
+     * MD5加密 
+     *  
+     * @param data 
+     * @return 
+     * @throws Exception 
+     */  
+    public static byte[] encryptMD5(byte[] data) throws Exception {  
+
+        MessageDigest md5 = MessageDigest.getInstance(KEY_MD5);  
+        md5.update(data);  
+
+        return md5.digest();  
+
+    } 
+
+    /** 
+     * SHA加密 
+     *  
+     * @param data 
+     * @return 
+     * @throws Exception 
+     */  
+    public static byte[] encryptSHA(byte[] data) throws Exception {  
+
+        MessageDigest sha = MessageDigest.getInstance(KEY_SHA);  
+        sha.update(data);  
+
+        return sha.digest();  
+
+    }  
+</code></pre>
+
+<h3 id="">参考资料</h3>
+
+<p>[MD5与SHA算法]</p>
+
+<p><a href="http://blog.csdn.net/liyangbing315/article/details/5682107">http://blog.csdn.net/liyangbing315/article/details/5682107</a></p>
+
+<p>[md5与sha]</p>
+
+<p><a href="http://www.cnblogs.com/mydomain/archive/2012/10/21/2733093.html">http://www.cnblogs.com/mydomain/archive/2012/10/21/2733093.html</a></p>
+
+<p>[关于数字签名算法的选择（MD5,SHA-0,SHA-1,SHA-2） ]</p>
+
+<p><a href="http://blog.chinaunix.net/uid-20662820-id-4050694.html">http://blog.chinaunix.net/uid-20662820-id-4050694.html</a></p>
+
+<p>[SHA1和MD5安全性探讨]</p>
+
+<p><a href="http://www.cnblogs.com/cjrboy/articles/1166626.html">http://www.cnblogs.com/cjrboy/articles/1166626.html</a></p>
+
+<p>[java中使用MD5进行计算摘要]</p>
+
+<p><a href="http://blog.csdn.net/hbcui1984/article/details/1326216">http://blog.csdn.net/hbcui1984/article/details/1326216</a></p>
+
+<p>[Java 加密 MD5]</p>
+
+<p><a href="http://blog.csdn.net/uikoo9/article/details/27981739">http://blog.csdn.net/uikoo9/article/details/27981739</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "Java加密算法-MD5和SHA.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

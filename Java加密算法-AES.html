@@ -1,0 +1,410 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##Java加密算法-AES
+
+###介绍
+
+&nbsp;&nbsp;&nbsp;&nbsp;高级加密标准（英语：Advanced Encryption Standard，缩写：AES），在密码学中又称Rijndael加密法，是美国联邦政府采用的一种区块加密标准。这个标准用来替代原先的DES，已经被多方分析且广为全世界所使用。经过五年的甄选流程，高级加密标准由美国国家标准与技术研究院（NIST）于2001年11月26日发布于FIPS PUB 197，并在2002年5月26日成为有效的标准。2006年，高级加密标准已然成为对称密钥加密中最流行的算法之一。
+
+&nbsp;&nbsp;&nbsp;&nbsp;近些年DES使用越来越少，原因就在于其使用56位密钥，比较容易被破解，近些年来逐渐被AES替代，AES已经变成目前对称加密中最流行算法之一；AES可以使用128、192、和256位密钥，并且用128位分组加密和解密数据。
+
+###样例代码
+
+```
+    /** 
+     * AES加密 
+     * @param content 待加密的内容 
+     * @param encryptKey 加密密钥 
+     * @return 加密后的byte[] 
+     * @throws Exception 
+     */  
+    public static String aesEncrypt(String content, String encryptKey) throws Exception {  
+        KeyGenerator kgen = KeyGenerator.getInstance("AES");
+        SecureRandom random=SecureRandom.getInstance("SHA1PRNG");
+        random.setSeed(encryptKey.getBytes());
+        kgen.init(128, random);  
+  
+        Cipher cipher = Cipher.getInstance("AES");  
+        cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(kgen.generateKey().getEncoded(), "AES"));  
+          
+        return byteArr2HexStr(cipher.doFinal(content.getBytes("utf-8")));  
+    }  
+    
+    /** 
+     * AES解密 
+     * @param encryptBytes 待解密的byte[] 
+     * @param decryptKey 解密密钥 
+     * @return 解密后的String 
+     * @throws Exception 
+     */  
+    public static String aesDecrypt(byte[] encryptBytes, String decryptKey) throws Exception { 
+        KeyGenerator kgen = KeyGenerator.getInstance("AES");
+        SecureRandom random=SecureRandom.getInstance("SHA1PRNG");
+        random.setSeed(decryptKey.getBytes());
+        kgen.init(128, random);
+        
+          
+        Cipher cipher = Cipher.getInstance("AES");  
+        cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(kgen.generateKey().getEncoded(), "AES"));  
+        byte[] decryptBytes = cipher.doFinal(encryptBytes);  
+          
+        return new String(decryptBytes,"utf-8");
+    }  
+    //随机生成密钥
+    private static String getKey() throws Exception{
+		//		 DES算法要求有一个可信任的随机数源
+		SecureRandom sr = new SecureRandom();
+		// 为我们选择的DES算法生成一个KeyGenerator对象
+			KeyGenerator kg = KeyGenerator.getInstance("AES");
+			kg.init(sr);
+			// 生成密匙
+			SecretKey key = kg.generateKey();
+			// 获取密匙数据
+			byte rawKeyData[] = key.getEncoded();
+			
+			//return new String(rawKeyData);
+			
+			return byteArr2HexStr(rawKeyData);
+    }
+    
+	/**
+	 * @param args
+	 * @throws Exception 
+	 */
+	public static void main(String[] args) throws Exception {
+		// TODO 自动生成的方法存根
+        String content = "我爱你";  
+        System.out.println("加密前：" + content);  
+  
+        String key = "123456890";  key=getKey();
+        System.out.println("加密密钥和解密密钥：" + key);  
+   
+        String encrypt = aesEncrypt(content, key);  
+        System.out.println("加密后：" + encrypt);  
+          
+        String decrypt = aesDecrypt(hexStr2ByteArr(encrypt), key);  
+        System.out.println("解密后：" + decrypt); 
+	}
+
+	
+    /** 
+     * 将byte数组转换为表示16进制值的字符串， 如：byte[]{8,18}转换为：0813， 和public static byte[] 
+     * hexStr2ByteArr(String strIn) 互为可逆的转换过程 
+ 
+     *  
+     * @param arrB 
+     *            需要转换的byte数组 
+ 
+     * @return 转换后的字符串 
+     * @throws Exception 
+     *             本方法不处理任何异常，所有异常全部抛出 
+     */  
+    private static String byteArr2HexStr(byte[] arrB) throws Exception {  
+        int iLen = arrB.length;  
+        // 每个byte用两个字符才能表示，所以字符串的长度是数组长度的两倍  
+  
+        StringBuffer sb = new StringBuffer(iLen * 2);  
+        for (int i = 0; i < iLen; i++) {  
+            int intTmp = arrB[i];  
+            // 把负数转换为正数  
+            while (intTmp < 0) {  
+                intTmp = intTmp + 256;  
+            }  
+            // 小于0F的数需要在前面补0  
+            if (intTmp < 16) {  
+                sb.append("0");  
+            }  
+            sb.append(Integer.toString(intTmp, 16));  
+        }  
+        return sb.toString();  
+    }  
+    
+    /** 
+     * 将表示16进制值的字符串转换为byte数组， 和public static String byteArr2HexStr(byte[] arrB) 
+     * 互为可逆的转换过程 
+ 
+     *  
+     * @param strIn 
+     *            需要转换的字符串 
+     * @return 转换后的byte数组 
+ 
+     * @throws Exception 
+     *             本方法不处理任何异常，所有异常全部抛出 
+     */  
+    private static byte[] hexStr2ByteArr(String strIn) throws Exception {  
+        byte[] arrB = strIn.getBytes();  
+        int iLen = arrB.length;  
+  
+        // 两个字符表示一个字节，所以字节数组长度是字符串长度除以2  
+        byte[] arrOut = new byte[iLen / 2];  
+        for (int i = 0; i < iLen; i = i + 2) {  
+            String strTmp = new String(arrB, i, 2);  
+            arrOut[i / 2] = (byte) Integer.parseInt(strTmp, 16);  
+        }  
+        return arrOut;  
+    }  
+
+```
+
+###参考
+
+[Java 加密 AES 对称加密算法]
+
+<http://blog.csdn.net/uikoo9/article/details/27982575>
+
+[JAVA实现AES加密]
+
+<http://blog.csdn.net/hbcui1984/article/details/5201247>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="javaaes">Java加密算法-AES</h2>
+
+<h3 id="">介绍</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;高级加密标准（英语：Advanced Encryption Standard，缩写：AES），在密码学中又称Rijndael加密法，是美国联邦政府采用的一种区块加密标准。这个标准用来替代原先的DES，已经被多方分析且广为全世界所使用。经过五年的甄选流程，高级加密标准由美国国家标准与技术研究院（NIST）于2001年11月26日发布于FIPS PUB 197，并在2002年5月26日成为有效的标准。2006年，高级加密标准已然成为对称密钥加密中最流行的算法之一。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;近些年DES使用越来越少，原因就在于其使用56位密钥，比较容易被破解，近些年来逐渐被AES替代，AES已经变成目前对称加密中最流行算法之一；AES可以使用128、192、和256位密钥，并且用128位分组加密和解密数据。</p>
+
+<h3 id="">样例代码</h3>
+
+<pre><code>    /** 
+     * AES加密 
+     * @param content 待加密的内容 
+     * @param encryptKey 加密密钥 
+     * @return 加密后的byte[] 
+     * @throws Exception 
+     */  
+    public static String aesEncrypt(String content, String encryptKey) throws Exception {  
+        KeyGenerator kgen = KeyGenerator.getInstance("AES");
+        SecureRandom random=SecureRandom.getInstance("SHA1PRNG");
+        random.setSeed(encryptKey.getBytes());
+        kgen.init(128, random);  
+
+        Cipher cipher = Cipher.getInstance("AES");  
+        cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(kgen.generateKey().getEncoded(), "AES"));  
+
+        return byteArr2HexStr(cipher.doFinal(content.getBytes("utf-8")));  
+    }  
+
+    /** 
+     * AES解密 
+     * @param encryptBytes 待解密的byte[] 
+     * @param decryptKey 解密密钥 
+     * @return 解密后的String 
+     * @throws Exception 
+     */  
+    public static String aesDecrypt(byte[] encryptBytes, String decryptKey) throws Exception { 
+        KeyGenerator kgen = KeyGenerator.getInstance("AES");
+        SecureRandom random=SecureRandom.getInstance("SHA1PRNG");
+        random.setSeed(decryptKey.getBytes());
+        kgen.init(128, random);
+
+
+        Cipher cipher = Cipher.getInstance("AES");  
+        cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(kgen.generateKey().getEncoded(), "AES"));  
+        byte[] decryptBytes = cipher.doFinal(encryptBytes);  
+
+        return new String(decryptBytes,"utf-8");
+    }  
+    //随机生成密钥
+    private static String getKey() throws Exception{
+        //       DES算法要求有一个可信任的随机数源
+        SecureRandom sr = new SecureRandom();
+        // 为我们选择的DES算法生成一个KeyGenerator对象
+            KeyGenerator kg = KeyGenerator.getInstance("AES");
+            kg.init(sr);
+            // 生成密匙
+            SecretKey key = kg.generateKey();
+            // 获取密匙数据
+            byte rawKeyData[] = key.getEncoded();
+
+            //return new String(rawKeyData);
+
+            return byteArr2HexStr(rawKeyData);
+    }
+
+    /**
+     * @param args
+     * @throws Exception 
+     */
+    public static void main(String[] args) throws Exception {
+        // TODO 自动生成的方法存根
+        String content = "我爱你";  
+        System.out.println("加密前：" + content);  
+
+        String key = "123456890";  key=getKey();
+        System.out.println("加密密钥和解密密钥：" + key);  
+
+        String encrypt = aesEncrypt(content, key);  
+        System.out.println("加密后：" + encrypt);  
+
+        String decrypt = aesDecrypt(hexStr2ByteArr(encrypt), key);  
+        System.out.println("解密后：" + decrypt); 
+    }
+
+
+    /** 
+     * 将byte数组转换为表示16进制值的字符串， 如：byte[]{8,18}转换为：0813， 和public static byte[] 
+     * hexStr2ByteArr(String strIn) 互为可逆的转换过程 
+
+     *  
+     * @param arrB 
+     *            需要转换的byte数组 
+
+     * @return 转换后的字符串 
+     * @throws Exception 
+     *             本方法不处理任何异常，所有异常全部抛出 
+     */  
+    private static String byteArr2HexStr(byte[] arrB) throws Exception {  
+        int iLen = arrB.length;  
+        // 每个byte用两个字符才能表示，所以字符串的长度是数组长度的两倍  
+
+        StringBuffer sb = new StringBuffer(iLen * 2);  
+        for (int i = 0; i &lt; iLen; i++) {  
+            int intTmp = arrB[i];  
+            // 把负数转换为正数  
+            while (intTmp &lt; 0) {  
+                intTmp = intTmp + 256;  
+            }  
+            // 小于0F的数需要在前面补0  
+            if (intTmp &lt; 16) {  
+                sb.append("0");  
+            }  
+            sb.append(Integer.toString(intTmp, 16));  
+        }  
+        return sb.toString();  
+    }  
+
+    /** 
+     * 将表示16进制值的字符串转换为byte数组， 和public static String byteArr2HexStr(byte[] arrB) 
+     * 互为可逆的转换过程 
+
+     *  
+     * @param strIn 
+     *            需要转换的字符串 
+     * @return 转换后的byte数组 
+
+     * @throws Exception 
+     *             本方法不处理任何异常，所有异常全部抛出 
+     */  
+    private static byte[] hexStr2ByteArr(String strIn) throws Exception {  
+        byte[] arrB = strIn.getBytes();  
+        int iLen = arrB.length;  
+
+        // 两个字符表示一个字节，所以字节数组长度是字符串长度除以2  
+        byte[] arrOut = new byte[iLen / 2];  
+        for (int i = 0; i &lt; iLen; i = i + 2) {  
+            String strTmp = new String(arrB, i, 2);  
+            arrOut[i / 2] = (byte) Integer.parseInt(strTmp, 16);  
+        }  
+        return arrOut;  
+    }  
+</code></pre>
+
+<h3 id="">参考</h3>
+
+<p>[Java 加密 AES 对称加密算法]</p>
+
+<p><a href="http://blog.csdn.net/uikoo9/article/details/27982575">http://blog.csdn.net/uikoo9/article/details/27982575</a></p>
+
+<p>[JAVA实现AES加密]</p>
+
+<p><a href="http://blog.csdn.net/hbcui1984/article/details/5201247">http://blog.csdn.net/hbcui1984/article/details/5201247</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "Java加密算法-AES.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

@@ -1,0 +1,494 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##Java加密算法-DES
+
+###介绍
+
+&nbsp;&nbsp;&nbsp;&nbsp;DES是一种对称加密算法，所谓对称加密算法即：加密和解密使用相同密钥的算法。DES加密算法出自IBM的研究，
+后来被美国政府正式采用，之后开始广泛流传，但是近些年使用越来越少，因为DES使用56位密钥，以现代计算能力，
+24小时内即可被破解。虽然如此，在某些简单应用中，我们还是可以使用DES加密算法。
+
+注意：DES加密和解密过程中，密钥长度都必须是8的倍数。
+
+###样例代码
+
+```
+import java.security.SecureRandom;
+import javax.crypto.spec.DESKeySpec;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.SecretKey;
+import javax.crypto.Cipher;
+
+
+public class DES {
+	/**
+	* 加密
+	* @param datasource byte[]
+	* @param password String
+	* @return byte[]
+	*/
+	public static String encrypt(byte[] datasource, String password) { 
+	try{
+	SecureRandom random = new SecureRandom();
+	DESKeySpec desKey = new DESKeySpec(password.getBytes());
+	//创建一个密匙工厂，然后用它把DESKeySpec转换成
+	SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES");
+	SecretKey securekey = keyFactory.generateSecret(desKey);
+	//Cipher对象实际完成加密操作
+	Cipher cipher = Cipher.getInstance("DES");
+	//用密匙初始化Cipher对象
+	cipher.init(Cipher.ENCRYPT_MODE, securekey, random);
+	//现在，获取数据并加密
+	//正式执行加密操作
+	return byteArr2HexStr(cipher.doFinal(datasource));
+	}catch(Throwable e){
+	e.printStackTrace();
+	}
+	return null;
+	}
+	/**
+	* 解密
+	* @param src byte[]
+	* @param password String
+	* @return byte[]
+	* @throws Exception
+	*/
+	public static byte[] decrypt(byte[] src, String password) throws Exception {
+	// DES算法要求有一个可信任的随机数源
+	SecureRandom random = new SecureRandom();
+	// 创建一个DESKeySpec对象
+	DESKeySpec desKey = new DESKeySpec(password.getBytes());
+	// 创建一个密匙工厂
+	SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES");
+	// 将DESKeySpec对象转换成SecretKey对象
+	SecretKey securekey = keyFactory.generateSecret(desKey);
+	// Cipher对象实际完成解密操作
+	Cipher cipher = Cipher.getInstance("DES");
+	// 用密匙初始化Cipher对象
+	cipher.init(Cipher.DECRYPT_MODE, securekey, random);
+	// 真正开始解密操作
+	return cipher.doFinal(src);
+	}
+	
+    /** 
+     * 将byte数组转换为表示16进制值的字符串， 如：byte[]{8,18}转换为：0813， 和public static byte[] 
+     * hexStr2ByteArr(String strIn) 互为可逆的转换过程 
+ 
+     *  
+     * @param arrB 
+     *            需要转换的byte数组 
+ 
+     * @return 转换后的字符串 
+     * @throws Exception 
+     *             本方法不处理任何异常，所有异常全部抛出 
+     */  
+    private static String byteArr2HexStr(byte[] arrB) throws Exception {  
+        int iLen = arrB.length;  
+        // 每个byte用两个字符才能表示，所以字符串的长度是数组长度的两倍  
+  
+        StringBuffer sb = new StringBuffer(iLen * 2);  
+        for (int i = 0; i < iLen; i++) {  
+            int intTmp = arrB[i];  
+            // 把负数转换为正数  
+            while (intTmp < 0) {  
+                intTmp = intTmp + 256;  
+            }  
+            // 小于0F的数需要在前面补0  
+            if (intTmp < 16) {  
+                sb.append("0");  
+            }  
+            sb.append(Integer.toString(intTmp, 16));  
+        }  
+        return sb.toString();  
+    }  
+    
+    /** 
+     * 将表示16进制值的字符串转换为byte数组， 和public static String byteArr2HexStr(byte[] arrB) 
+     * 互为可逆的转换过程 
+ 
+     *  
+     * @param strIn 
+     *            需要转换的字符串 
+     * @return 转换后的byte数组 
+ 
+     * @throws Exception 
+     *             本方法不处理任何异常，所有异常全部抛出 
+     */  
+    private static byte[] hexStr2ByteArr(String strIn) throws Exception {  
+        byte[] arrB = strIn.getBytes();  
+        int iLen = arrB.length;  
+  
+        // 两个字符表示一个字节，所以字节数组长度是字符串长度除以2  
+        byte[] arrOut = new byte[iLen / 2];  
+        for (int i = 0; i < iLen; i = i + 2) {  
+            String strTmp = new String(arrB, i, 2);  
+            arrOut[i / 2] = (byte) Integer.parseInt(strTmp, 16);  
+        }  
+        return arrOut;  
+    }  
+    
+    //随机生成密钥
+    private static String getKey() throws Exception{
+		//		 DES算法要求有一个可信任的随机数源
+		SecureRandom sr = new SecureRandom();
+		// 为我们选择的DES算法生成一个KeyGenerator对象
+			KeyGenerator kg = KeyGenerator.getInstance("DES");
+			kg.init(sr);
+			// 生成密匙
+			SecretKey key = kg.generateKey();
+			// 获取密匙数据
+			byte rawKeyData[] = key.getEncoded();
+			
+			//return new String(rawKeyData);
+			
+			return byteArr2HexStr(rawKeyData);
+    }
+    
+	/**
+	 * @param args
+	 * @throws Exception 
+	 */
+	public static void main(String[] args) throws Exception {
+
+		//待加密内容
+		String str = "测试内容";
+		//密码，长度要是8的倍数
+		String key = "9588028820109132570743325311898426347857298773549468758875018579537757772163084478873699447306034466200616411960574122434059469100235892702736860872901247123456";
+		
+		//随机生成密钥
+		key=getKey();
+		
+		String result = DES.encrypt(str.getBytes("UTF8"),key);
+		System.out.println("加密后："+result);
+
+		//直接将如上内容解密
+		try {
+		byte[] decryResult = DES.decrypt(hexStr2ByteArr(result), key);
+		System.out.println("解密后："+new String(decryResult));
+		} catch (Exception e1) {
+		e1.printStackTrace();
+		}
+	}
+
+}
+
+
+```
+
+###参考
+
+[JAVA实现DES加密实现详解]
+
+<http://www.cnblogs.com/langtianya/p/3715975.html>
+
+[JAVA语言DES算法]
+
+<http://lhc1986.iteye.com/blog/1730477>
+
+[Java DES 加解密（支持utf-8）]
+
+<http://toyota2006.iteye.com/blog/690658>
+
+[JAVA实现DES加密]
+
+<http://blog.csdn.net/hbcui1984/article/details/5065506>
+
+[DES加密算法Java应用实例]
+
+<http://blog.csdn.net/zeng622peng/article/details/5957024>
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="javades">Java加密算法-DES</h2>
+
+<h3 id="">介绍</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;DES是一种对称加密算法，所谓对称加密算法即：加密和解密使用相同密钥的算法。DES加密算法出自IBM的研究，
+后来被美国政府正式采用，之后开始广泛流传，但是近些年使用越来越少，因为DES使用56位密钥，以现代计算能力，
+24小时内即可被破解。虽然如此，在某些简单应用中，我们还是可以使用DES加密算法。</p>
+
+<p>注意：DES加密和解密过程中，密钥长度都必须是8的倍数。</p>
+
+<h3 id="">样例代码</h3>
+
+<pre><code>import java.security.SecureRandom;
+import javax.crypto.spec.DESKeySpec;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.SecretKey;
+import javax.crypto.Cipher;
+
+
+public class DES {
+    /**
+    * 加密
+    * @param datasource byte[]
+    * @param password String
+    * @return byte[]
+    */
+    public static String encrypt(byte[] datasource, String password) { 
+    try{
+    SecureRandom random = new SecureRandom();
+    DESKeySpec desKey = new DESKeySpec(password.getBytes());
+    //创建一个密匙工厂，然后用它把DESKeySpec转换成
+    SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES");
+    SecretKey securekey = keyFactory.generateSecret(desKey);
+    //Cipher对象实际完成加密操作
+    Cipher cipher = Cipher.getInstance("DES");
+    //用密匙初始化Cipher对象
+    cipher.init(Cipher.ENCRYPT_MODE, securekey, random);
+    //现在，获取数据并加密
+    //正式执行加密操作
+    return byteArr2HexStr(cipher.doFinal(datasource));
+    }catch(Throwable e){
+    e.printStackTrace();
+    }
+    return null;
+    }
+    /**
+    * 解密
+    * @param src byte[]
+    * @param password String
+    * @return byte[]
+    * @throws Exception
+    */
+    public static byte[] decrypt(byte[] src, String password) throws Exception {
+    // DES算法要求有一个可信任的随机数源
+    SecureRandom random = new SecureRandom();
+    // 创建一个DESKeySpec对象
+    DESKeySpec desKey = new DESKeySpec(password.getBytes());
+    // 创建一个密匙工厂
+    SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES");
+    // 将DESKeySpec对象转换成SecretKey对象
+    SecretKey securekey = keyFactory.generateSecret(desKey);
+    // Cipher对象实际完成解密操作
+    Cipher cipher = Cipher.getInstance("DES");
+    // 用密匙初始化Cipher对象
+    cipher.init(Cipher.DECRYPT_MODE, securekey, random);
+    // 真正开始解密操作
+    return cipher.doFinal(src);
+    }
+
+    /** 
+     * 将byte数组转换为表示16进制值的字符串， 如：byte[]{8,18}转换为：0813， 和public static byte[] 
+     * hexStr2ByteArr(String strIn) 互为可逆的转换过程 
+
+     *  
+     * @param arrB 
+     *            需要转换的byte数组 
+
+     * @return 转换后的字符串 
+     * @throws Exception 
+     *             本方法不处理任何异常，所有异常全部抛出 
+     */  
+    private static String byteArr2HexStr(byte[] arrB) throws Exception {  
+        int iLen = arrB.length;  
+        // 每个byte用两个字符才能表示，所以字符串的长度是数组长度的两倍  
+
+        StringBuffer sb = new StringBuffer(iLen * 2);  
+        for (int i = 0; i &lt; iLen; i++) {  
+            int intTmp = arrB[i];  
+            // 把负数转换为正数  
+            while (intTmp &lt; 0) {  
+                intTmp = intTmp + 256;  
+            }  
+            // 小于0F的数需要在前面补0  
+            if (intTmp &lt; 16) {  
+                sb.append("0");  
+            }  
+            sb.append(Integer.toString(intTmp, 16));  
+        }  
+        return sb.toString();  
+    }  
+
+    /** 
+     * 将表示16进制值的字符串转换为byte数组， 和public static String byteArr2HexStr(byte[] arrB) 
+     * 互为可逆的转换过程 
+
+     *  
+     * @param strIn 
+     *            需要转换的字符串 
+     * @return 转换后的byte数组 
+
+     * @throws Exception 
+     *             本方法不处理任何异常，所有异常全部抛出 
+     */  
+    private static byte[] hexStr2ByteArr(String strIn) throws Exception {  
+        byte[] arrB = strIn.getBytes();  
+        int iLen = arrB.length;  
+
+        // 两个字符表示一个字节，所以字节数组长度是字符串长度除以2  
+        byte[] arrOut = new byte[iLen / 2];  
+        for (int i = 0; i &lt; iLen; i = i + 2) {  
+            String strTmp = new String(arrB, i, 2);  
+            arrOut[i / 2] = (byte) Integer.parseInt(strTmp, 16);  
+        }  
+        return arrOut;  
+    }  
+
+    //随机生成密钥
+    private static String getKey() throws Exception{
+        //       DES算法要求有一个可信任的随机数源
+        SecureRandom sr = new SecureRandom();
+        // 为我们选择的DES算法生成一个KeyGenerator对象
+            KeyGenerator kg = KeyGenerator.getInstance("DES");
+            kg.init(sr);
+            // 生成密匙
+            SecretKey key = kg.generateKey();
+            // 获取密匙数据
+            byte rawKeyData[] = key.getEncoded();
+
+            //return new String(rawKeyData);
+
+            return byteArr2HexStr(rawKeyData);
+    }
+
+    /**
+     * @param args
+     * @throws Exception 
+     */
+    public static void main(String[] args) throws Exception {
+
+        //待加密内容
+        String str = "测试内容";
+        //密码，长度要是8的倍数
+        String key = "9588028820109132570743325311898426347857298773549468758875018579537757772163084478873699447306034466200616411960574122434059469100235892702736860872901247123456";
+
+        //随机生成密钥
+        key=getKey();
+
+        String result = DES.encrypt(str.getBytes("UTF8"),key);
+        System.out.println("加密后："+result);
+
+        //直接将如上内容解密
+        try {
+        byte[] decryResult = DES.decrypt(hexStr2ByteArr(result), key);
+        System.out.println("解密后："+new String(decryResult));
+        } catch (Exception e1) {
+        e1.printStackTrace();
+        }
+    }
+
+}
+</code></pre>
+
+<h3 id="">参考</h3>
+
+<p>[JAVA实现DES加密实现详解]</p>
+
+<p><a href="http://www.cnblogs.com/langtianya/p/3715975.html">http://www.cnblogs.com/langtianya/p/3715975.html</a></p>
+
+<p>[JAVA语言DES算法]</p>
+
+<p><a href="http://lhc1986.iteye.com/blog/1730477">http://lhc1986.iteye.com/blog/1730477</a></p>
+
+<p>[Java DES 加解密（支持utf-8）]</p>
+
+<p><a href="http://toyota2006.iteye.com/blog/690658">http://toyota2006.iteye.com/blog/690658</a></p>
+
+<p>[JAVA实现DES加密]</p>
+
+<p><a href="http://blog.csdn.net/hbcui1984/article/details/5065506">http://blog.csdn.net/hbcui1984/article/details/5065506</a></p>
+
+<p>[DES加密算法Java应用实例]</p>
+
+<p><a href="http://blog.csdn.net/zeng622peng/article/details/5957024">http://blog.csdn.net/zeng622peng/article/details/5957024</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "Java加密算法-DES.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

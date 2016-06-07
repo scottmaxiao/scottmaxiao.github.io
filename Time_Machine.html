@@ -1,0 +1,181 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+## Time Machine
+
+&nbsp;&nbsp;&nbsp;&nbsp;Time Machine 是自动备份功能的一大突破，它内建於 Mac OS X，能为 Mac 上的一切建立最新拷贝，包括数位相片、音乐、家庭影片与文件。现在，只要您有需要，就能轻易回到过去恢复任何资料。
+
+&nbsp;&nbsp;&nbsp;&nbsp;Time Machine 会备份您的系统档案、应用程式、帐号、偏好设定、音乐、照片、影店、文件。但 Time Machine 与其它备份软体不同之处在於，它不只是将每个档案多拷贝一份，它还会记得您的系统在某一日期所呈现的模样，因此您可以重返 Mac 过去的样貌。
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;Time Machine的使用方式请参考
+<http://bbs.feng.com/read-htm-tid-6379114.html>
+
+&nbsp;&nbsp;&nbsp;&nbsp;如果用户将 Time Machine 的备份磁盘设置为外置磁盘，那么 Time Machine 将自动在内置驱动器中也创建一套附加备份，以方便无法使用外置磁盘的意外情况等。这样做为备份的安全又提供了一重保障，但对于需要节省硬盘空间开支的情况而言，倒不如关闭为妙。
+
+
+```
+所谓本地备份存储是 Lion 系统中系能的一项功能，也叫快照。
+
+快照的位置:
+/Volumes/.MobileBackups
+
+
+```
+
+
+```
+首先依然是打开终端应用（应用程序 – 实用工具 – 终端）。然后输入以下命令来禁用本地备份存储（需要输入系统管理员密码）：
+sudo tmutil disablelocal
+如果要重新开启本地备份功能，输入下面的命令即可恢复（需要输入系统管理员密码）：
+sudo tmutil enablelocal
+
+```
+请注意，一旦禁用本地备份存储功能，备份就不会再存储在内置磁盘中，所以用于备份的外置磁盘一旦出现故障，可能会失去最后一根救命稻草哟。无论如何，保证重要的数据在不同的地方同时存在至少两份副本才是安全的做法。
+
+
+###参考文档
+
+[[教程] 禁用 Time Machine 的本地备份存储]
+
+<http://bbs.feng.com/read-htm-tid-4653218.html>
+
+[禁用／开启 Time Machine 的本地备份存储]
+
+<http://www.jianshu.com/p/27273e879c46>
+
+
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="timemachine">Time Machine</h2>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Time Machine 是自动备份功能的一大突破，它内建於 Mac OS X，能为 Mac 上的一切建立最新拷贝，包括数位相片、音乐、家庭影片与文件。现在，只要您有需要，就能轻易回到过去恢复任何资料。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Time Machine 会备份您的系统档案、应用程式、帐号、偏好设定、音乐、照片、影店、文件。但 Time Machine 与其它备份软体不同之处在於，它不只是将每个档案多拷贝一份，它还会记得您的系统在某一日期所呈现的模样，因此您可以重返 Mac 过去的样貌。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Time Machine的使用方式请参考
+<a href="http://bbs.feng.com/read-htm-tid-6379114.html">http://bbs.feng.com/read-htm-tid-6379114.html</a></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;如果用户将 Time Machine 的备份磁盘设置为外置磁盘，那么 Time Machine 将自动在内置驱动器中也创建一套附加备份，以方便无法使用外置磁盘的意外情况等。这样做为备份的安全又提供了一重保障，但对于需要节省硬盘空间开支的情况而言，倒不如关闭为妙。</p>
+
+<pre><code>所谓本地备份存储是 Lion 系统中系能的一项功能，也叫快照。
+
+快照的位置:
+/Volumes/.MobileBackups
+</code></pre>
+
+<pre><code>首先依然是打开终端应用（应用程序 – 实用工具 – 终端）。然后输入以下命令来禁用本地备份存储（需要输入系统管理员密码）：
+sudo tmutil disablelocal
+如果要重新开启本地备份功能，输入下面的命令即可恢复（需要输入系统管理员密码）：
+sudo tmutil enablelocal
+</code></pre>
+
+<p>请注意，一旦禁用本地备份存储功能，备份就不会再存储在内置磁盘中，所以用于备份的外置磁盘一旦出现故障，可能会失去最后一根救命稻草哟。无论如何，保证重要的数据在不同的地方同时存在至少两份副本才是安全的做法。</p>
+
+<h3 id="">参考文档</h3>
+
+<p>[[教程] 禁用 Time Machine 的本地备份存储]</p>
+
+<p><a href="http://bbs.feng.com/read-htm-tid-4653218.html">http://bbs.feng.com/read-htm-tid-4653218.html</a></p>
+
+<p>[禁用／开启 Time Machine 的本地备份存储]</p>
+
+<p><a href="http://www.jianshu.com/p/27273e879c46">http://www.jianshu.com/p/27273e879c46</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "Time_Machine.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

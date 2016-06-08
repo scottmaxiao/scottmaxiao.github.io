@@ -413,6 +413,31 @@ Xcode为当前工程提供了诸多配置选项，其中的Build Settings提供�
 	}
 
 </code></pre>
+----
+
+####从storyboard中获取实例对象
+<pre><code>
+//获取storyboard: 通过bundle根据storyboard的名字来获取我们的storyboard,
+UIStoryboard *story = [UIStoryboard storyboardWithName:@"Main" bundle:[NSBundle mainBundle]];
+
+//由storyboard根据myView的storyBoardID来获取我们要切换的视图
+WeknowLoginViewController *weknowLoginViewController = [story instantiateViewControllerWithIdentifier:@"WeknowLoginView"];
+
+</code></pre>
+
+
+----
+
+####利用正则表达式验证email正确性
+
+<pre><code>
++(BOOL)isValidateEmail:(NSString *)email {
+	NSString *emailRegex = @"[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}";
+	NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", emailRegex];
+	return [emailTest evaluateWithObject:email];
+}
+</code></pre>
+
 
 <!-- markdown end -->
 </div>
@@ -821,6 +846,31 @@ personWithName方法返回的是ZOCPerson对象实例。
         [UIApplication sharedApplication].applicationIconBadgeNumber=0;
     }
 
+</code></pre>
+
+<hr>
+
+<h4 id="storyboard">从storyboard中获取实例对象</h4>
+
+<pre><code>
+//获取storyboard: 通过bundle根据storyboard的名字来获取我们的storyboard,
+UIStoryboard *story = [UIStoryboard storyboardWithName:@"Main" bundle:[NSBundle mainBundle]];
+
+//由storyboard根据myView的storyBoardID来获取我们要切换的视图
+WeknowLoginViewController *weknowLoginViewController = [story instantiateViewControllerWithIdentifier:@"WeknowLoginView"];
+
+</code></pre>
+
+<hr>
+
+<h4 id="email">利用正则表达式验证email正确性</h4>
+
+<pre><code>
++(BOOL)isValidateEmail:(NSString *)email {
+    NSString *emailRegex = @"[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}";
+    NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", emailRegex];
+    return [emailTest evaluateWithObject:email];
+}
 </code></pre>
 <!-- content end -->
 </div>

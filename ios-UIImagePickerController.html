@@ -1,0 +1,326 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##ios-UIImagePickerController
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;我们需要用到iOS设备的摄像头进行拍照，视频。并且从相册中选取我们需要的图片或者视频。关于iOS摄像头和相册的应用，可以使用UIImagePickerController类来完成控制。
+    
+&nbsp;&nbsp;&nbsp;&nbsp;UIImagePickerController 是系统提供的用来获取图片和视频的接口，该类继承自UINavigationController类。
+    
+&nbsp;&nbsp;&nbsp;&nbsp;用UIImagePickerController 类来获取图片视频，大体分为以下几个步骤：
+
+1. 初始化UIImagePickerController 类；
+2. 设置UIImagePickerController 实例的数据来源类型；
+3. 设置设置代理；
+4. 如果需要做图片修改的话设置allowsEditing =yes。
+5. 实现UIImagePickerController的代理方法
+
+
+样例如下
+<pre><code>
+#pragma mark UIActionSheetDelegate Source
+-(void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+	if (buttonIndex == 0) {//拍照
+		[self getMediaFromSource:UIImagePickerControllerSourceTypeCamera];
+
+	}else if (buttonIndex == 1) {//从相册中上传
+		[self getMediaFromSource:UIImagePickerControllerSourceTypePhotoLibrary];
+
+	}else if(buttonIndex == 2) {//取消
+		[self.actionSheet dismissWithClickedButtonIndex:buttonIndex animated:YES];
+	}
+}
+
+
+-(void)getMediaFromSource:(UIImagePickerControllerSourceType)sourceType
+{
+		UIImagePickerController *picker=[[UIImagePickerController alloc] init];
+		//设置图像选取控制器的类型为静态图像,或者视频
+		picker.mediaTypes=@[(NSString *)kUTTypeImage];
+		//设置委托对象
+		picker.delegate=self;
+		//不允许用户进行编辑
+		picker.allowsEditing=NO;
+		//设置图像选取控制器的来源模式为相机模式或者相册模式
+		picker.sourceType=sourceType;
+		[self presentViewController:picker animated:YES completion:nil];
+}
+
+#pragma mark - UIImagePickerControllerDelegate
+// 选择了图片或者拍照了
+- (void)imagePickerController:(UIImagePickerController *)aPicker didFinishPickingMediaWithInfo:(NSDictionary *)info {
+	[aPicker dismissViewControllerAnimated:YES completion:nil];
+	
+	NSString *type = [info objectForKey:UIImagePickerControllerMediaType];
+	
+	//当选择的类型是图片
+	if ([type isEqualToString:(NSString *)kUTTypeImage])
+	{
+		//先把图片转成NSData
+		UIImage* image = [info objectForKey:UIImagePickerControllerOriginalImage];
+		
+		NSData *data;
+		if (UIImagePNGRepresentation(image) == nil)
+		{
+			data = UIImageJPEGRepresentation(image, 1.0);
+		}
+		else
+		{
+			data = UIImagePNGRepresentation(image);
+		}
+		
+		//图片保存的路径
+		//这里将图片放在沙盒的documents文件夹中
+		NSString *DocumentsPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"];
+		
+		//文件管理器
+		NSFileManager *fileManager = [NSFileManager defaultManager];
+		
+		//把刚刚图片转换的data对象拷贝至沙盒中 并保存为image.png
+		[fileManager createDirectoryAtPath:DocumentsPath withIntermediateDirectories:YES attributes:nil error:nil];
+		[fileManager createFileAtPath:[DocumentsPath stringByAppendingString:@"/image.png"] contents:data attributes:nil];
+		
+		//得到选择后沙盒中图片的完整路径
+		NSString *filePath = [[NSString alloc]initWithFormat:@"%@%@",DocumentsPath,  @"/image.png"];
+		
+		[self uploadfile:filePath];
+	}
+
+	return;
+}
+
+//取消照相机的回调
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker{
+	//模态方式退出uiimagepickercontroller
+	[picker dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (NSString *)documentFolderPath
+{
+	return [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"];
+}
+</code></pre>   
+    
+参考文档
+
+[iOS摄像头和相册-UIImagePickerController-浅析]<http://blog.sina.com.cn/s/blog_7b9d64af0101cfd9.html>
+
+[UIImagePickerController从拍照、图库、相册获取图片]<http://www.cocoachina.com/ios/20140923/9730.html>
+
+[UIImagePickerController详解]<http://blog.csdn.net/kingsley_cxz/article/details/9157093>
+
+[UIImagePickerController拍照与摄像]<http://blog.sina.com.cn/s/blog_68edaff101019ppe.html>
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="iosuiimagepickercontroller">ios-UIImagePickerController</h2>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;我们需要用到iOS设备的摄像头进行拍照，视频。并且从相册中选取我们需要的图片或者视频。关于iOS摄像头和相册的应用，可以使用UIImagePickerController类来完成控制。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;UIImagePickerController 是系统提供的用来获取图片和视频的接口，该类继承自UINavigationController类。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;用UIImagePickerController 类来获取图片视频，大体分为以下几个步骤：</p>
+
+<ol>
+<li>初始化UIImagePickerController 类；</li>
+<li>设置UIImagePickerController 实例的数据来源类型；</li>
+<li>设置设置代理；</li>
+<li>如果需要做图片修改的话设置allowsEditing =yes。</li>
+<li>实现UIImagePickerController的代理方法</li>
+</ol>
+
+<p>样例如下</p>
+
+<pre><code>
+#pragma mark UIActionSheetDelegate Source
+-(void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == 0) {//拍照
+        [self getMediaFromSource:UIImagePickerControllerSourceTypeCamera];
+
+    }else if (buttonIndex == 1) {//从相册中上传
+        [self getMediaFromSource:UIImagePickerControllerSourceTypePhotoLibrary];
+
+    }else if(buttonIndex == 2) {//取消
+        [self.actionSheet dismissWithClickedButtonIndex:buttonIndex animated:YES];
+    }
+}
+
+
+-(void)getMediaFromSource:(UIImagePickerControllerSourceType)sourceType
+{
+        UIImagePickerController *picker=[[UIImagePickerController alloc] init];
+        //设置图像选取控制器的类型为静态图像,或者视频
+        picker.mediaTypes=@[(NSString *)kUTTypeImage];
+        //设置委托对象
+        picker.delegate=self;
+        //不允许用户进行编辑
+        picker.allowsEditing=NO;
+        //设置图像选取控制器的来源模式为相机模式或者相册模式
+        picker.sourceType=sourceType;
+        [self presentViewController:picker animated:YES completion:nil];
+}
+
+#pragma mark - UIImagePickerControllerDelegate
+// 选择了图片或者拍照了
+- (void)imagePickerController:(UIImagePickerController *)aPicker didFinishPickingMediaWithInfo:(NSDictionary *)info {
+    [aPicker dismissViewControllerAnimated:YES completion:nil];
+
+    NSString *type = [info objectForKey:UIImagePickerControllerMediaType];
+
+    //当选择的类型是图片
+    if ([type isEqualToString:(NSString *)kUTTypeImage])
+    {
+        //先把图片转成NSData
+        UIImage* image = [info objectForKey:UIImagePickerControllerOriginalImage];
+
+        NSData *data;
+        if (UIImagePNGRepresentation(image) == nil)
+        {
+            data = UIImageJPEGRepresentation(image, 1.0);
+        }
+        else
+        {
+            data = UIImagePNGRepresentation(image);
+        }
+
+        //图片保存的路径
+        //这里将图片放在沙盒的documents文件夹中
+        NSString *DocumentsPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"];
+
+        //文件管理器
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+
+        //把刚刚图片转换的data对象拷贝至沙盒中 并保存为image.png
+        [fileManager createDirectoryAtPath:DocumentsPath withIntermediateDirectories:YES attributes:nil error:nil];
+        [fileManager createFileAtPath:[DocumentsPath stringByAppendingString:@"/image.png"] contents:data attributes:nil];
+
+        //得到选择后沙盒中图片的完整路径
+        NSString *filePath = [[NSString alloc]initWithFormat:@"%@%@",DocumentsPath,  @"/image.png"];
+
+        [self uploadfile:filePath];
+    }
+
+    return;
+}
+
+//取消照相机的回调
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker{
+    //模态方式退出uiimagepickercontroller
+    [picker dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (NSString *)documentFolderPath
+{
+    return [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"];
+}
+</code></pre>   
+
+<p>参考文档</p>
+
+<p>[iOS摄像头和相册-UIImagePickerController-浅析]<a href="http://blog.sina.com.cn/s/blog_7b9d64af0101cfd9.html">http://blog.sina.com.cn/s/blog_7b9d64af0101cfd9.html</a></p>
+
+<p>[UIImagePickerController从拍照、图库、相册获取图片]<a href="http://www.cocoachina.com/ios/20140923/9730.html">http://www.cocoachina.com/ios/20140923/9730.html</a></p>
+
+<p>[UIImagePickerController详解]<a href="http://blog.csdn.net/kingsley_cxz/article/details/9157093">http://blog.csdn.net/kingsley_cxz/article/details/9157093</a></p>
+
+<p>[UIImagePickerController拍照与摄像]<a href="http://blog.sina.com.cn/s/blog_68edaff101019ppe.html">http://blog.sina.com.cn/s/blog_68edaff101019ppe.html</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "ios-UIImagePickerController.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

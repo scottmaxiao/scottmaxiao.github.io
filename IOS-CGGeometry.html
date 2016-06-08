@@ -1,0 +1,425 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##IOS-CGGeometry
+
+CGGeometry.h文件是用C语言实现的一个封装了许多常用几何方法的文件。
+
+**几个常用结构体**
+<pre><code>
+struct CGPoint {
+  CGFloat x;
+  CGFloat y;
+};
+定义一个点，设置x坐标和y坐标
+
+struct CGSize {
+  CGFloat width;
+  CGFloat height;
+};
+定义一个尺寸，设置宽度和高度
+
+
+struct CGVector {
+  CGFloat dx;
+  CGFloat dy;
+};
+定义一个二维矢量
+
+struct CGRect {
+  CGPoint origin;
+  CGSize size;
+};
+定义一个矩形
+</code></pre>
+
+**几个系统定义的量**
+
+<pre><code>
+const CGPoint CGPointZero
+零点，与CGPointMake(0, 0)等效
+
+const CGSize CGSizeZero
+零尺寸，与CGSizeMake(0, 0)等效
+
+const CGRect CGRectZero
+零矩形，与CGRectMake(0, 0, 0, 0)等效
+
+const CGRect CGRectNull
+空矩形，这个和零矩形并不相同，当我们返回两个不相交矩形的交集时，会返回空矩形。
+
+const CGRect CGRectInfinite
+无限的矩形
+</code></pre>
+
+
+**CGRectGet[Min|Mid|Max][X|Y]**
+
+- CGRectGetMinX
+- CGRectGetMinY
+- CGRectGetMidX
+- CGRectGetMidY
+- CGRectGetMaxX
+- CGRectGetMaxY
+
+这六个函数返回矩形x或y的最小、中间或最大值，用这些函数代替诸如frame.origin.x + frame.size.width之类的代码将更加清晰、语义上更为生动的（特别是用取中间和取最大函数）。
+
+**CGRectGet[Width|Height]**
+
+- CGRectGetHeight: 返回矩形的高度。
+- CGRectGetWidth: 返回矩形的宽度。
+
+**CGRectIntegral**
+
+CGRectIntegral: 返回包围源矩形的最小整数矩形。
+
+<pre><code>
+CGRect CGRectIntegral (
+  CGRect rect
+)
+</code></pre>
+
+&nbsp;&nbsp;&nbsp;&nbsp;将CGRect 取整到最近的完整点是非常重要的。小数值会让边框画在像素边界处。因为像素已经是最小单元（不能再细分），小数值会使绘制时取周围几个像素的平均值，这样看起来就模糊了。
+
+&nbsp;&nbsp;&nbsp;&nbsp;CGRectIntegral 将表示原点的值向下取整，表示大小的值向上取整，这样就保证了你的绘制代码平整地对齐到像素边界。
+
+&nbsp;&nbsp;&nbsp;&nbsp;作为一个经验性的原则，如果你在执行任何一个可能产生小数值的操作（例如除法，CGGetMid[X|Y]，或是 CGRectDivide），在把一矩形作为视图的边框之前应该用CGRectIntegral正则化它。
+
+**CGRectOffset**
+
+CGRectOffset: 返回一个原点在源矩形基础上进行了偏移的矩形。
+
+<pre><code>
+CGRect CGRectOffset(
+  CGRect rect,
+  CGFloat dx,
+  CGFloat dy
+)
+</code></pre>
+&nbsp;&nbsp;&nbsp;&nbsp;注意，用这个你只改变了矩形的原点。它不仅能让你在同时改变水平和垂直位置的时候减少一行代码，更重要的是，它所表示的平移比直接分开操作原点的值更具有几何意义。
+
+**CGRectInset**
+
+CGRectInset: 返回一个与源矩形共中心点的，或大些或小些的新矩形。
+
+<pre><code>
+CGRect CGRectInset(
+  CGRect rect,
+  CGFloat dx,
+  CGFloat dy
+)
+</code></pre>
+&nbsp;&nbsp;&nbsp;&nbsp;用CGRectInset给它设置一个 10pt 的边距吧。需要记住的是，矩形将围绕它的中心点进行缩放，左右分别增减dx（总共2 x dx），上下分别增减 dy（总共 2 x dy）。
+
+&nbsp;&nbsp;&nbsp;&nbsp;如果你用 CGRectInset 作为缩放矩形的快捷方法，一般通用的做法是嵌套调用CGRectOffset，把CGRectInset的返回值作为CGRectOffset的参数。
+
+
+**CGRectDivide**
+
+CGRectDivide: 将源矩形分为两个子矩形。
+
+<pre><code>
+void CGRectDivide(
+  CGRect rect,
+  CGRect *slice,
+  CGRect *remainder,
+  CGFloat amount,
+  CGRectEdge edge
+)
+</code></pre>
+
+CGRectDivide 用以下方式将矩形分割为两部分：
+
+- 传入一个矩形并选择一条edge（上，下，左，右）；
+- 平行那个边在矩形里量出amount的长度；
+- 从edge 到量出的amount区域都保存到slice 参数中；
+- 剩余的部分保存到remainder 参数中。
+
+其中 edge 参数是一个CGRectEdge 枚举类型：
+
+<pre><code>
+enum CGRectEdge {
+   CGRectMinXEdge,
+   CGRectMinYEdge,
+   CGRectMaxXEdge,
+   CGRectMaxYEdge
+}
+</code></pre>
+
+**参考文档**
+
+[CGGeometry]
+
+<http://nshipster.cn/cggeometry/>
+
+[IOS(CGGeometry)几何类方法总结]
+
+<http://my.oschina.net/u/2340880/blog/406816>
+
+[利用CGRectDivide进行布局]
+
+<http://ju.outofmemory.cn/entry/119786>
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="ioscggeometry">IOS-CGGeometry</h2>
+
+<p>CGGeometry.h文件是用C语言实现的一个封装了许多常用几何方法的文件。</p>
+
+<p><strong>几个常用结构体</strong></p>
+
+<pre><code>
+struct CGPoint {
+  CGFloat x;
+  CGFloat y;
+};
+定义一个点，设置x坐标和y坐标
+
+struct CGSize {
+  CGFloat width;
+  CGFloat height;
+};
+定义一个尺寸，设置宽度和高度
+
+
+struct CGVector {
+  CGFloat dx;
+  CGFloat dy;
+};
+定义一个二维矢量
+
+struct CGRect {
+  CGPoint origin;
+  CGSize size;
+};
+定义一个矩形
+</code></pre>
+
+<p><strong>几个系统定义的量</strong></p>
+
+<pre><code>
+const CGPoint CGPointZero
+零点，与CGPointMake(0, 0)等效
+
+const CGSize CGSizeZero
+零尺寸，与CGSizeMake(0, 0)等效
+
+const CGRect CGRectZero
+零矩形，与CGRectMake(0, 0, 0, 0)等效
+
+const CGRect CGRectNull
+空矩形，这个和零矩形并不相同，当我们返回两个不相交矩形的交集时，会返回空矩形。
+
+const CGRect CGRectInfinite
+无限的矩形
+</code></pre>
+
+<p><strong>CGRectGet[Min|Mid|Max][X|Y]</strong></p>
+
+<ul>
+<li>CGRectGetMinX</li>
+<li>CGRectGetMinY</li>
+<li>CGRectGetMidX</li>
+<li>CGRectGetMidY</li>
+<li>CGRectGetMaxX</li>
+<li>CGRectGetMaxY</li>
+</ul>
+
+<p>这六个函数返回矩形x或y的最小、中间或最大值，用这些函数代替诸如frame.origin.x + frame.size.width之类的代码将更加清晰、语义上更为生动的（特别是用取中间和取最大函数）。</p>
+
+<p><strong>CGRectGet[Width|Height]</strong></p>
+
+<ul>
+<li>CGRectGetHeight: 返回矩形的高度。</li>
+<li>CGRectGetWidth: 返回矩形的宽度。</li>
+</ul>
+
+<p><strong>CGRectIntegral</strong></p>
+
+<p>CGRectIntegral: 返回包围源矩形的最小整数矩形。</p>
+
+<pre><code>
+CGRect CGRectIntegral (
+  CGRect rect
+)
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;将CGRect 取整到最近的完整点是非常重要的。小数值会让边框画在像素边界处。因为像素已经是最小单元（不能再细分），小数值会使绘制时取周围几个像素的平均值，这样看起来就模糊了。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;CGRectIntegral 将表示原点的值向下取整，表示大小的值向上取整，这样就保证了你的绘制代码平整地对齐到像素边界。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;作为一个经验性的原则，如果你在执行任何一个可能产生小数值的操作（例如除法，CGGetMid[X|Y]，或是 CGRectDivide），在把一矩形作为视图的边框之前应该用CGRectIntegral正则化它。</p>
+
+<p><strong>CGRectOffset</strong></p>
+
+<p>CGRectOffset: 返回一个原点在源矩形基础上进行了偏移的矩形。</p>
+
+<pre><code>
+CGRect CGRectOffset(
+  CGRect rect,
+  CGFloat dx,
+  CGFloat dy
+)
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;注意，用这个你只改变了矩形的原点。它不仅能让你在同时改变水平和垂直位置的时候减少一行代码，更重要的是，它所表示的平移比直接分开操作原点的值更具有几何意义。</p>
+
+<p><strong>CGRectInset</strong></p>
+
+<p>CGRectInset: 返回一个与源矩形共中心点的，或大些或小些的新矩形。</p>
+
+<pre><code>
+CGRect CGRectInset(
+  CGRect rect,
+  CGFloat dx,
+  CGFloat dy
+)
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;用CGRectInset给它设置一个 10pt 的边距吧。需要记住的是，矩形将围绕它的中心点进行缩放，左右分别增减dx（总共2 x dx），上下分别增减 dy（总共 2 x dy）。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;如果你用 CGRectInset 作为缩放矩形的快捷方法，一般通用的做法是嵌套调用CGRectOffset，把CGRectInset的返回值作为CGRectOffset的参数。</p>
+
+<p><strong>CGRectDivide</strong></p>
+
+<p>CGRectDivide: 将源矩形分为两个子矩形。</p>
+
+<pre><code>
+void CGRectDivide(
+  CGRect rect,
+  CGRect *slice,
+  CGRect *remainder,
+  CGFloat amount,
+  CGRectEdge edge
+)
+</code></pre>
+
+<p>CGRectDivide 用以下方式将矩形分割为两部分：</p>
+
+<ul>
+<li>传入一个矩形并选择一条edge（上，下，左，右）；</li>
+<li>平行那个边在矩形里量出amount的长度；</li>
+<li>从edge 到量出的amount区域都保存到slice 参数中；</li>
+<li>剩余的部分保存到remainder 参数中。</li>
+</ul>
+
+<p>其中 edge 参数是一个CGRectEdge 枚举类型：</p>
+
+<pre><code>
+enum CGRectEdge {
+   CGRectMinXEdge,
+   CGRectMinYEdge,
+   CGRectMaxXEdge,
+   CGRectMaxYEdge
+}
+</code></pre>
+
+<p><strong>参考文档</strong></p>
+
+<p>[CGGeometry]</p>
+
+<p><a href="http://nshipster.cn/cggeometry/">http://nshipster.cn/cggeometry/</a></p>
+
+<p>[IOS(CGGeometry)几何类方法总结]</p>
+
+<p><a href="http://my.oschina.net/u/2340880/blog/406816">http://my.oschina.net/u/2340880/blog/406816</a></p>
+
+<p>[利用CGRectDivide进行布局]</p>
+
+<p><a href="http://ju.outofmemory.cn/entry/119786">http://ju.outofmemory.cn/entry/119786</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-CGGeometry.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

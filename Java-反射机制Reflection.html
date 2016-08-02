@@ -1,0 +1,365 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+###Java-反射机制Reflection
+
+###介绍
+&nbsp;&nbsp;&nbsp;&nbsp;程序运行时，允许改变程序结构或变量类型，这种语言称为动态语言。从这个观点看，Perl，Python，Ruby是动态语言，C++，Java，C#不是动态语言。但是JAVA有着一个非常突出的动态相关机制：Reflection，用在Java身上指的是我们可以于运行时加载、探知、使用编译期间完全未知的classes。换句话说，Java程序可以加载一个运行时才得知名称的class，获悉其完整构造（但不包括methods定义），并生成其对象实体、或对其fields设值、或唤起其methods。
+
+&nbsp;&nbsp;&nbsp;&nbsp;Java反射机制主要提供了以下功能： 在运行时判断任意一个对象所属的类；在运行时构造任意一个类的对象；在运行时判断任意一个类所具有的成员变量和方法；在运行时调用任意一个对象的方法；生成动态代理。
+
+&nbsp;&nbsp;&nbsp;&nbsp;Java程序可以加载一个运行时才得知名称的class，获悉其完整构造（但不包括methods定义），并生成其对象实体、或对其fields设值、或唤起其methods。这种“看透class”的能力（the ability of the program to examine itself）被称为introspection（内省、内观、反省）。Reflection和introspection是常被并提的两个术语。
+
+
+
+###反射机制的作用：
+   1，反编译：.class-->.java
+   
+   2,通过反射机制访问java对象的属性，方法，构造方法等；
+
+
+###在这里先看一下sun为我们提供了那些反射机制中的类：
+
+```
+java.lang.Class;                
+java.lang.reflect.Constructor; 
+java.lang.reflect.Field;        
+java.lang.reflect.Method;
+java.lang.reflect.Modifier;
+
+```
+
+
+###Demo
+
+####获取对象实例
+
+a、调用无参的构造函数:
+
+```
+    Class c = Class.forName(类名);
+    Object obj = c.newInstance();
+```
+
+
+ b、调用有参的构造函数：
+
+```
+	Class[] argsClass = new Class[2];// 方法传入的参数类型
+    argsClass[0]=String.class;
+    argsClass[1]=String.class;
+
+    Object[] params = {null,null};// 方法传入的参数值
+
+    Constructor cons = newoneClass.getConstructor(argsClass);
+
+	Object obj = cons.newInstance(params)
+  
+```
+
+####获取属性
+
+a、先看获取所有的属性的写法
+
+```
+	Class c = Class.forName(类名);  
+	//获取所有的属性?  
+	Field[] fs = c.getDeclaredFields();  
+
+```
+
+b、获取特定的属性，
+
+```
+	//获取类  
+    Class c = Class.forName(类名);  
+    //获取id属性  
+    Field idF = c.getDeclaredField(字段名);  
+    //实例化这个类赋给o  
+    Object o = c.newInstance();  
+    //打破封装  
+    idF.setAccessible(true); //使用反射机制可以打破封装性，导致了java对象的属性不安全。  
+    //给o对象的id属性赋值"110"  
+    idF.set(o, "110"); //set  
+    //get  
+    System.out.println(idF.get(o)); 
+
+```  
+
+c、静态属性获取
+
+由于静态属性属于这个类,所以只要在这个类上调用这个field即可
+
+```
+//获取类  
+	Class c = Class.forName(类名); 
+	Object property = field.get(c);
+
+```
+  
+####方法调用
+
+a、无参数方法调用
+
+```
+	Class c = Class.forName(类名); 
+	Method method = c.getMethod(方法名); 
+	return method.invoke(类实例);
+```
+
+b、有参数方法调用
+
+```
+	Class[] argsClass = new Class[2];// 方法传入的参数类型
+    argsClass[0]=String.class;
+    argsClass[1]=String.class;
+    Object[] params = {null,null};// 方法传入的参数值
+    
+	Method method = ownerClass.getMethod(方法名, argsClass); 
+	method.invoke(类实例, params);
+```
+
+c、静态方法调用
+
+```
+	Method method = ownerClass.getMethod(方法名, argsClass); 
+	method.invoke(null, args);
+
+```
+
+
+
+###参考资料
+
+[JAVA反射机制]<http://baike.baidu.com/link?url=tZk29owSJRNVgK0dIoe2w3hb7AygMVPqd8Zz4KpC_Mut6qXSRVHMx5g00Oi2vFAHzzJyQRqYYrMYAZDZoOBgLq>
+
+[JAVA中的反射机制]<http://blog.csdn.net/liujiahan629629/article/details/18013523>
+
+[java 反射的实例]<http://www.cnblogs.com/shenliang123/archive/2011/10/27/2226926.html>
+
+[java反射机制--调用有参构造函数生成类]<http://blog.163.com/yellow_tulip/blog/static/945666552009920451389/>
+
+[java反射详解]<http://www.cnblogs.com/rollenholt/archive/2011/09/02/2163758.html>
+
+[java如何通过反射 激活静态类的静态方法]<http://blog.csdn.net/eagleking012/article/details/6876920>
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h3 id="javareflection">Java-反射机制Reflection</h3>
+
+<h3 id="">介绍</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;程序运行时，允许改变程序结构或变量类型，这种语言称为动态语言。从这个观点看，Perl，Python，Ruby是动态语言，C++，Java，C#不是动态语言。但是JAVA有着一个非常突出的动态相关机制：Reflection，用在Java身上指的是我们可以于运行时加载、探知、使用编译期间完全未知的classes。换句话说，Java程序可以加载一个运行时才得知名称的class，获悉其完整构造（但不包括methods定义），并生成其对象实体、或对其fields设值、或唤起其methods。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Java反射机制主要提供了以下功能： 在运行时判断任意一个对象所属的类；在运行时构造任意一个类的对象；在运行时判断任意一个类所具有的成员变量和方法；在运行时调用任意一个对象的方法；生成动态代理。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Java程序可以加载一个运行时才得知名称的class，获悉其完整构造（但不包括methods定义），并生成其对象实体、或对其fields设值、或唤起其methods。这种“看透class”的能力（the ability of the program to examine itself）被称为introspection（内省、内观、反省）。Reflection和introspection是常被并提的两个术语。</p>
+
+<h3 id="">反射机制的作用：</h3>
+
+<p>1，反编译：.class--&gt;.java</p>
+
+<p>2,通过反射机制访问java对象的属性，方法，构造方法等；</p>
+
+<h3 id="sun">在这里先看一下sun为我们提供了那些反射机制中的类：</h3>
+
+<pre><code>java.lang.Class;                
+java.lang.reflect.Constructor; 
+java.lang.reflect.Field;        
+java.lang.reflect.Method;
+java.lang.reflect.Modifier;
+</code></pre>
+
+<h3 id="demo">Demo</h3>
+
+<h4 id="">获取对象实例</h4>
+
+<p>a、调用无参的构造函数:</p>
+
+<pre><code>    Class c = Class.forName(类名);
+    Object obj = c.newInstance();
+</code></pre>
+
+<p>b、调用有参的构造函数：</p>
+
+<pre><code>    Class[] argsClass = new Class[2];// 方法传入的参数类型
+    argsClass[0]=String.class;
+    argsClass[1]=String.class;
+
+    Object[] params = {null,null};// 方法传入的参数值
+
+    Constructor cons = newoneClass.getConstructor(argsClass);
+
+    Object obj = cons.newInstance(params)
+</code></pre>
+
+<h4 id="">获取属性</h4>
+
+<p>a、先看获取所有的属性的写法</p>
+
+<pre><code>    Class c = Class.forName(类名);  
+    //获取所有的属性?  
+    Field[] fs = c.getDeclaredFields();  
+</code></pre>
+
+<p>b、获取特定的属性，</p>
+
+<pre><code>    //获取类  
+    Class c = Class.forName(类名);  
+    //获取id属性  
+    Field idF = c.getDeclaredField(字段名);  
+    //实例化这个类赋给o  
+    Object o = c.newInstance();  
+    //打破封装  
+    idF.setAccessible(true); //使用反射机制可以打破封装性，导致了java对象的属性不安全。  
+    //给o对象的id属性赋值"110"  
+    idF.set(o, "110"); //set  
+    //get  
+    System.out.println(idF.get(o)); 
+</code></pre>
+
+<p>c、静态属性获取</p>
+
+<p>由于静态属性属于这个类,所以只要在这个类上调用这个field即可</p>
+
+<pre><code>//获取类  
+    Class c = Class.forName(类名); 
+    Object property = field.get(c);
+</code></pre>
+
+<h4 id="">方法调用</h4>
+
+<p>a、无参数方法调用</p>
+
+<pre><code>    Class c = Class.forName(类名); 
+    Method method = c.getMethod(方法名); 
+    return method.invoke(类实例);
+</code></pre>
+
+<p>b、有参数方法调用</p>
+
+<pre><code>    Class[] argsClass = new Class[2];// 方法传入的参数类型
+    argsClass[0]=String.class;
+    argsClass[1]=String.class;
+    Object[] params = {null,null};// 方法传入的参数值
+
+    Method method = ownerClass.getMethod(方法名, argsClass); 
+    method.invoke(类实例, params);
+</code></pre>
+
+<p>c、静态方法调用</p>
+
+<pre><code>    Method method = ownerClass.getMethod(方法名, argsClass); 
+    method.invoke(null, args);
+</code></pre>
+
+<h3 id="">参考资料</h3>
+
+<p>[JAVA反射机制]<a href="http://baike.baidu.com/link?url=tZk29owSJRNVgK0dIoe2w3hb7AygMVPqd8Zz4KpC_Mut6qXSRVHMx5g00Oi2vFAHzzJyQRqYYrMYAZDZoOBgLq">http://baike.baidu.com/link?url=tZk29owSJRNVgK0dIoe2w3hb7AygMVPqd8Zz4KpC_Mut6qXSRVHMx5g00Oi2vFAHzzJyQRqYYrMYAZDZoOBgLq</a></p>
+
+<p>[JAVA中的反射机制]<a href="http://blog.csdn.net/liujiahan629629/article/details/18013523">http://blog.csdn.net/liujiahan629629/article/details/18013523</a></p>
+
+<p>[java 反射的实例]<a href="http://www.cnblogs.com/shenliang123/archive/2011/10/27/2226926.html">http://www.cnblogs.com/shenliang123/archive/2011/10/27/2226926.html</a></p>
+
+<p>[java反射机制--调用有参构造函数生成类]<a href="http://blog.163.com/yellow_tulip/blog/static/945666552009920451389/">http://blog.163.com/yellow_tulip/blog/static/945666552009920451389/</a></p>
+
+<p>[java反射详解]<a href="http://www.cnblogs.com/rollenholt/archive/2011/09/02/2163758.html">http://www.cnblogs.com/rollenholt/archive/2011/09/02/2163758.html</a></p>
+
+<p>[java如何通过反射 激活静态类的静态方法]<a href="http://blog.csdn.net/eagleking012/article/details/6876920">http://blog.csdn.net/eagleking012/article/details/6876920</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "Java-反射机制Reflection.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

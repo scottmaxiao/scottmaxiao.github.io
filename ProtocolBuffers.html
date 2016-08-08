@@ -1,0 +1,468 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+# Protocol Buffers
+
+###介绍
+
+&nbsp;&nbsp;&nbsp;&nbsp;ProtocolBuffer是用于结构化数据串行化的灵活、高效、自动的方法，有如XML，不过它更小、更快、也更简单。你可以定义自己的数据结构，然后使用代码生成器生成的代码来读写这个数据结构。你甚至可以在无需重新部署程序的情况下更新数据结构。
+
+###安装 `protobuf 3.0` 环境
+
+######下载
+从 [protobuf 3.0](https://github.com/google/protobuf/releases#release-downloads-header)下载 `protobuf-java-3.0.0-beta-2.tar.gz` 文件
+
+######解压
+
+```
+tar xvf protobuf-java-3.0.0-beta-2.tar.gz
+cd protobuf-3.0.0-beta-2
+```
+
+######安装
+
+```    
+./configure 
+make
+make check
+make install
+```
+
+这几个命令也可以通过链接符合并执行，例如 `./configure && make && make check && make install`
+
+######版本检查
+
+```
+ protoc --version
+```
+
+若返回结果为 libprotoc 3.0.0 表示安装成功
+
+###文件格式
+
+```
+syntax="proto2" #语法格式
+
+package tutorial; #包名,防止多个protobuf命名冲突
+
+#option:可赋值非必须赋值 java_package:java包名
+option java_package = "com.example.tutorial";
+#java类名，生成com.example.tutorial.AddressBookProtos java类
+option java_outer_classname = "AddressBookProtos";
+
+#message定义所需要序列化的数据的格式。每一个Message都是一个小的信息逻辑单元，
+#包含了一些列的name-value对。
+message Person {
+  required string name = 1; #required必须赋值，是永久性的
+  required int32 id = 2;        
+  optional string email = 3;
+
+  message PhoneNumber {
+    required string number = 1;
+    optional PhoneType type = 2 [default = HOME];
+  }
+   
+  #repeated类似数组或集合（java里是list）
+  repeated PhoneNumber phone = 4;
+}
+
+  enum PhoneType { #枚举
+    MOBILE = 0;
+    HOME = 1;
+    WORK = 2;
+  }
+  
+
+// Our address book file is just one of these.
+message AddressBook {
+  repeated Person person = 1;
+}
+
+```
+
+<table>
+<tr>
+<td>.proto类型</td>
+<td>Java 类型</td>
+<td>C++类型</td>
+<td>备注</td>
+</tr>
+
+<tr>
+<td>double</td>
+<td>double</td>
+<td>double</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td>float</td>
+<td>float</td>
+<td>float</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td>int32</td>
+<td>int</td>
+<td>int32</td>
+<td>使用可变长编码方式。编码负数时不够高效——如果你的字段可能含有负数，那么请使用sint32。</td>
+</tr>
+
+<tr>
+<td>int64</td>
+<td>long</td>
+<td>int64</td>
+<td>使用可变长编码方式。编码负数时不够高效——如果你的字段可能含有负数，那么请使用sint64。</td>
+</tr>
+
+<tr>
+<td>sint32</td>
+<td>int</td>
+<td>int32</td>
+<td>使用可变长编码方式。有符号的整型值。编码时比通常的int32高效。</td>
+</tr>
+
+<tr>
+<td>sint64</td>
+<td>long</td>
+<td>int64</td>
+<td>使用可变长编码方式。有符号的整型值。编码时比通常的int64高效。</td>
+</tr>
+
+<tr>
+<td>bool</td>
+<td>boolean</td>
+<td>bool</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td>string</td>
+<td>String</td>
+<td>string</td>
+<td>一个字符串必须是UTF-8编码或者7-bit ASCII编码的文本。</td>
+</tr>
+
+<tr>
+<td>bytes</td>
+<td>ByteString</td>
+<td>string</td>
+<td>可能包含任意顺序的字节数据。</td>
+</tr>
+
+</table>
+###导出
+
+&nbsp;&nbsp;&nbsp;&nbsp;可以通过定义好的.proto文件来生成Java、Python、C++代码，需要基于.proto文件运行protocol buffer编译器protoc。运行的命令如下所示：
+
+```
+protoc --proto_path=IMPORT_PATH --cpp_out=DST_DIR --java_out=DST_DIR --python_out=DST_DIR --objc_out==$DST_DIR --csharp_out=$DST_DIR path/to/file.proto
+```
+ 
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORT_PATH声明了一个.proto文件所在的具体目录。如果忽略该值，则使用当前目录。如果有多个目录则可以 对--proto_path 写多次，它们将会顺序的被访问并执行导入。-I=IMPORT_PATH是它的简化形式。
+
+当然也可以提供一个或多个输出路径：
+
+* --cpp\_out 在目标目录DST_DIR中产生C++代码。
+
+* --java\_out 在目标目录DST_DIR中产生Java代码。
+
+* --python\_out 在目标目录 DST_DIR 中产生Python代码。
+
+* --objc\_out 在目标目录 DST_DIR 中产生Objective-C代码
+
+* --csharp\_out 在目标目录 DST_DIR 中产生C#代码
+
+
+
+###参考资料
+
+[官方文档]<https://developers.google.com/protocol-buffers/docs/proto>
+
+[proto文件格式]<http://my.oschina.net/haoqoo/blog/467409>
+
+[几种序列化协议(protobuf,xstream,jackjson,jdk,hessian)相关数据对比]<http://agapple.iteye.com/blog/859052>
+
+[Google Protocol Buffer 的使用和原理]<http://www.ibm.com/developerworks/cn/linux/l-cn-gpb/index.html>
+
+[Google protobuf for java 小试]<http://blog.csdn.net/ajun_studio/article/details/7693056>
+
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h1 id="protocolbuffers">Protocol Buffers</h1>
+
+<h3 id="">介绍</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;ProtocolBuffer是用于结构化数据串行化的灵活、高效、自动的方法，有如XML，不过它更小、更快、也更简单。你可以定义自己的数据结构，然后使用代码生成器生成的代码来读写这个数据结构。你甚至可以在无需重新部署程序的情况下更新数据结构。</p>
+
+<h3 id="protobuf30">安装 <code>protobuf 3.0</code> 环境</h3>
+
+<h6 id="">下载</h6>
+
+<p>从 <a href="https://github.com/google/protobuf/releases#release-downloads-header">protobuf 3.0</a>下载 <code>protobuf-java-3.0.0-beta-2.tar.gz</code> 文件</p>
+
+<h6 id="">解压</h6>
+
+<pre><code>tar xvf protobuf-java-3.0.0-beta-2.tar.gz
+cd protobuf-3.0.0-beta-2
+</code></pre>
+
+<h6 id="">安装</h6>
+
+<pre><code class="    ">./configure 
+make
+make check
+make install
+</code></pre>
+
+<p>这几个命令也可以通过链接符合并执行，例如 <code>./configure &amp;&amp; make &amp;&amp; make check &amp;&amp; make install</code></p>
+
+<h6 id="">版本检查</h6>
+
+<pre><code> protoc --version
+</code></pre>
+
+<p>若返回结果为 libprotoc 3.0.0 表示安装成功</p>
+
+<h3 id="">文件格式</h3>
+
+<pre><code>syntax="proto2" #语法格式
+
+package tutorial; #包名,防止多个protobuf命名冲突
+
+#option:可赋值非必须赋值 java_package:java包名
+option java_package = "com.example.tutorial";
+#java类名，生成com.example.tutorial.AddressBookProtos java类
+option java_outer_classname = "AddressBookProtos";
+
+#message定义所需要序列化的数据的格式。每一个Message都是一个小的信息逻辑单元，
+#包含了一些列的name-value对。
+message Person {
+  required string name = 1; #required必须赋值，是永久性的
+  required int32 id = 2;        
+  optional string email = 3;
+
+  message PhoneNumber {
+    required string number = 1;
+    optional PhoneType type = 2 [default = HOME];
+  }
+&nbsp;&nbsp;&nbsp;
+  #repeated类似数组或集合（java里是list）
+  repeated PhoneNumber phone = 4;
+}
+
+  enum PhoneType { #枚举
+    MOBILE = 0;
+    HOME = 1;
+    WORK = 2;
+  }
+
+
+// Our address book file is just one of these.
+message AddressBook {
+  repeated Person person = 1;
+}
+</code></pre>
+
+<table>
+<tbody><tr>
+<td>.proto类型</td>
+<td>Java 类型</td>
+<td>C++类型</td>
+<td>备注</td>
+</tr>
+
+<tr>
+<td>double</td>
+<td>double</td>
+<td>double</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td>float</td>
+<td>float</td>
+<td>float</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td>int32</td>
+<td>int</td>
+<td>int32</td>
+<td>使用可变长编码方式。编码负数时不够高效——如果你的字段可能含有负数，那么请使用sint32。</td>
+</tr>
+
+<tr>
+<td>int64</td>
+<td>long</td>
+<td>int64</td>
+<td>使用可变长编码方式。编码负数时不够高效——如果你的字段可能含有负数，那么请使用sint64。</td>
+</tr>
+
+<tr>
+<td>sint32</td>
+<td>int</td>
+<td>int32</td>
+<td>使用可变长编码方式。有符号的整型值。编码时比通常的int32高效。</td>
+</tr>
+
+<tr>
+<td>sint64</td>
+<td>long</td>
+<td>int64</td>
+<td>使用可变长编码方式。有符号的整型值。编码时比通常的int64高效。</td>
+</tr>
+
+<tr>
+<td>bool</td>
+<td>boolean</td>
+<td>bool</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td>string</td>
+<td>String</td>
+<td>string</td>
+<td>一个字符串必须是UTF-8编码或者7-bit ASCII编码的文本。</td>
+</tr>
+
+<tr>
+<td>bytes</td>
+<td>ByteString</td>
+<td>string</td>
+<td>可能包含任意顺序的字节数据。</td>
+</tr>
+
+</tbody></table>
+
+<h3 id="">导出</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;可以通过定义好的.proto文件来生成Java、Python、C++代码，需要基于.proto文件运行protocol buffer编译器protoc。运行的命令如下所示：</p>
+
+<pre><code>protoc --proto_path=IMPORT_PATH --cpp_out=DST_DIR --java_out=DST_DIR --python_out=DST_DIR --objc_out==$DST_DIR --csharp_out=$DST_DIR path/to/file.proto
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;IMPORT<em>PATH声明了一个.proto文件所在的具体目录。如果忽略该值，则使用当前目录。如果有多个目录则可以 对--proto</em>path 写多次，它们将会顺序的被访问并执行导入。-I=IMPORT_PATH是它的简化形式。</p>
+
+<p>当然也可以提供一个或多个输出路径：</p>
+
+<ul>
+<li><p>--cpp_out 在目标目录DST_DIR中产生C++代码。</p></li>
+<li><p>--java_out 在目标目录DST_DIR中产生Java代码。</p></li>
+<li><p>--python_out 在目标目录 DST_DIR 中产生Python代码。</p></li>
+<li><p>--objc_out 在目标目录 DST_DIR 中产生Objective-C代码</p></li>
+<li><p>--csharp_out 在目标目录 DST_DIR 中产生C#代码</p></li>
+</ul>
+
+<h3 id="">参考资料</h3>
+
+<p>[官方文档]<a href="https://developers.google.com/protocol-buffers/docs/proto">https://developers.google.com/protocol-buffers/docs/proto</a></p>
+
+<p>[proto文件格式]<a href="http://my.oschina.net/haoqoo/blog/467409">http://my.oschina.net/haoqoo/blog/467409</a></p>
+
+<p>[几种序列化协议(protobuf,xstream,jackjson,jdk,hessian)相关数据对比]<a href="http://agapple.iteye.com/blog/859052">http://agapple.iteye.com/blog/859052</a></p>
+
+<p>[Google Protocol Buffer 的使用和原理]<a href="http://www.ibm.com/developerworks/cn/linux/l-cn-gpb/index.html">http://www.ibm.com/developerworks/cn/linux/l-cn-gpb/index.html</a></p>
+
+<p>[Google protobuf for java 小试]<a href="http://blog.csdn.net/ajun_studio/article/details/7693056">http://blog.csdn.net/ajun_studio/article/details/7693056</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "ProtocolBuffers.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

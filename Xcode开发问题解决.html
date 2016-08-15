@@ -25,7 +25,7 @@
 	</div>
 <div id="md" style="display: none;">
 <!-- markdown -->
-##Xcode开发问题解决
+###Xcode开发问题解决
 
 ####Xcode中code sign identity选项值不出下拉选择框的解决方法
 
@@ -148,7 +148,7 @@ Missing iOS Distribution signing identity for XXXXXX
 
 ####pch文件不见了
 
-Xcode 6以上版本创建的项目默认是不带pch文件的，当然了旧版本的项目是会保留的。那么如何添加pch文件？  Command + N 然后在Other里面选择"PCH File "， 在Build Settings里面找到"Prefix Header"
+Xcode 6以上版本创建的项目默认是不带pch文件的，当然了旧版本的项目是会保留的。那么如何添加pch文件？ Command + N 然后在Other里面选择"PCH File "， 在Build Settings里面找到"Prefix Header"
 
 ![framework](http://scottmaxiao.github.io/img/xcode/xcode06.jpg)
 
@@ -157,11 +157,33 @@ Xcode 6以上版本创建的项目默认是不带pch文件的，当然了旧版�
 
 [参考]<http://bawn.github.io/ios/2014/09/20/iOS8.html>
 
+----
+
+# XCode清理空间
+
+下面这几个是我主要清理的文件夹：
+
+1.	这里放的是连接真机生成的文件，可以全部删掉或者把不常用的版本删掉，再次连接设备会自动生成
+
+    `> ~/Library/Developer/Xcode/iOS DeviceSuppor`
+   
+2. app打包生成的文件，可以删掉不需要的项目打包文件
+
+    `> ~/Library/Developer/Xcode/Archives`
+   
+3.	项目的索引文件等，可以全部删除，或者删除不常用的项目，再次打开项目会自动生成
+
+    `> ~/Library/Developer/Xcode/DerivedData`
+
+
+[参考]<http://www.cnblogs.com/bolin-123/p/5422766.html>
+
+
 <!-- markdown end -->
 </div>
 <div class="entry" id="main">
 <!-- content -->
-<h2 id="xcode">Xcode开发问题解决</h2>
+<h3 id="xcode">Xcode开发问题解决</h3>
 
 <h4 id="xcodecodesignidentity">Xcode中code sign identity选项值不出下拉选择框的解决方法</h4>
 
@@ -280,13 +302,35 @@ Missing iOS Distribution signing identity for XXXXXX
 
 <h4 id="pch">pch文件不见了</h4>
 
-<p>Xcode 6以上版本创建的项目默认是不带pch文件的，当然了旧版本的项目是会保留的。那么如何添加pch文件？  Command + N 然后在Other里面选择"PCH File "， 在Build Settings里面找到"Prefix Header"</p>
+<p>Xcode 6以上版本创建的项目默认是不带pch文件的，当然了旧版本的项目是会保留的。那么如何添加pch文件？ Command + N 然后在Other里面选择"PCH File "， 在Build Settings里面找到"Prefix Header"</p>
 
 <p><img src="http://scottmaxiao.github.io/img/xcode/xcode06.jpg" alt="framework" title=""></p>
 
 <p>注意: 添加pch文件，规则是: 项目名/xxxxx.pch</p>
 
 <p>[参考]<a href="http://bawn.github.io/ios/2014/09/20/iOS8.html">http://bawn.github.io/ios/2014/09/20/iOS8.html</a></p>
+
+<hr>
+
+<h1 id="xcode">XCode清理空间</h1>
+
+<p>下面这几个是我主要清理的文件夹：</p>
+
+<ol>
+<li><p>这里放的是连接真机生成的文件，可以全部删掉或者把不常用的版本删掉，再次连接设备会自动生成</p>
+
+<p><code>&gt; ~/Library/Developer/Xcode/iOS DeviceSuppor</code>
+&nbsp; </p></li>
+<li><p>app打包生成的文件，可以删掉不需要的项目打包文件</p>
+
+<p><code>&gt; ~/Library/Developer/Xcode/Archives</code>
+&nbsp; </p></li>
+<li><p>项目的索引文件等，可以全部删除，或者删除不常用的项目，再次打开项目会自动生成</p>
+
+<p><code>&gt; ~/Library/Developer/Xcode/DerivedData</code></p></li>
+</ol>
+
+<p>[参考]<a href="http://www.cnblogs.com/bolin-123/p/5422766.html">http://www.cnblogs.com/bolin-123/p/5422766.html</a></p>
 <!-- content end -->
 </div>
 <br>

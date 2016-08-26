@@ -1,0 +1,544 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+###背景介绍
+&nbsp;&nbsp;&nbsp;&nbsp;Android系统支持多种USB外围设备。根据Android设备在USB通信中充当的角色，可以将Android USB通信分为主机模式（Host Mode）和配件模式（Accessory Mode）两种模式。
+
+&nbsp;&nbsp;&nbsp;&nbsp;主机模式是指Android设备充当USB主机并为总线供电。此模式下，Android设备需支持USB主机功能或OTG(On-The-Go)功能，此时Android设备的USB主机称为USB嵌入式主机EH（Embedded Host）。与PC上的USB主机相比，EH设备可能无法为连接到其总线上的未识别外围设备加载驱动程序，因此它们对其目标外围设备列表TPL（Target Peripheral List）进行了定义。这些外围USB设备大部分为HID设备（Human Interface Device）、BOMS设备（Bulk Only Mass Storage，如U盘）和CDC设备（Comm-unication Device Class，USB通信设备类，如打印机），其驱动程序已存在于Android平台的系统中（Linux Kernel），因此Android设备可以与其直接通信。[Android APP实现参考]<https://developer.android.com/guide/topics/connectivity/usb/host.html>
+
+&nbsp;&nbsp;&nbsp;&nbsp;配件模式是指Android设备充当USB从机，外部设备充当主机并为总线供电。此模式下，外部USB设备称为Android配件。该模式为不具备主机功能的Android设备提供与USB设备交互的能力。Android设备和Android配件都必须支持AOA协议。[Android APP实现参考]<https://developer.android.com/guide/topics/connectivity/usb/accessory.html>
+
+![usb_model](http://scottmaxiao.github.io/img/usb/usb_model.jpg)
+
+###协议介绍
+&nbsp;&nbsp;&nbsp;&nbsp;Google 在 Android 3.1 (API Level 12) 推出了 Android Open Accessory 协议。这个协议是用来支持外部 USB 设备做为主机连接 Android 设备的底层基础。当 Android 设备进入 accessory 模式后，外部设备将做为视为主机为 bus 供电，并且和 Android 设备交互。
+
+```
+注：accessory 模式，最终依赖于设备的硬件，而不是所有设备都支持配件模式。
+Android Open Accessory (AOA) 会在省电模式下失效。经过咨询 USB 的相关同事，了解到省电模式下连接 USB 线仅为充电功能。
+```
+
+AOA有两个版本，支持不同类型的通信：
+
+* AOAv1。
+支持通用配件通信(generic accessory communication)和adb调试。Android2.3.4或者更高版本 (Android3.1 or later for Tablet)
+
+* AOAv2
+支持音频流(audio streaming)和人机接口设备（human interface device,HID）功能。Android 4.1 (API Level 16)。
+
+AOAv2是兼容AOAv1的。AOA目前不支持同时进行AOA和MTP的连接。从AOA切换到MTP的话，必须先断开USB设备，然后再连接USB设备的时候选择MTP。
+
+###实现步骤
+
+&nbsp;&nbsp;&nbsp;&nbsp;一个Android USB配件必须遵循AOA协议，它定义了配件如何检测并与Android设备建立通信。 
+
+&nbsp;&nbsp;&nbsp;&nbsp;在一般情况下，配件应进行以下步骤：
+
+&nbsp;&nbsp;&nbsp;&nbsp;1. 等待并检测连接的设备 
+&nbsp;&nbsp;&nbsp;&nbsp;2. 确定设备支持配件模式 
+&nbsp;&nbsp;&nbsp;&nbsp;3. 如果需要，尝试启动设备的配件模式 
+&nbsp;&nbsp;&nbsp;&nbsp;4. 如果它支持Android配件模式，建立与设备的通信
+
+#####确定设备支持配件模式
+
+当Android手机连接，它可以在三种状态之一：
+
+* A.连接的设备支持Android配件的模式，并已在配件模式。 
+* B.连接的设备支持Android配件模式，但它不是在配件模式。 
+* C.连接的设备不支持Android的配件模式。 
+
+在初始连接时，该配件应检查连接设备的vendor ID和product ID。 vendor ID应符合谷歌的ID（0x18D1），并且如果该设备已在配件模式（状态A），product ID应该存在下表中。 如果是这样的话，该配件现在可以在自己的通信协议下批量传输端点来与设备建立通信。 没必要在配件模式启动设备。
+
+
+<table>
+<tr>
+<td>Version</td>
+<td>Product ID</td>
+<td>Communication</td>
+</tr>
+<tr>
+<td rowspan=2>AOAv1</td>
+<td>0x2D00</td>
+<td>accessory</td>
+</tr>
+<tr>
+<td>0x2D01</td>
+<td>accessory + adb</td>
+</tr>
+<tr>
+<td rowspan=4>AOAv2</td>
+<td>0x2D02</td>
+<td>audio</td>
+</tr>
+<tr>
+<td>0x2D03</td>
+<td>audio + adb</td>
+</tr>
+<tr>
+<td>0x2D04</td>
+<td>accessory + audio</td>
+</tr>
+<tr>
+<td>0x2D05</td>
+<td>accessory + audio + adb</td>
+</tr>
+</table>
+
+表1
+
+#####尝试开启配件模式
+第一步,发送51控制请求（“Get Protocol”），判断该设备是否支持AOA协议。 支持该协议，则返回一个非0的数字，它代表了该设备支持的版本协议。返回1表示支持AOAv1，返回2表示支持AOAv2。该请求的endpoint为0。
+
+```
+requestType:    USB_DIR_IN | USB_TYPE_VENDOR
+request:        51
+value:          0
+index:          0
+data:           protocol version number (16 bits little endian sent from the
+                device to the accessory)
+```
+
+第二步，如果该设备返回一个正确的协议版本，发送标识字符串(string ID)信息到该设备。 这一信息使该设备找出一个支持该协议的应用程序，如果不存在相应的应用程序，还将会为用户提供一个URL下载。 该请求的endpoint为0。
+
+```
+requestType:    USB_DIR_OUT | USB_TYPE_VENDOR
+request:        52
+value:          0
+index:          string ID
+data            zero terminated UTF8 string sent from accessory to device
+```
+
+标识字符串(string ID)信息如下
+
+```
+manufacturer name:  0
+model name:         1
+description:        2
+version:            3
+URI:                4
+serial number:      5
+```
+
+第三步，发送控制请求(control request)，要求设备以配件模式启动。 该请求的endpoint为0。
+
+```
+requestType:    USB_DIR_OUT | USB_TYPE_VENDOR
+request:        53
+value:          0
+index:          0
+data:           none
+
+```
+
+可以参考Accessory Development Kit 2011 的源代码(<adk-src>/adk1/board/AndroidAccessory/AndroidAccessory.cpp)
+
+```
+#define USB_ACCESSORY_VENDOR_ID         0x18D1
+#define USB_ACCESSORY_PRODUCT_ID        0x2D00
+#define USB_ACCESSORY_ADB_PRODUCT_ID    0x2D01
+#define ACCESSORY_STRING_MANUFACTURER   0
+#define ACCESSORY_STRING_MODEL          1
+#define ACCESSORY_STRING_DESCRIPTION    2
+#define ACCESSORY_STRING_VERSION        3
+#define ACCESSORY_STRING_URI            4
+#define ACCESSORY_STRING_SERIAL         5
+#define ACCESSORY_GET_PROTOCOL          51
+#define ACCESSORY_SEND_STRING           52
+#define ACCESSORY_START                 53
+
+int AndroidAccessory::getProtocol(byte addr)
+{
+    uint16_t protocol = -1;
+    usb.ctrlReq(addr, 0,
+                USB_SETUP_DEVICE_TO_HOST |
+                USB_SETUP_TYPE_VENDOR |
+                USB_SETUP_RECIPIENT_DEVICE,
+                ACCESSORY_GET_PROTOCOL, 0, 0, 0, 2, (char *)&protocol);
+    return protocol;
+}
+
+bool AndroidAccessory::switchDevice(byte addr)
+{
+    int protocol = getProtocol(addr);
+    if (protocol >= 1) {
+        Serial.print("device supports protocol 1 or higher\n");
+    } else {
+        Serial.print("could not read device protocol version\n");
+        return false;
+    }
+
+    sendString(addr, ACCESSORY_STRING_MANUFACTURER, manufacturer);
+    sendString(addr, ACCESSORY_STRING_MODEL, model);
+    sendString(addr, ACCESSORY_STRING_DESCRIPTION, description);
+    sendString(addr, ACCESSORY_STRING_VERSION, version);
+    sendString(addr, ACCESSORY_STRING_URI, uri);
+    sendString(addr, ACCESSORY_STRING_SERIAL, serial);
+
+    usb.ctrlReq(addr, 0, USB_SETUP_HOST_TO_DEVICE | USB_SETUP_TYPE_VENDOR |
+                USB_SETUP_RECIPIENT_DEVICE, ACCESSORY_START, 0, 0, 0, 0, NULL);
+    return true;
+}
+```
+[参考]<https://github.com/GoogleChrome/chrome-app-samples/blob/master/samples/serial/adkjs/firmware/arduino_libs/AndroidAccessory/AndroidAccessory.cpp>
+
+&nbsp;&nbsp;&nbsp;&nbsp;发出最后的控制请求后，已连接的USB设备应在总线上以配件模式重新识别，并且重新检查连接的设备。 如果该设备已成功切换到配件模式，vendor ID将会变成Google's vendor，而不是设备制造商的ID，product ID变成了<表1>中的一类product ID。 该配件可以建立与设备的通信。
+
+&nbsp;&nbsp;&nbsp;&nbsp;任何这些步骤之一失败了，该设备都不能支持Android配件模式，只能等待后面连接的设备了。
+
+
+==USB device APIs.==
+
+```
+/* Setup Data Constants */
+
+#define USB_SETUP_HOST_TO_DEVICE                0x00    // Device Request bmRequestType transfer direction - host to device transfer
+#define USB_SETUP_DEVICE_TO_HOST                0x80    // Device Request bmRequestType transfer direction - device to host transfer
+#define USB_SETUP_TYPE_STANDARD                 0x00    // Device Request bmRequestType type - standard
+#define USB_SETUP_TYPE_CLASS                    0x20    // Device Request bmRequestType type - class
+#define USB_SETUP_TYPE_VENDOR                   0x40    // Device Request bmRequestType type - vendor
+#define USB_SETUP_RECIPIENT_DEVICE              0x00    // Device Request bmRequestType recipient - device
+#define USB_SETUP_RECIPIENT_INTERFACE           0x01    // Device Request bmRequestType recipient - interface
+#define USB_SETUP_RECIPIENT_ENDPOINT            0x02    // Device Request bmRequestType recipient - endpoint
+#define USB_SETUP_RECIPIENT_OTHER               0x03    // Device Request bmRequestType recipient - other
+ 
+```
+[USB Host Shield 2.0]<http://felis.github.io/USB_Host_Shield_2.0/usb__ch9_8h_source.html>
+
+
+#####不通过Android app连接AOAv2
+&nbsp;&nbsp;&nbsp;&nbsp;设计一个配件（例如，音频基座（audio dock））使用新的音频和HID支持，但并不需要在Android设备上的应用程序进行通信。 在这种情况下，用户不希望看到提示发现和连接新的可以与应用程序通信的配件的相关对话框。 为了防止这些对话框在设备和配件连接后出现，配件可以不向Android设备发送制造商和型号的名称。 如果这些字符串没有提供给Android设备，在AOA 2.0下，配件可以使用新的音频和HID支持，而不需系统试图找到一个应用程序与配件进行通信。 另外，如果没有提供这些字符串，该设备进入配件模式后，配件的USB接口是不存在在Android设备的USB配置中的。
+
+###参考资料
+
+[Android Open Accessory (AOA)]<https://source.android.com/devices/accessories/protocol.html>
+
+[Android Open Accessory Protocol 1.0]<https://source.android.com/devices/accessories/aoa.html>
+
+[Android Open Accessory Protocol 2.0]<https://source.android.com/devices/accessories/aoa2.html>
+
+[Android Open Accessory Protocol(中文译文)]<http://blog.csdn.net/jiezhi2013/article/details/42642297>
+
+[Android Open Accessory Protocol 2.0(中文译文)]<http://blog.csdn.net/jiezhi2013/article/details/42642371>
+
+[基于AOA协议实现Android设备的USB通信]<http://blog.csdn.net/tianruxishui/article/details/37903841>
+
+[Linux Cross Reference]<http://lxr.free-electrons.com/source/include/uapi/linux/usb/ch9.h#L50>
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h3 id="">背景介绍</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Android系统支持多种USB外围设备。根据Android设备在USB通信中充当的角色，可以将Android USB通信分为主机模式（Host Mode）和配件模式（Accessory Mode）两种模式。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;主机模式是指Android设备充当USB主机并为总线供电。此模式下，Android设备需支持USB主机功能或OTG(On-The-Go)功能，此时Android设备的USB主机称为USB嵌入式主机EH（Embedded Host）。与PC上的USB主机相比，EH设备可能无法为连接到其总线上的未识别外围设备加载驱动程序，因此它们对其目标外围设备列表TPL（Target Peripheral List）进行了定义。这些外围USB设备大部分为HID设备（Human Interface Device）、BOMS设备（Bulk Only Mass Storage，如U盘）和CDC设备（Comm-unication Device Class，USB通信设备类，如打印机），其驱动程序已存在于Android平台的系统中（Linux Kernel），因此Android设备可以与其直接通信。[Android APP实现参考]<a href="https://developer.android.com/guide/topics/connectivity/usb/host.html">https://developer.android.com/guide/topics/connectivity/usb/host.html</a></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;配件模式是指Android设备充当USB从机，外部设备充当主机并为总线供电。此模式下，外部USB设备称为Android配件。该模式为不具备主机功能的Android设备提供与USB设备交互的能力。Android设备和Android配件都必须支持AOA协议。[Android APP实现参考]<a href="https://developer.android.com/guide/topics/connectivity/usb/accessory.html">https://developer.android.com/guide/topics/connectivity/usb/accessory.html</a></p>
+
+<p><img src="http://scottmaxiao.github.io/img/usb/usb_model.jpg" alt="usb_model" title=""></p>
+
+<h3 id="">协议介绍</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Google 在 Android 3.1 (API Level 12) 推出了 Android Open Accessory 协议。这个协议是用来支持外部 USB 设备做为主机连接 Android 设备的底层基础。当 Android 设备进入 accessory 模式后，外部设备将做为视为主机为 bus 供电，并且和 Android 设备交互。</p>
+
+<pre><code>注：accessory 模式，最终依赖于设备的硬件，而不是所有设备都支持配件模式。
+Android Open Accessory (AOA) 会在省电模式下失效。经过咨询 USB 的相关同事，了解到省电模式下连接 USB 线仅为充电功能。
+</code></pre>
+
+<p>AOA有两个版本，支持不同类型的通信：</p>
+
+<ul>
+<li><p>AOAv1。
+支持通用配件通信(generic accessory communication)和adb调试。Android2.3.4或者更高版本 (Android3.1 or later for Tablet)</p></li>
+<li><p>AOAv2
+支持音频流(audio streaming)和人机接口设备（human interface device,HID）功能。Android 4.1 (API Level 16)。</p></li>
+</ul>
+
+<p>AOAv2是兼容AOAv1的。AOA目前不支持同时进行AOA和MTP的连接。从AOA切换到MTP的话，必须先断开USB设备，然后再连接USB设备的时候选择MTP。</p>
+
+<h3 id="">实现步骤</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;一个Android USB配件必须遵循AOA协议，它定义了配件如何检测并与Android设备建立通信。 </p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在一般情况下，配件应进行以下步骤：</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;1. 等待并检测连接的设备 
+&nbsp;&nbsp;&nbsp;&nbsp;2. 确定设备支持配件模式 
+&nbsp;&nbsp;&nbsp;&nbsp;3. 如果需要，尝试启动设备的配件模式 
+&nbsp;&nbsp;&nbsp;&nbsp;4. 如果它支持Android配件模式，建立与设备的通信</p>
+
+<h5 id="">确定设备支持配件模式</h5>
+
+<p>当Android手机连接，它可以在三种状态之一：</p>
+
+<ul>
+<li>A.连接的设备支持Android配件的模式，并已在配件模式。 </li>
+<li>B.连接的设备支持Android配件模式，但它不是在配件模式。 </li>
+<li>C.连接的设备不支持Android的配件模式。 </li>
+</ul>
+
+<p>在初始连接时，该配件应检查连接设备的vendor ID和product ID。 vendor ID应符合谷歌的ID（0x18D1），并且如果该设备已在配件模式（状态A），product ID应该存在下表中。 如果是这样的话，该配件现在可以在自己的通信协议下批量传输端点来与设备建立通信。 没必要在配件模式启动设备。</p>
+
+<table>
+<tbody><tr>
+<td>Version</td>
+<td>Product ID</td>
+<td>Communication</td>
+</tr>
+<tr>
+<td rowspan="2">AOAv1</td>
+<td>0x2D00</td>
+<td>accessory</td>
+</tr>
+<tr>
+<td>0x2D01</td>
+<td>accessory + adb</td>
+</tr>
+<tr>
+<td rowspan="4">AOAv2</td>
+<td>0x2D02</td>
+<td>audio</td>
+</tr>
+<tr>
+<td>0x2D03</td>
+<td>audio + adb</td>
+</tr>
+<tr>
+<td>0x2D04</td>
+<td>accessory + audio</td>
+</tr>
+<tr>
+<td>0x2D05</td>
+<td>accessory + audio + adb</td>
+</tr>
+</tbody></table>
+
+<p>表1</p>
+
+<h5 id="">尝试开启配件模式</h5>
+
+<p>第一步,发送51控制请求（“Get Protocol”），判断该设备是否支持AOA协议。 支持该协议，则返回一个非0的数字，它代表了该设备支持的版本协议。返回1表示支持AOAv1，返回2表示支持AOAv2。该请求的endpoint为0。</p>
+
+<pre><code>requestType: &nbsp; &nbsp;USB_DIR_IN | USB_TYPE_VENDOR
+request: &nbsp; &nbsp; &nbsp; &nbsp;51
+value: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;0
+index: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;0
+data: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; protocol version number (16 bits little endian sent from the
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; device to the accessory)
+</code></pre>
+
+<p>第二步，如果该设备返回一个正确的协议版本，发送标识字符串(string ID)信息到该设备。 这一信息使该设备找出一个支持该协议的应用程序，如果不存在相应的应用程序，还将会为用户提供一个URL下载。 该请求的endpoint为0。</p>
+
+<pre><code>requestType: &nbsp; &nbsp;USB_DIR_OUT | USB_TYPE_VENDOR
+request: &nbsp; &nbsp; &nbsp; &nbsp;52
+value: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;0
+index: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;string ID
+data &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;zero terminated UTF8 string sent from accessory to device
+</code></pre>
+
+<p>标识字符串(string ID)信息如下</p>
+
+<pre><code>manufacturer name: &nbsp;0
+model name: &nbsp; &nbsp; &nbsp; &nbsp; 1
+description: &nbsp; &nbsp; &nbsp; &nbsp;2
+version: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;3
+URI: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;4
+serial number: &nbsp; &nbsp; &nbsp;5
+</code></pre>
+
+<p>第三步，发送控制请求(control request)，要求设备以配件模式启动。 该请求的endpoint为0。</p>
+
+<pre><code>requestType: &nbsp; &nbsp;USB_DIR_OUT | USB_TYPE_VENDOR
+request: &nbsp; &nbsp; &nbsp; &nbsp;53
+value: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;0
+index: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;0
+data: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; none
+</code></pre>
+
+<p>可以参考Accessory Development Kit 2011 的源代码(<adk-src>/adk1/board/AndroidAccessory/AndroidAccessory.cpp)</adk-src></p>
+
+<pre><code>#define USB_ACCESSORY_VENDOR_ID         0x18D1
+#define USB_ACCESSORY_PRODUCT_ID        0x2D00
+#define USB_ACCESSORY_ADB_PRODUCT_ID    0x2D01
+#define ACCESSORY_STRING_MANUFACTURER   0
+#define ACCESSORY_STRING_MODEL          1
+#define ACCESSORY_STRING_DESCRIPTION    2
+#define ACCESSORY_STRING_VERSION        3
+#define ACCESSORY_STRING_URI            4
+#define ACCESSORY_STRING_SERIAL         5
+#define ACCESSORY_GET_PROTOCOL          51
+#define ACCESSORY_SEND_STRING           52
+#define ACCESSORY_START                 53
+
+int AndroidAccessory::getProtocol(byte addr)
+{
+    uint16_t protocol = -1;
+    usb.ctrlReq(addr, 0,
+                USB_SETUP_DEVICE_TO_HOST |
+                USB_SETUP_TYPE_VENDOR |
+                USB_SETUP_RECIPIENT_DEVICE,
+                ACCESSORY_GET_PROTOCOL, 0, 0, 0, 2, (char *)&amp;protocol);
+    return protocol;
+}
+
+bool AndroidAccessory::switchDevice(byte addr)
+{
+&nbsp; &nbsp; int protocol = getProtocol(addr);
+&nbsp; &nbsp; if (protocol &gt;= 1) {
+&nbsp; &nbsp; &nbsp; &nbsp; Serial.print("device supports protocol 1 or higher\n");
+&nbsp; &nbsp; } else {
+&nbsp; &nbsp; &nbsp; &nbsp; Serial.print("could not read device protocol version\n");
+&nbsp; &nbsp; &nbsp; &nbsp; return false;
+&nbsp; &nbsp; }
+
+&nbsp; &nbsp; sendString(addr, ACCESSORY_STRING_MANUFACTURER, manufacturer);
+&nbsp; &nbsp; sendString(addr, ACCESSORY_STRING_MODEL, model);
+&nbsp; &nbsp; sendString(addr, ACCESSORY_STRING_DESCRIPTION, description);
+&nbsp; &nbsp; sendString(addr, ACCESSORY_STRING_VERSION, version);
+&nbsp; &nbsp; sendString(addr, ACCESSORY_STRING_URI, uri);
+&nbsp; &nbsp; sendString(addr, ACCESSORY_STRING_SERIAL, serial);
+
+&nbsp; &nbsp; usb.ctrlReq(addr, 0, USB_SETUP_HOST_TO_DEVICE | USB_SETUP_TYPE_VENDOR |
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; USB_SETUP_RECIPIENT_DEVICE, ACCESSORY_START, 0, 0, 0, 0, NULL);
+&nbsp; &nbsp; return true;
+}
+</code></pre>
+
+<p>[参考]<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/samples/serial/adkjs/firmware/arduino_libs/AndroidAccessory/AndroidAccessory.cpp">https://github.com/GoogleChrome/chrome-app-samples/blob/master/samples/serial/adkjs/firmware/arduino_libs/AndroidAccessory/AndroidAccessory.cpp</a></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;发出最后的控制请求后，已连接的USB设备应在总线上以配件模式重新识别，并且重新检查连接的设备。 如果该设备已成功切换到配件模式，vendor ID将会变成Google's vendor，而不是设备制造商的ID，product ID变成了&lt;表1&gt;中的一类product ID。 该配件可以建立与设备的通信。</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;任何这些步骤之一失败了，该设备都不能支持Android配件模式，只能等待后面连接的设备了。</p>
+
+<p>==USB device APIs.==</p>
+
+<pre><code>/* Setup Data Constants */
+
+#define USB_SETUP_HOST_TO_DEVICE                0x00    // Device Request bmRequestType transfer direction - host to device transfer
+#define USB_SETUP_DEVICE_TO_HOST                0x80    // Device Request bmRequestType transfer direction - device to host transfer
+#define USB_SETUP_TYPE_STANDARD                 0x00    // Device Request bmRequestType type - standard
+#define USB_SETUP_TYPE_CLASS                    0x20    // Device Request bmRequestType type - class
+#define USB_SETUP_TYPE_VENDOR                   0x40    // Device Request bmRequestType type - vendor
+#define USB_SETUP_RECIPIENT_DEVICE              0x00    // Device Request bmRequestType recipient - device
+#define USB_SETUP_RECIPIENT_INTERFACE           0x01    // Device Request bmRequestType recipient - interface
+#define USB_SETUP_RECIPIENT_ENDPOINT            0x02    // Device Request bmRequestType recipient - endpoint
+#define USB_SETUP_RECIPIENT_OTHER               0x03    // Device Request bmRequestType recipient - other
+</code></pre>
+
+<p>[USB Host Shield 2.0]<a href="http://felis.github.io/USB_Host_Shield_2.0/usb__ch9_8h_source.html">http://felis.github.io/USB_Host_Shield_2.0/usb__ch9_8h_source.html</a></p>
+
+<h5 id="androidappaoav2">不通过Android app连接AOAv2</h5>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;设计一个配件（例如，音频基座（audio dock））使用新的音频和HID支持，但并不需要在Android设备上的应用程序进行通信。 在这种情况下，用户不希望看到提示发现和连接新的可以与应用程序通信的配件的相关对话框。 为了防止这些对话框在设备和配件连接后出现，配件可以不向Android设备发送制造商和型号的名称。 如果这些字符串没有提供给Android设备，在AOA 2.0下，配件可以使用新的音频和HID支持，而不需系统试图找到一个应用程序与配件进行通信。 另外，如果没有提供这些字符串，该设备进入配件模式后，配件的USB接口是不存在在Android设备的USB配置中的。</p>
+
+<h3 id="">参考资料</h3>
+
+<p>[Android Open Accessory (AOA)]<a href="https://source.android.com/devices/accessories/protocol.html">https://source.android.com/devices/accessories/protocol.html</a></p>
+
+<p>[Android Open Accessory Protocol 1.0]<a href="https://source.android.com/devices/accessories/aoa.html">https://source.android.com/devices/accessories/aoa.html</a></p>
+
+<p>[Android Open Accessory Protocol 2.0]<a href="https://source.android.com/devices/accessories/aoa2.html">https://source.android.com/devices/accessories/aoa2.html</a></p>
+
+<p>[Android Open Accessory Protocol(中文译文)]<a href="http://blog.csdn.net/jiezhi2013/article/details/42642297">http://blog.csdn.net/jiezhi2013/article/details/42642297</a></p>
+
+<p>[Android Open Accessory Protocol 2.0(中文译文)]<a href="http://blog.csdn.net/jiezhi2013/article/details/42642371">http://blog.csdn.net/jiezhi2013/article/details/42642371</a></p>
+
+<p>[基于AOA协议实现Android设备的USB通信]<a href="http://blog.csdn.net/tianruxishui/article/details/37903841">http://blog.csdn.net/tianruxishui/article/details/37903841</a></p>
+
+<p>[Linux Cross Reference]<a href="http://lxr.free-electrons.com/source/include/uapi/linux/usb/ch9.h#L50">http://lxr.free-electrons.com/source/include/uapi/linux/usb/ch9.h#L50</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "AOA.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

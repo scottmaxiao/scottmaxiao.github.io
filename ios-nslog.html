@@ -25,9 +25,9 @@
 	</div>
 <div id="md" style="display: none;">
 <!-- markdown -->
-####IOS-NsLog介绍
 在Objective-C中，NSLog相当于C语言中的printf，常用于文字输出。
-<pre><code>
+
+```
 NSLog (@"this is a test");
 //控制台中就会输出this is a test
 
@@ -37,28 +37,103 @@ NSLog (@"string is :%@", string);
 
 NSLog (@"x=%d, y=%d", 10, 20);
 //控制台中就会输出x=10, y=20
-</code></pre>
+
+BOOL start=YES;
+NSLog(@"%@",start?@"YES":@"NO");
+//控制台中就会输出YES
+```
 
 NSLog的占位符格式如下所示：
+
 <table>
-<tr><td>%@</td><td>对象</td></tr>
-<tr><td>%d, %i</td><td>整数, %和d之间可以指定位数。如02：表示整数位数至少为2位。不足则补0</td></tr>
-<tr><td>%f</td><td>浮点数, %.2f：保留两位小数</td></tr>
-<tr><td>%u</td><td>无符号整形</td></tr>
+<tr colspan=2>
+<td nowrap><font size="4" color="red">整型占位符</font></td>
+</tr>
+<tr>
+<td>%d, %i</td>
+<td>整数, %和d之间可以指定位数。如%02d:表示整数位数至少为2位。不足则补0</td>
+</tr>
+<tr>
+<td>%o</td>
+<td>八进制无符号整数, 没有 0 前缀</td>
+</tr>
+<tr>
+<td>%x </td>
+<td>十六进制无符号整数, 没有 0x 前缀</td>
+</tr>
+<tr>
+<td>%u</td>
+<td>十进制无符号整数</td>
+</tr>
+<tr colspan=2>
+<td nowrap><font size="4" color="red">浮点占位符</font></td>
+</tr>
+<tr>
+<td>%f</td>
+<td>以小数形式输出浮点数, 默认 6 位小数,如2.300000</td>
+</tr>
+<tr>
+<td>%e</td>
+<td>以指数形式输出浮点数, 默认 6 位小数,如2.300000e+00</td>
+</tr>
+<tr colspan=2>
+<td nowrap><font size="4" color="red">占位符附加字符</font></td>
+</tr>
+<tr>
+<td>l</td>
+<td>在整型和浮点型占位符之前, %d %o %x %u %f %e %g 代表长整型 和 长字符串</td>
+</tr>
+<tr>
+<td>n(任意整数)</td>
+<td>%8d 代表输出8位数字, 输出总位数</td>
+</tr>
+<tr>
+<td>.n</td>
+<td>浮点数 限制小数位数, %5.2f 表示 5位数字 2位小数, 字符串 截取字符个数</td>
+</tr>
+<tr>
+<td>- </td>
+<td>字符左对齐</td>
+</tr>
+<tr colspan=2>
+<td nowrap><font size="4" color="red">字符占位符</font></td>
+</tr>
+<tr>
+<td>%c</td>
+<td>单个字符输出,`char * oct_c = "Octopus";`</td>
+</tr>
+<tr>
+<td>%s</td>
+<td>输出字符串,NSString *oct_oc = @"Octopus";</td>
+</tr>
+<tr colspan=2>
+<td nowrap><font size="4" color="red">其它形式占位符</font></td>
+</tr>
+<tr>
+<td>%p</td>
+<td>输出十六进制形式的指针地址,已0X为前缀,如0X00</td>
+</tr>
+<tr>
+<td>%@</td>
+<td>输出 Object-C 对象</td>
+</tr>
 </table>
 
 ####输出当前调用的方法名
-<pre><code>
+
+```
 NSLog(@"%s", __FUNCTION__);
-</code></pre>
+```
 
 ####输出应用程序目录的路径
-<pre><code>
+
+```
 NSLog(@"%@",NSHomeDirectory());
-</code></pre>
+```
 
 ####输出CGPoint,CGSize,CGRect的值
-<pre><code>
+
+```
 CGPoint point = CGPointMake(0.0f, 0.0f);
 CGSize size = CGSizeMake(10.0f, 10.0f);
 CGRect rect = CGRectMake(point.x, point.y, size.width, size.height);
@@ -66,17 +141,19 @@ CGRect rect = CGRectMake(point.x, point.y, size.width, size.height);
 NSLog(@"point: %@", NSStringFromCGPoint(point));
 NSLog(@"size: %@", NSStringFromCGSize(size));
 NSLog(@"rect: %@", NSStringFromCGRect(rect));
-</code></pre>
+```
+
+####参考资料
+
+[Object - C 入门 之 数据类型详解]<http://blog.csdn.net/shulianghan/article/details/38544659>
+
 <!-- markdown end -->
 </div>
 <div class="entry" id="main">
 <!-- content -->
-<h4 id="iosnslog">IOS-NsLog介绍</h4>
-
 <p>在Objective-C中，NSLog相当于C语言中的printf，常用于文字输出。</p>
 
-<pre><code>
-NSLog (@"this is a test");
+<pre><code>NSLog (@"this is a test");
 //控制台中就会输出this is a test
 
 NSString *string=@"this is a test";
@@ -85,33 +162,101 @@ NSLog (@"string is :%@", string);
 
 NSLog (@"x=%d, y=%d", 10, 20);
 //控制台中就会输出x=10, y=20
+
+BOOL start=YES;
+NSLog(@"%@",start?@"YES":@"NO");
+//控制台中就会输出YES
 </code></pre>
 
 <p>NSLog的占位符格式如下所示：</p>
 
 <table>
-<tbody><tr><td>%@</td><td>对象</td></tr>
-<tr><td>%d, %i</td><td>整数, %和d之间可以指定位数。如02：表示整数位数至少为2位。不足则补0</td></tr>
-<tr><td>%f</td><td>浮点数, %.2f：保留两位小数</td></tr>
-<tr><td>%u</td><td>无符号整形</td></tr>
+<tbody><tr colspan="2">
+<td nowrap=""><font size="4" color="red">整型占位符</font></td>
+</tr>
+<tr>
+<td>%d, %i</td>
+<td>整数, %和d之间可以指定位数。如%02d:表示整数位数至少为2位。不足则补0</td>
+</tr>
+<tr>
+<td>%o</td>
+<td>八进制无符号整数, 没有 0 前缀</td>
+</tr>
+<tr>
+<td>%x&nbsp;</td>
+<td>十六进制无符号整数, 没有 0x 前缀</td>
+</tr>
+<tr>
+<td>%u</td>
+<td>十进制无符号整数</td>
+</tr>
+<tr colspan="2">
+<td nowrap=""><font size="4" color="red">浮点占位符</font></td>
+</tr>
+<tr>
+<td>%f</td>
+<td>以小数形式输出浮点数, 默认 6 位小数,如2.300000</td>
+</tr>
+<tr>
+<td>%e</td>
+<td>以指数形式输出浮点数, 默认 6 位小数,如2.300000e+00</td>
+</tr>
+<tr colspan="2">
+<td nowrap=""><font size="4" color="red">占位符附加字符</font></td>
+</tr>
+<tr>
+<td>l</td>
+<td>在整型和浮点型占位符之前, %d %o %x %u %f %e %g 代表长整型 和 长字符串</td>
+</tr>
+<tr>
+<td>n(任意整数)</td>
+<td>%8d 代表输出8位数字, 输出总位数</td>
+</tr>
+<tr>
+<td>.n</td>
+<td>浮点数&nbsp;限制小数位数, %5.2f 表示 5位数字 2位小数, 字符串&nbsp;截取字符个数</td>
+</tr>
+<tr>
+<td>- </td>
+<td>字符左对齐</td>
+</tr>
+<tr colspan="2">
+<td nowrap=""><font size="4" color="red">字符占位符</font></td>
+</tr>
+<tr>
+<td>%c</td>
+<td>单个字符输出,`char&nbsp;*&nbsp;oct_c&nbsp;=&nbsp;"Octopus";`</td>
+</tr>
+<tr>
+<td>%s</td>
+<td>输出字符串,NSString&nbsp;*oct_oc&nbsp;=&nbsp;@"Octopus";</td>
+</tr>
+<tr colspan="2">
+<td nowrap=""><font size="4" color="red">其它形式占位符</font></td>
+</tr>
+<tr>
+<td>%p</td>
+<td>输出十六进制形式的指针地址,已0X为前缀,如0X00</td>
+</tr>
+<tr>
+<td>%@</td>
+<td>输出 Object-C 对象</td>
+</tr>
 </tbody></table>
 
 <h4 id="">输出当前调用的方法名</h4>
 
-<pre><code>
-NSLog(@"%s", __FUNCTION__);
+<pre><code>NSLog(@"%s", __FUNCTION__);
 </code></pre>
 
 <h4 id="">输出应用程序目录的路径</h4>
 
-<pre><code>
-NSLog(@"%@",NSHomeDirectory());
+<pre><code>NSLog(@"%@",NSHomeDirectory());
 </code></pre>
 
 <h4 id="cgpointcgsizecgrect">输出CGPoint,CGSize,CGRect的值</h4>
 
-<pre><code>
-CGPoint point = CGPointMake(0.0f, 0.0f);
+<pre><code>CGPoint point = CGPointMake(0.0f, 0.0f);
 CGSize size = CGSizeMake(10.0f, 10.0f);
 CGRect rect = CGRectMake(point.x, point.y, size.width, size.height);
 
@@ -119,6 +264,10 @@ NSLog(@"point: %@", NSStringFromCGPoint(point));
 NSLog(@"size: %@", NSStringFromCGSize(size));
 NSLog(@"rect: %@", NSStringFromCGRect(rect));
 </code></pre>
+
+<h4 id="">参考资料</h4>
+
+<p>[Object - C 入门 之 数据类型详解]<a href="http://blog.csdn.net/shulianghan/article/details/38544659">http://blog.csdn.net/shulianghan/article/details/38544659</a></p>
 <!-- content end -->
 </div>
 <br>

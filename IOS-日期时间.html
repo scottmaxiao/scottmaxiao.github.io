@@ -1,0 +1,580 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+# IOS-日期时间
+
+###NSDate
+
+&nbsp;&nbsp;&nbsp;&nbsp;NSDate类用于保存时间值，同时提供了一些方法来处理一些基于秒级别时差(Time Interval)运算和日期之间的早晚比较等。
+
+**用于创建NSDate实例的类方法有:**
+
+```
++ (id)date;
+返回当前时间
+
++ (id)dateWithTimeIntervalSinceNow:(NSTimeInterval)secs;   
+返回以当前时间为基准，然后过了secs秒的时间
+
++ (id)dateWithTimeIntervalSinceReferenceDate:(NSTimeInterval)secs;
+返回以2001/01/01 GMT为基准，然后过了secs秒的时间
+
++ (id)dateWithTimeIntervalSince1970:(NSTimeInterval)secs;
+返回以1970/01/01 GMT为基准，然后过了secs秒的时间
+
++ (id)distantFuture;
+返回很多年以后的未来的某一天。
+比如你需要一个比现在(Now)晚(大)很长时间的时间值，
+则可以调用该方法。测试返回了4000/12/31 16:00:00
+
++ (id)distantPast;
+返回很多年以前的某一天。
+比如你需要一个比现在(Now)早(小)大很长时间的时间值，
+则可以调用该方法。测试返回了公元前0001/12/31 17:00:00
+
+用于创建NSDate实例的实例方法有
+- (id)addTimeInterval:(NSTimeInterval)secs;
+返回以目前的实例中保存的时间为基准，然后过了secs秒的时间
+
+用于初始化NSDate实例的实例方法有
+- (id)init;
+初始化为当前时间。类似date方法
+
+- (id)initWithTimeIntervalSinceReferenceDate:(NSTimeInterval)secs;
+初始化为以2001/01/01 GMT为基准，然后过了secs秒的时间。
+类似dateWithTimeIntervalSinceReferenceDate:方法
+
+- (id)initWithTimeInterval:(NSTimeInterval)secs sinceDate:(NSDate *)refDate;
+初始化为以refDate为基准，然后过了secs秒的时间
+
+- (id)initWithTimeIntervalSinceNow:(NSTimeInterval)secs;
+初始化为以当前时间为基准，然后过了secs秒的时间
+```
+
+**日期之间比较,可用以下方法:**
+
+```
+- (BOOL)isEqualToDate:(NSDate *)otherDate;
+与otherDate比较，相同返回YES
+
+- (NSDate *)earlierDate:(NSDate *)anotherDate;
+与anotherDate比较，返回较早的那个日期
+
+- (NSDate *)laterDate:(NSDate *)anotherDate;
+与anotherDate比较，返回较晚的那个日期
+
+- (NSComparisonResult)compare:(NSDate *)other;
+该方法用于排序时调用:
+. 当实例保存的日期值与anotherDate相同时返回NSOrderedSame
+. 当实例保存的日期值晚于anotherDate时返回NSOrderedDescending
+. 当实例保存的日期值早于anotherDate时返回NSOrderedAscending
+```
+
+**时间间隔,可用以下方法:**
+
+```
+- (NSTimeInterval)timeIntervalSinceDate:(NSDate *)refDate;
+以refDate为基准时间，返回实例保存的时间与refDate的时间间隔
+
+- (NSTimeInterval)timeIntervalSinceNow;
+以当前时间(Now)为基准时间，返回实例保存的时间与当前时间(Now)的时间间隔
+
+- (NSTimeInterval)timeIntervalSince1970;
+以1970/01/01 GMT为基准时间，返回实例保存的时间与1970/01/01 GMT的时间间隔
+
+- (NSTimeInterval)timeIntervalSinceReferenceDate;
+以2001/01/01 GMT为基准时间，返回实例保存的时间与2001/01/01 GMT的时间间隔
+```
+
+NSDate总结如下: 
+1	NSDate对象用来表示一个具体的时间点。
+2	NSDate是一个类簇，我们所使用的NSDate对象，都是NSDate的私有子类的实体。
+3	NSDate存储的是GMT时间(格林尼治标准时间Greenwich MeanTime)，使用的时候会根据当前应用指定的时区进行时间上的增减，以供计算或显示。
+
+参考:
+[iOS时间那点事--NSDate]<https://my.oschina.net/yongbin45/blog/150114>
+
+#####NSTimeInterval
+&nbsp;&nbsp;&nbsp;&nbsp;NSTimeInterval的单位是秒。可以通过NSTimeInterval计算出时，分，秒。
+
+```
+NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+[formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+NSDate *date1 = [formatter dateFromString:startTime];
+NSDate *date2 = [NSDate date];
+NSTimeInterval aTimer = [date2 timeIntervalSinceDate:date1];
+
+int hour = (int)(aTimer/3600);
+int minute = (int)(aTimer - hour*3600)/60;
+int second = aTimer - hour*3600 - minute*60;
+NSString *dural = [NSString stringWithFormat:@"%d时%d分%d秒", hour, minute,second];
+
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;NSTimeInterval经常使用的场景就是时间戳。对于将NSDate类型转换为时间戳，是 10位的数值，这个数值在转化为 NSDate类型的时候，就会出点儿错，你会发现，每一个时间的 毫秒都是为000的；
+
+&nbsp;&nbsp;&nbsp;&nbsp;是因为 [[NSDate date] timeIntervalSince1970] 虽然可以获取到后面的毫秒、微秒 ，但是在保存的时候省略掉了。如一个时间戳不省略的情况下为 1395399556.862046 ，省略掉后为一般所见 1395399556 。所以想取得毫秒时用获取到的时间戳 *1000 ，想取得微秒时 用取到的时间戳 * 1000 * 1000 。这样就解释了上面的10位数值的问题，当你取毫秒的时候，就会变成13位数值了。
+
+```
+//将时间戳转换为NSDate类型
+-(NSDate *)getDateTimeFromMilliSeconds:(long long) miliSeconds
+{
+	NSTimeInterval tempMilli = miliSeconds;
+	NSTimeInterval seconds = tempMilli/1000.0;//这里的.0一定要加上，不然除下来的数据会被截断导致时间不一致
+	NSLog(@"传入的时间戳=%f",seconds);
+	return [NSDate dateWithTimeIntervalSince1970:seconds];
+}
+
+//将NSDate类型的时间转换为时间戳,从1970/1/1开始
+-(long long)getDateTimeTOMilliSeconds:(NSDate *)datetime
+{
+	NSTimeInterval interval = [datetime timeIntervalSince1970];
+	NSLog(@"转换的时间戳=%f",interval);
+	long long totalMilliseconds = interval*1000 ;
+	NSLog(@"totalMilliseconds=%llu",totalMilliseconds);
+	return totalMilliseconds;
+}
+```
+
+参考：
+[ios NSTimeInterval获取时间间隔]<http://blog.csdn.net/so_much/article/details/8979186>
+[iOS 将时间NSDate转化为毫秒时间戳]<http://longlinyisheng.lofter.com/post/3ca1cc_59c458a>
+
+
+#####NSDateFormatter
+
+&nbsp;&nbsp;&nbsp;&nbsp;NSDateFormatter是NSFormatter的子类，另，NSFormatter的用途是“将数据在字符串与特定类型的对象之间转换”，目前NSFormatter只有两个子类NSNumberFormatter和NSDateFormatter。
+
+```
+// NSDate --> NSString
+NSDate *now = [NSDate date];
+NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+	// yyyy 年
+	// MM 月
+	// dd 日
+	// HH 24小时  hh 12小时
+	// mm 分钟
+	// ss 秒钟
+	// Z 时区
+formatter.dateFormat = @"yyyy年MM月dd日 HH时mm分ss秒 Z";
+//formatter.dateFormat = @"MM-dd-yyyy HH-mm-ss";
+NSString *res = [formatter stringFromDate:now];
+NSLog(@"%@", res);
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;尽管NSDateFormatter提供了许多已定义好的时间格式，但是开发中开发人员更加喜欢自定义时间格式。
+
+```
+NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];
+[dateFormatter setDateFormat:@"'公元前/后:'G  '年份:'u'='yyyy'='yy '季度:'q'='qqq'='qqqq '月份:'M'='MMM'='MMMM '今天是今年第几周:'w '今天是本月第几周:'W  '今天是今天第几天:'D '今天是本月第几天:'d '星期:'c'='ccc'='cccc '上午/下午:'a '小时:'h'='H '分钟:'m '秒:'s '毫秒:'SSS  '这一天已过多少毫秒:'A  '时区名称:'zzzz'='vvvv '时区编号:'Z "];
+NSLog(@"%@", [dateFormatter stringFromDate:[NSDate date]]);
+```
+
+参考:
+[iOS时间那点事--NSDateFormatter]<https://my.oschina.net/yongbin45/blog/150667>
+
+#####NSTimeZone
+
+&nbsp;&nbsp;&nbsp;&nbsp;时区是一个地理名字，是为了克服各个地区或国家之间在使用时间上的混乱。
+
+基本概念：
+
+* GMT 0:00 格林威治标准时间; UTC +00:00 校准的全球时间; CCD +08:00 中国标准时间 [来自百度百科]
+
+* 夏时制，英文"DaylightSavingTime"。夏季时将时区内的时间提前（一般为1小时），以节省资源，提高效率。使用夏时制期间，当前时区相对于GMT的时间偏移量会发生变化。在某些应用中可能需要考虑。
+
+* 任何时区都以GMT为基准，即，任何NSTimeZone对象所代表的时区都是相对于GMT的，这里的相对性是NSTimeZone中最重要的属性，我们称之为当前时区相对于GMT的偏移量。一旦知道了一个偏移量，便可以确定一个时区。在iOS中，偏移量是以"秒"为单位的。
+
+* NSTimeZone是一个类簇，我们所使用的任何NSTimeZone对象都是NSTimeZone的私有子类。
+iOS中的时间类NSDate中存储的时间，都是相对于GMT的，我们使用NSDate时，会根据App的时区设置返回与时区对应的数据。
+
+* iOS系统中的/usr/share/zoneinfo/目录中保存了所有的可根据 地理位置名称 或 时区别名 得到的时区信息。时区别名都是与具体的地理位置一一对应的。(已越狱的童鞋请看)
+
+* iOS中的时区表示方法：GMT+0800 GMT-0800。(+：东区; -：西区; 08：小时数; 00：分钟数)。 GMT+0830就是指比GMT早8小时外加30分钟的时区。
+
+```
+NSDate *date = [NSDate date];
+NSLog(@"当前时间 date = %@",date);
+NSTimeZone *zone = [NSTimeZone systemTimeZone];
+NSInteger interval = [zone secondsFromGMTForDate: date];
+NSDate *localDate = [date  dateByAddingTimeInterval: interval];
+NSLog(@"正确当前时间 localDate = %@",localDate);
+```
+
+参考:
+[iOS时间那点事--NSTimeZone]<https://my.oschina.net/yongbin45/blog/151376>
+[ios NSDate NSTring long 时间戳与字符串转换]<http://longquan.iteye.com/blog/1873268>
+
+
+###NSCalendar
+
+* 历法能使人类确定每一日再无限的时间中的确切位置并记录历史。
+* 日历，历法，一般历法都是遵循固定的规则的，具有周期性。日历都是已知的或可预测的。
+* 任何一种具体的历法，首先必须明确规定起始点，即开始计算的年代，这叫“纪元”；以及规定一年的开端，这叫“岁首”。此外，还要规定每年所含的日数，如何划分月份，每月有多少天等等。
+* NSCalendar对世界上现存的常用的历法进行了封装，既提供了不同历法的时间信息，又支持日历的计算。
+* NSDateFomatter表示的时间默认以公历（即阳历）为参考，可以通过设置calendar属性变量获得特定历法下的时间表示。
+* NSDate是独立与任何历法的，它只是时间相对于某个时间点的时间差；NSDate是进行日历计算的基础。
+* NSDateComponents将时间表示成适合人类阅读和使用的方式，通过NSDateComponents可以快速而简单地获取某个时间点对应的“年”，“月”，“日”，“时”，“分”，“秒”，“周”等信息。当然一旦涉及了年月日时分秒就要和某个历法绑定，因此NSDateComponents必须和NSCalendar一起使用，默认为公历。
+* NSDateComponents除了像上面说的表示一个时间点外，还可以表示时间段，例如：两周，三个月，20年，7天，10分钟，50秒等等。时间段用于日历的计算，例如：获取当前历法下，三个月前的某个时间点。
+* 可以说，要获取某个时间点在某个历法下的表示，需要NSDateComponents；要计算当前时间点在某个历法下对应的一个时间段前或后的时间点，需要NSDateComponents。
+* NSDateComponents返回的day, week, weekday, month, year这一类数据都是从1开始的。因为日历是给人看的，不是给计算机看的，从0开始就是个错误。
+
+```
+NSDate *createDate = [self getDateTimeFromMilliSeconds:1475128625025];
+	
+NSCalendar *cal = [NSCalendar currentCalendar];
+NSString *key = NULL;
+if ([cal isDateInToday: createDate]){
+	key = @"今天";
+}
+	
+if (!key && [cal isDateInYesterday: createDate]){
+	key = @"昨天";
+}
+	
+if (!key && [cal isDateInWeekend: createDate]){
+	key = @"过去七天";
+}
+	
+if (!key)	key = @"最近一个月";
+	
+NSLog(@"createDate=%@,key=%@",createDate, key);
+```
+
+参考：
+
+[NSCalendar Additions]<http://nshipster.cn/nscalendar-additions/>
+[NSCalendar + NSDateComponents]<https://my.oschina.net/yongbin45/blog/156181>
+
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h1 id="ios">IOS-日期时间</h1>
+
+<h3 id="nsdate">NSDate</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;NSDate类用于保存时间值，同时提供了一些方法来处理一些基于秒级别时差(Time Interval)运算和日期之间的早晚比较等。</p>
+
+<p><strong>用于创建NSDate实例的类方法有:</strong></p>
+
+<pre><code>+ (id)date;
+返回当前时间
+
++ (id)dateWithTimeIntervalSinceNow:(NSTimeInterval)secs;&nbsp;&nbsp; 
+返回以当前时间为基准，然后过了secs秒的时间
+
++ (id)dateWithTimeIntervalSinceReferenceDate:(NSTimeInterval)secs;
+返回以2001/01/01 GMT为基准，然后过了secs秒的时间
+
++ (id)dateWithTimeIntervalSince1970:(NSTimeInterval)secs;
+返回以1970/01/01 GMT为基准，然后过了secs秒的时间
+
++ (id)distantFuture;
+返回很多年以后的未来的某一天。
+比如你需要一个比现在(Now)晚(大)很长时间的时间值，
+则可以调用该方法。测试返回了4000/12/31 16:00:00
+
++ (id)distantPast;
+返回很多年以前的某一天。
+比如你需要一个比现在(Now)早(小)大很长时间的时间值，
+则可以调用该方法。测试返回了公元前0001/12/31 17:00:00
+
+用于创建NSDate实例的实例方法有
+- (id)addTimeInterval:(NSTimeInterval)secs;
+返回以目前的实例中保存的时间为基准，然后过了secs秒的时间
+
+用于初始化NSDate实例的实例方法有
+- (id)init;
+初始化为当前时间。类似date方法
+
+- (id)initWithTimeIntervalSinceReferenceDate:(NSTimeInterval)secs;
+初始化为以2001/01/01 GMT为基准，然后过了secs秒的时间。
+类似dateWithTimeIntervalSinceReferenceDate:方法
+
+- (id)initWithTimeInterval:(NSTimeInterval)secs sinceDate:(NSDate *)refDate;
+初始化为以refDate为基准，然后过了secs秒的时间
+
+- (id)initWithTimeIntervalSinceNow:(NSTimeInterval)secs;
+初始化为以当前时间为基准，然后过了secs秒的时间
+</code></pre>
+
+<p><strong>日期之间比较,可用以下方法:</strong></p>
+
+<pre><code>- (BOOL)isEqualToDate:(NSDate *)otherDate;
+与otherDate比较，相同返回YES
+
+- (NSDate *)earlierDate:(NSDate *)anotherDate;
+与anotherDate比较，返回较早的那个日期
+
+- (NSDate *)laterDate:(NSDate *)anotherDate;
+与anotherDate比较，返回较晚的那个日期
+
+- (NSComparisonResult)compare:(NSDate *)other;
+该方法用于排序时调用:
+. 当实例保存的日期值与anotherDate相同时返回NSOrderedSame
+. 当实例保存的日期值晚于anotherDate时返回NSOrderedDescending
+. 当实例保存的日期值早于anotherDate时返回NSOrderedAscending
+</code></pre>
+
+<p><strong>时间间隔,可用以下方法:</strong></p>
+
+<pre><code>- (NSTimeInterval)timeIntervalSinceDate:(NSDate *)refDate;
+以refDate为基准时间，返回实例保存的时间与refDate的时间间隔
+
+- (NSTimeInterval)timeIntervalSinceNow;
+以当前时间(Now)为基准时间，返回实例保存的时间与当前时间(Now)的时间间隔
+
+- (NSTimeInterval)timeIntervalSince1970;
+以1970/01/01 GMT为基准时间，返回实例保存的时间与1970/01/01 GMT的时间间隔
+
+- (NSTimeInterval)timeIntervalSinceReferenceDate;
+以2001/01/01 GMT为基准时间，返回实例保存的时间与2001/01/01 GMT的时间间隔
+</code></pre>
+
+<p>NSDate总结如下: 
+1    NSDate对象用来表示一个具体的时间点。
+2    NSDate是一个类簇，我们所使用的NSDate对象，都是NSDate的私有子类的实体。
+3    NSDate存储的是GMT时间(格林尼治标准时间Greenwich MeanTime)，使用的时候会根据当前应用指定的时区进行时间上的增减，以供计算或显示。</p>
+
+<p>参考:
+[iOS时间那点事--NSDate]<a href="https://my.oschina.net/yongbin45/blog/150114">https://my.oschina.net/yongbin45/blog/150114</a></p>
+
+<h5 id="nstimeinterval">NSTimeInterval</h5>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;NSTimeInterval的单位是秒。可以通过NSTimeInterval计算出时，分，秒。</p>
+
+<pre><code>NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+[formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+NSDate *date1 = [formatter dateFromString:startTime];
+NSDate *date2 = [NSDate date];
+NSTimeInterval aTimer = [date2 timeIntervalSinceDate:date1];
+
+int hour = (int)(aTimer/3600);
+int minute = (int)(aTimer - hour*3600)/60;
+int second = aTimer - hour*3600 - minute*60;
+NSString *dural = [NSString stringWithFormat:@"%d时%d分%d秒", hour, minute,second];
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;NSTimeInterval经常使用的场景就是时间戳。对于将NSDate类型转换为时间戳，是 10位的数值，这个数值在转化为 NSDate类型的时候，就会出点儿错，你会发现，每一个时间的 毫秒都是为000的；</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;是因为 [[NSDate date] timeIntervalSince1970] 虽然可以获取到后面的毫秒、微秒 ，但是在保存的时候省略掉了。如一个时间戳不省略的情况下为 1395399556.862046 ，省略掉后为一般所见 1395399556 。所以想取得毫秒时用获取到的时间戳 *1000 ，想取得微秒时 用取到的时间戳 * 1000 * 1000 。这样就解释了上面的10位数值的问题，当你取毫秒的时候，就会变成13位数值了。</p>
+
+<pre><code>//将时间戳转换为NSDate类型
+-(NSDate *)getDateTimeFromMilliSeconds:(long long) miliSeconds
+{
+    NSTimeInterval tempMilli = miliSeconds;
+    NSTimeInterval seconds = tempMilli/1000.0;//这里的.0一定要加上，不然除下来的数据会被截断导致时间不一致
+    NSLog(@"传入的时间戳=%f",seconds);
+    return [NSDate dateWithTimeIntervalSince1970:seconds];
+}
+
+//将NSDate类型的时间转换为时间戳,从1970/1/1开始
+-(long long)getDateTimeTOMilliSeconds:(NSDate *)datetime
+{
+    NSTimeInterval interval = [datetime timeIntervalSince1970];
+    NSLog(@"转换的时间戳=%f",interval);
+    long long totalMilliseconds = interval*1000 ;
+    NSLog(@"totalMilliseconds=%llu",totalMilliseconds);
+    return totalMilliseconds;
+}
+</code></pre>
+
+<p>参考：
+[ios NSTimeInterval获取时间间隔]<a href="http://blog.csdn.net/so_much/article/details/8979186">http://blog.csdn.net/so_much/article/details/8979186</a>
+[iOS 将时间NSDate转化为毫秒时间戳]<a href="http://longlinyisheng.lofter.com/post/3ca1cc_59c458a">http://longlinyisheng.lofter.com/post/3ca1cc_59c458a</a></p>
+
+<h5 id="nsdateformatter">NSDateFormatter</h5>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;NSDateFormatter是NSFormatter的子类，另，NSFormatter的用途是“将数据在字符串与特定类型的对象之间转换”，目前NSFormatter只有两个子类NSNumberFormatter和NSDateFormatter。</p>
+
+<pre><code>// NSDate --&gt; NSString
+NSDate *now = [NSDate date];
+NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    // yyyy 年
+    // MM 月
+    // dd 日
+    // HH 24小时  hh 12小时
+    // mm 分钟
+    // ss 秒钟
+    // Z 时区
+formatter.dateFormat = @"yyyy年MM月dd日 HH时mm分ss秒 Z";
+//formatter.dateFormat = @"MM-dd-yyyy HH-mm-ss";
+NSString *res = [formatter stringFromDate:now];
+NSLog(@"%@", res);
+</code></pre>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;尽管NSDateFormatter提供了许多已定义好的时间格式，但是开发中开发人员更加喜欢自定义时间格式。</p>
+
+<pre><code>NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];
+[dateFormatter setDateFormat:@"'公元前/后:'G  '年份:'u'='yyyy'='yy '季度:'q'='qqq'='qqqq '月份:'M'='MMM'='MMMM '今天是今年第几周:'w '今天是本月第几周:'W  '今天是今天第几天:'D '今天是本月第几天:'d '星期:'c'='ccc'='cccc '上午/下午:'a '小时:'h'='H '分钟:'m '秒:'s '毫秒:'SSS  '这一天已过多少毫秒:'A  '时区名称:'zzzz'='vvvv '时区编号:'Z "];
+NSLog(@"%@", [dateFormatter stringFromDate:[NSDate date]]);
+</code></pre>
+
+<p>参考:
+[iOS时间那点事--NSDateFormatter]<a href="https://my.oschina.net/yongbin45/blog/150667">https://my.oschina.net/yongbin45/blog/150667</a></p>
+
+<h5 id="nstimezone">NSTimeZone</h5>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;时区是一个地理名字，是为了克服各个地区或国家之间在使用时间上的混乱。</p>
+
+<p>基本概念：</p>
+
+<ul>
+<li><p>GMT 0:00 格林威治标准时间; UTC +00:00 校准的全球时间; CCD +08:00 中国标准时间 [来自百度百科]</p></li>
+<li><p>夏时制，英文"DaylightSavingTime"。夏季时将时区内的时间提前（一般为1小时），以节省资源，提高效率。使用夏时制期间，当前时区相对于GMT的时间偏移量会发生变化。在某些应用中可能需要考虑。</p></li>
+<li><p>任何时区都以GMT为基准，即，任何NSTimeZone对象所代表的时区都是相对于GMT的，这里的相对性是NSTimeZone中最重要的属性，我们称之为当前时区相对于GMT的偏移量。一旦知道了一个偏移量，便可以确定一个时区。在iOS中，偏移量是以"秒"为单位的。</p></li>
+<li><p>NSTimeZone是一个类簇，我们所使用的任何NSTimeZone对象都是NSTimeZone的私有子类。
+iOS中的时间类NSDate中存储的时间，都是相对于GMT的，我们使用NSDate时，会根据App的时区设置返回与时区对应的数据。</p></li>
+<li><p>iOS系统中的/usr/share/zoneinfo/目录中保存了所有的可根据 地理位置名称 或 时区别名 得到的时区信息。时区别名都是与具体的地理位置一一对应的。(已越狱的童鞋请看)</p></li>
+<li><p>iOS中的时区表示方法：GMT+0800 GMT-0800。(+：东区; -：西区; 08：小时数; 00：分钟数)。 GMT+0830就是指比GMT早8小时外加30分钟的时区。</p></li>
+</ul>
+
+<pre><code>NSDate *date = [NSDate date];
+NSLog(@"当前时间 date = %@",date);
+NSTimeZone *zone = [NSTimeZone systemTimeZone];
+NSInteger interval = [zone secondsFromGMTForDate: date];
+NSDate *localDate = [date  dateByAddingTimeInterval: interval];
+NSLog(@"正确当前时间 localDate = %@",localDate);
+</code></pre>
+
+<p>参考:
+[iOS时间那点事--NSTimeZone]<a href="https://my.oschina.net/yongbin45/blog/151376">https://my.oschina.net/yongbin45/blog/151376</a>
+[ios NSDate NSTring long 时间戳与字符串转换]<a href="http://longquan.iteye.com/blog/1873268">http://longquan.iteye.com/blog/1873268</a></p>
+
+<h3 id="nscalendar">NSCalendar</h3>
+
+<ul>
+<li>历法能使人类确定每一日再无限的时间中的确切位置并记录历史。</li>
+<li>日历，历法，一般历法都是遵循固定的规则的，具有周期性。日历都是已知的或可预测的。</li>
+<li>任何一种具体的历法，首先必须明确规定起始点，即开始计算的年代，这叫“纪元”；以及规定一年的开端，这叫“岁首”。此外，还要规定每年所含的日数，如何划分月份，每月有多少天等等。</li>
+<li>NSCalendar对世界上现存的常用的历法进行了封装，既提供了不同历法的时间信息，又支持日历的计算。</li>
+<li>NSDateFomatter表示的时间默认以公历（即阳历）为参考，可以通过设置calendar属性变量获得特定历法下的时间表示。</li>
+<li>NSDate是独立与任何历法的，它只是时间相对于某个时间点的时间差；NSDate是进行日历计算的基础。</li>
+<li>NSDateComponents将时间表示成适合人类阅读和使用的方式，通过NSDateComponents可以快速而简单地获取某个时间点对应的“年”，“月”，“日”，“时”，“分”，“秒”，“周”等信息。当然一旦涉及了年月日时分秒就要和某个历法绑定，因此NSDateComponents必须和NSCalendar一起使用，默认为公历。</li>
+<li>NSDateComponents除了像上面说的表示一个时间点外，还可以表示时间段，例如：两周，三个月，20年，7天，10分钟，50秒等等。时间段用于日历的计算，例如：获取当前历法下，三个月前的某个时间点。</li>
+<li>可以说，要获取某个时间点在某个历法下的表示，需要NSDateComponents；要计算当前时间点在某个历法下对应的一个时间段前或后的时间点，需要NSDateComponents。</li>
+<li>NSDateComponents返回的day, week, weekday, month, year这一类数据都是从1开始的。因为日历是给人看的，不是给计算机看的，从0开始就是个错误。</li>
+</ul>
+
+<pre><code>NSDate *createDate = [self getDateTimeFromMilliSeconds:1475128625025];
+
+NSCalendar *cal = [NSCalendar currentCalendar];
+NSString *key = NULL;
+if ([cal isDateInToday: createDate]){
+    key = @"今天";
+}
+
+if (!key &amp;&amp; [cal isDateInYesterday: createDate]){
+    key = @"昨天";
+}
+
+if (!key &amp;&amp; [cal isDateInWeekend: createDate]){
+    key = @"过去七天";
+}
+
+if (!key)    key = @"最近一个月";
+
+NSLog(@"createDate=%@,key=%@",createDate, key);
+</code></pre>
+
+<p>参考：</p>
+
+<p>[NSCalendar Additions]<a href="http://nshipster.cn/nscalendar-additions/">http://nshipster.cn/nscalendar-additions/</a>
+[NSCalendar + NSDateComponents]<a href="https://my.oschina.net/yongbin45/blog/156181">https://my.oschina.net/yongbin45/blog/156181</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "IOS-日期时间.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

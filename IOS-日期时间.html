@@ -25,8 +25,6 @@
 	</div>
 <div id="md" style="display: none;">
 <!-- markdown -->
-# IOS-日期时间
-
 ###NSDate
 
 &nbsp;&nbsp;&nbsp;&nbsp;NSDate类用于保存时间值，同时提供了一些方法来处理一些基于秒级别时差(Time Interval)运算和日期之间的早晚比较等。
@@ -118,6 +116,8 @@ NSDate总结如下:
 参考:
 [iOS时间那点事--NSDate]<https://my.oschina.net/yongbin45/blog/150114>
 
+----
+
 #####NSTimeInterval
 &nbsp;&nbsp;&nbsp;&nbsp;NSTimeInterval的单位是秒。可以通过NSTimeInterval计算出时，分，秒。
 
@@ -164,6 +164,7 @@ NSString *dural = [NSString stringWithFormat:@"%d时%d分%d秒", hour, minute,se
 [ios NSTimeInterval获取时间间隔]<http://blog.csdn.net/so_much/article/details/8979186>
 [iOS 将时间NSDate转化为毫秒时间戳]<http://longlinyisheng.lofter.com/post/3ca1cc_59c458a>
 
+----
 
 #####NSDateFormatter
 
@@ -197,6 +198,8 @@ NSLog(@"%@", [dateFormatter stringFromDate:[NSDate date]]);
 参考:
 [iOS时间那点事--NSDateFormatter]<https://my.oschina.net/yongbin45/blog/150667>
 
+----
+
 #####NSTimeZone
 
 &nbsp;&nbsp;&nbsp;&nbsp;时区是一个地理名字，是为了克服各个地区或国家之间在使用时间上的混乱。
@@ -229,6 +232,7 @@ NSLog(@"正确当前时间 localDate = %@",localDate);
 [iOS时间那点事--NSTimeZone]<https://my.oschina.net/yongbin45/blog/151376>
 [ios NSDate NSTring long 时间戳与字符串转换]<http://longquan.iteye.com/blog/1873268>
 
+----
 
 ###NSCalendar
 
@@ -275,8 +279,6 @@ NSLog(@"createDate=%@,key=%@",createDate, key);
 </div>
 <div class="entry" id="main">
 <!-- content -->
-<h1 id="ios">IOS-日期时间</h1>
-
 <h3 id="nsdate">NSDate</h3>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;NSDate类用于保存时间值，同时提供了一些方法来处理一些基于秒级别时差(Time Interval)运算和日期之间的早晚比较等。</p>
@@ -365,6 +367,8 @@ NSLog(@"createDate=%@,key=%@",createDate, key);
 <p>参考:
 [iOS时间那点事--NSDate]<a href="https://my.oschina.net/yongbin45/blog/150114">https://my.oschina.net/yongbin45/blog/150114</a></p>
 
+<hr>
+
 <h5 id="nstimeinterval">NSTimeInterval</h5>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;NSTimeInterval的单位是秒。可以通过NSTimeInterval计算出时，分，秒。</p>
@@ -409,6 +413,8 @@ NSString *dural = [NSString stringWithFormat:@"%d时%d分%d秒", hour, minute,se
 [ios NSTimeInterval获取时间间隔]<a href="http://blog.csdn.net/so_much/article/details/8979186">http://blog.csdn.net/so_much/article/details/8979186</a>
 [iOS 将时间NSDate转化为毫秒时间戳]<a href="http://longlinyisheng.lofter.com/post/3ca1cc_59c458a">http://longlinyisheng.lofter.com/post/3ca1cc_59c458a</a></p>
 
+<hr>
+
 <h5 id="nsdateformatter">NSDateFormatter</h5>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;NSDateFormatter是NSFormatter的子类，另，NSFormatter的用途是“将数据在字符串与特定类型的对象之间转换”，目前NSFormatter只有两个子类NSNumberFormatter和NSDateFormatter。</p>
@@ -439,6 +445,8 @@ NSLog(@"%@", [dateFormatter stringFromDate:[NSDate date]]);
 <p>参考:
 [iOS时间那点事--NSDateFormatter]<a href="https://my.oschina.net/yongbin45/blog/150667">https://my.oschina.net/yongbin45/blog/150667</a></p>
 
+<hr>
+
 <h5 id="nstimezone">NSTimeZone</h5>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;时区是一个地理名字，是为了克服各个地区或国家之间在使用时间上的混乱。</p>
@@ -466,6 +474,8 @@ NSLog(@"正确当前时间 localDate = %@",localDate);
 <p>参考:
 [iOS时间那点事--NSTimeZone]<a href="https://my.oschina.net/yongbin45/blog/151376">https://my.oschina.net/yongbin45/blog/151376</a>
 [ios NSDate NSTring long 时间戳与字符串转换]<a href="http://longquan.iteye.com/blog/1873268">http://longquan.iteye.com/blog/1873268</a></p>
+
+<hr>
 
 <h3 id="nscalendar">NSCalendar</h3>
 

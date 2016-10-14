@@ -1,0 +1,391 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+在Objective-C中，NSLog相当于C语言中的printf，常用于文字输出。
+
+```
+NSLog (@"this is a test");
+//控制台中就会输出this is a test
+
+NSString *string=@"this is a test";
+NSLog (@"string is :%@", string);
+//控制台中就会输出this is a test
+
+NSLog (@"x=%d, y=%d", 10, 20);
+//控制台中就会输出x=10, y=20
+
+BOOL start=YES;
+NSLog(@"%@",start?@"YES":@"NO");
+//控制台中就会输出YES
+```
+
+NSLog的占位符格式如下所示：
+
+<table>
+<tr colspan=2>
+<td nowrap><font size="4" color="red">整型占位符</font></td>
+</tr>
+<tr>
+<td>%d,%i</td>
+<td>整数, %和d之间可以指定位数。如%02d:表示整数位数至少为2位。不足则补0</td>
+</tr>
+<tr>
+<td>%o</td>
+<td>八进制无符号整数, 没有 0 前缀</td>
+</tr>
+<tr>
+<td>%x </td>
+<td>十六进制无符号整数, 没有 0x 前缀</td>
+</tr>
+<tr>
+<td>%u</td>
+<td>十进制无符号整数</td>
+</tr>
+<tr colspan=2>
+<td nowrap><font size="4" color="red">浮点占位符</font></td>
+</tr>
+<tr>
+<td>%f</td>
+<td>以小数形式输出浮点数, 默认 6 位小数,如2.300000</td>
+</tr>
+<tr>
+<td>%e</td>
+<td>以指数形式(科学计数法)输出浮点数, 默认 6 位小数,如2.300000e+00</td>
+</tr>
+<tr colspan=2>
+<td nowrap><font size="4" color="red">占位符附加字符</font></td>
+</tr>
+<tr>
+<td>l</td>
+<td>在整型和浮点型占位符之前, %d %o %x %u %f %e %g 代表长整型 和 长字符串</td>
+</tr>
+<tr>
+<td>n(任意整数)</td>
+<td>%8d 代表输出8位数字, 输出总位数</td>
+</tr>
+<tr>
+<td>.n</td>
+<td>浮点数 限制小数位数, %5.2f 表示 5位数字 2位小数, 字符串 截取字符个数</td>
+</tr>
+<tr>
+<td>- </td>
+<td>字符左对齐</td>
+</tr>
+<tr colspan=2>
+<td nowrap><font size="4" color="red">字符占位符</font></td>
+</tr>
+<tr>
+<td>%c</td>
+<td>单个字符输出,char * oct_c = "Octopus";</td>
+</tr>
+<tr>
+<td>%s</td>
+<td>输出字符串,NSString *oct_oc = @"Octopus";</td>
+</tr>
+<tr colspan=2>
+<td nowrap><font size="4" color="red">其它形式占位符</font></td>
+</tr>
+<tr>
+<td>%p</td>
+<td>输出十六进制形式的指针地址,已0X为前缀,如0X00</td>
+</tr>
+<tr>
+<td>%@</td>
+<td>输出 Object-C 对象</td>
+</tr>
+</table>
+
+####输出当前调用的方法名
+
+```
+NSLog(@"%s", __FUNCTION__);
+```
+
+####输出应用程序目录的路径
+
+```
+NSLog(@"%@",NSHomeDirectory());
+```
+
+####输出Point,Size,Rect等值
+
+```
+<CoreGraphics/CGGeometry.h>
+CGPoint point = CGPointMake(0.0f, 0.0f);
+CGSize size = CGSizeMake(10.0f, 10.0f);
+CGRect rect = CGRectMake(point.x, point.y, size.width, size.height);
+
+NSLog(@"point: %@", NSStringFromCGPoint(point));
+NSLog(@"size: %@", NSStringFromCGSize(size));
+NSLog(@"rect: %@", NSStringFromCGRect(rect));
+
+<Foundation/NSGeometry.h>
+NSPoint point = NSMakePoint(0.0f, 0.0f);
+NSSize size = NSMakeSize(10.0f, 10.0f);
+NSRect rect = NSMakeRect(point.x, point.y, size.width, size.height);
+NSRange range = NSMakeRange(0, 10);
+	
+NSLog(@"point: %@", NSStringFromPoint(point));
+NSLog(@"size: %@", NSStringFromSize(size));
+NSLog(@"rect: %@", NSStringFromRect(rect));
+NSLog(@"range: %@", NSStringFromRange(range));
+NSLog(@"Class: %@", NSStringFromClass(self.class));
+
+```
+
+####Dictionary
+```
+NSMutableDictionary *dict = [[ NSMutableDictionary alloc ] init ];
+//add values
+NSLog ( @"log dict =%@" , [dict description ]);
+```
+####参考资料
+
+[Object - C 入门 之 数据类型详解]<http://blog.csdn.net/shulianghan/article/details/38544659>
+
+
+
+http://blog.csdn.net/jiajiayouba/article/details/42973293
+
+https://my.oschina.net/sayonala/blog/215910
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<p>在Objective-C中，NSLog相当于C语言中的printf，常用于文字输出。</p>
+
+<pre><code>NSLog (@"this is a test");
+//控制台中就会输出this is a test
+
+NSString *string=@"this is a test";
+NSLog (@"string is :%@", string);
+//控制台中就会输出this is a test
+
+NSLog (@"x=%d, y=%d", 10, 20);
+//控制台中就会输出x=10, y=20
+
+BOOL start=YES;
+NSLog(@"%@",start?@"YES":@"NO");
+//控制台中就会输出YES
+</code></pre>
+
+<p>NSLog的占位符格式如下所示：</p>
+
+<table>
+<tbody><tr colspan="2">
+<td nowrap=""><font size="4" color="red">整型占位符</font></td>
+</tr>
+<tr>
+<td>%d,%i</td>
+<td>整数, %和d之间可以指定位数。如%02d:表示整数位数至少为2位。不足则补0</td>
+</tr>
+<tr>
+<td>%o</td>
+<td>八进制无符号整数, 没有 0 前缀</td>
+</tr>
+<tr>
+<td>%x&nbsp;</td>
+<td>十六进制无符号整数, 没有 0x 前缀</td>
+</tr>
+<tr>
+<td>%u</td>
+<td>十进制无符号整数</td>
+</tr>
+<tr colspan="2">
+<td nowrap=""><font size="4" color="red">浮点占位符</font></td>
+</tr>
+<tr>
+<td>%f</td>
+<td>以小数形式输出浮点数, 默认 6 位小数,如2.300000</td>
+</tr>
+<tr>
+<td>%e</td>
+<td>以指数形式(科学计数法)输出浮点数, 默认 6 位小数,如2.300000e+00</td>
+</tr>
+<tr colspan="2">
+<td nowrap=""><font size="4" color="red">占位符附加字符</font></td>
+</tr>
+<tr>
+<td>l</td>
+<td>在整型和浮点型占位符之前, %d %o %x %u %f %e %g 代表长整型 和 长字符串</td>
+</tr>
+<tr>
+<td>n(任意整数)</td>
+<td>%8d 代表输出8位数字, 输出总位数</td>
+</tr>
+<tr>
+<td>.n</td>
+<td>浮点数&nbsp;限制小数位数, %5.2f 表示 5位数字 2位小数, 字符串&nbsp;截取字符个数</td>
+</tr>
+<tr>
+<td>- </td>
+<td>字符左对齐</td>
+</tr>
+<tr colspan="2">
+<td nowrap=""><font size="4" color="red">字符占位符</font></td>
+</tr>
+<tr>
+<td>%c</td>
+<td>单个字符输出,char&nbsp;*&nbsp;oct_c&nbsp;=&nbsp;"Octopus";</td>
+</tr>
+<tr>
+<td>%s</td>
+<td>输出字符串,NSString&nbsp;*oct_oc&nbsp;=&nbsp;@"Octopus";</td>
+</tr>
+<tr colspan="2">
+<td nowrap=""><font size="4" color="red">其它形式占位符</font></td>
+</tr>
+<tr>
+<td>%p</td>
+<td>输出十六进制形式的指针地址,已0X为前缀,如0X00</td>
+</tr>
+<tr>
+<td>%@</td>
+<td>输出 Object-C 对象</td>
+</tr>
+</tbody></table>
+
+<h4 id="">输出当前调用的方法名</h4>
+
+<pre><code>NSLog(@"%s", __FUNCTION__);
+</code></pre>
+
+<h4 id="">输出应用程序目录的路径</h4>
+
+<pre><code>NSLog(@"%@",NSHomeDirectory());
+</code></pre>
+
+<h4 id="pointsizerect">输出Point,Size,Rect等值</h4>
+
+<pre><code>&lt;CoreGraphics/CGGeometry.h&gt;
+CGPoint point = CGPointMake(0.0f, 0.0f);
+CGSize size = CGSizeMake(10.0f, 10.0f);
+CGRect rect = CGRectMake(point.x, point.y, size.width, size.height);
+
+NSLog(@"point: %@", NSStringFromCGPoint(point));
+NSLog(@"size: %@", NSStringFromCGSize(size));
+NSLog(@"rect: %@", NSStringFromCGRect(rect));
+
+&lt;Foundation/NSGeometry.h&gt;
+NSPoint point = NSMakePoint(0.0f, 0.0f);
+NSSize size = NSMakeSize(10.0f, 10.0f);
+NSRect rect = NSMakeRect(point.x, point.y, size.width, size.height);
+NSRange range = NSMakeRange(0, 10);
+
+NSLog(@"point: %@", NSStringFromPoint(point));
+NSLog(@"size: %@", NSStringFromSize(size));
+NSLog(@"rect: %@", NSStringFromRect(rect));
+NSLog(@"range: %@", NSStringFromRange(range));
+NSLog(@"Class: %@", NSStringFromClass(self.class));
+</code></pre>
+
+<h4 id="dictionary">Dictionary</h4>
+
+<pre><code>NSMutableDictionary&nbsp;*dict&nbsp;=&nbsp;[[&nbsp;NSMutableDictionary&nbsp;alloc&nbsp;]&nbsp;init&nbsp;];
+//add&nbsp;values
+NSLog&nbsp;(&nbsp;@"log&nbsp;dict&nbsp;=%@"&nbsp;,&nbsp;[dict&nbsp;description&nbsp;]);
+</code></pre>
+
+<h4 id="">参考资料</h4>
+
+<p>[Object - C 入门 之 数据类型详解]<a href="http://blog.csdn.net/shulianghan/article/details/38544659">http://blog.csdn.net/shulianghan/article/details/38544659</a></p>
+
+<p>http://blog.csdn.net/jiajiayouba/article/details/42973293</p>
+
+<p>https://my.oschina.net/sayonala/blog/215910</p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "oc-nslog.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>

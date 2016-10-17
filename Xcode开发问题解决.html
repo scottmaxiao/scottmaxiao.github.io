@@ -25,8 +25,6 @@
 	</div>
 <div id="md" style="display: none;">
 <!-- markdown -->
-###Xcode开发问题解决
-
 ####Xcode中code sign identity选项值不出下拉选择框的解决方法
 
 Xcode为当前工程提供了诸多配置选项，其中的Build Settings提供了工程的编译选项，默认情况下，一些编译选项中的具有多值的选项会以列表方式供我们选择。一次在想要进行Code Signing配置时，发现选项列表丢失了，再仔细一看其它的列表也全丢失了，只能双击进行输入操作。如下图所示
@@ -178,13 +176,20 @@ Xcode 6以上版本创建的项目默认是不带pch文件的，当然了旧版�
 
 [参考]<http://www.cnblogs.com/bolin-123/p/5422766.html>
 
+----
 
+####not available in automatic reference counting mode
+
+&nbsp;&nbsp;&nbsp;&nbsp;需要手动关闭工程中ARC。
+&nbsp;&nbsp;&nbsp;&nbsp;工程中 Build Settings--->Apple LLVM compiler 3.0 - Language--->Objective-C Automatic Reference Counting 把YES改为NO就可以了。
+
+![framework](http://scottmaxiao.github.io/img/xcode/xcode07.png)
+
+[参考]<http://blog.csdn.net/xbl1986/article/details/7216668>
 <!-- markdown end -->
 </div>
 <div class="entry" id="main">
 <!-- content -->
-<h3 id="xcode">Xcode开发问题解决</h3>
-
 <h4 id="xcodecodesignidentity">Xcode中code sign identity选项值不出下拉选择框的解决方法</h4>
 
 <p>Xcode为当前工程提供了诸多配置选项，其中的Build Settings提供了工程的编译选项，默认情况下，一些编译选项中的具有多值的选项会以列表方式供我们选择。一次在想要进行Code Signing配置时，发现选项列表丢失了，再仔细一看其它的列表也全丢失了，只能双击进行输入操作。如下图所示
@@ -331,6 +336,17 @@ Missing iOS Distribution signing identity for XXXXXX
 </ol>
 
 <p>[参考]<a href="http://www.cnblogs.com/bolin-123/p/5422766.html">http://www.cnblogs.com/bolin-123/p/5422766.html</a></p>
+
+<hr>
+
+<h4 id="notavailableinautomaticreferencecountingmode">not available in automatic reference counting mode</h4>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;需要手动关闭工程中ARC。
+&nbsp;&nbsp;&nbsp;&nbsp;工程中 Build Settings---&gt;Apple LLVM compiler 3.0 - Language---&gt;Objective-C Automatic Reference Counting 把YES改为NO就可以了。</p>
+
+<p><img src="http://scottmaxiao.github.io/img/xcode/xcode07.png" alt="framework" title=""></p>
+
+<p>[参考]<a href="http://blog.csdn.net/xbl1986/article/details/7216668">http://blog.csdn.net/xbl1986/article/details/7216668</a></p>
 <!-- content end -->
 </div>
 <br>
